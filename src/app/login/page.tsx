@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
-import { MARCA } from "@/lib/candidato";
+import { LogoManuFlow } from "@/components/marca/logo-manuflow";
 
 type Msg = { tipo: "erro" | "ok"; texto: string } | null;
 
 const INPUT_CLS =
-  "h-12 border-[#e8ecf2] bg-[#f7f8fc] focus-visible:border-[#2a45f8] focus-visible:ring-[#0525f7]/10";
+  "h-12 border-tinta-200 bg-tinta-50 focus-visible:border-tema focus-visible:ring-tema/15";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -139,24 +139,17 @@ export default function LoginPage() {
   }
 
   return (
-    <main
-      className="relative flex min-h-dvh w-full items-center justify-center p-4 sm:p-6"
-      style={{ background: "#0a1430" }}
-    >
-      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${MARCA.capa})` }} />
-      <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(150deg, rgba(5,37,247,0.42) 0%, rgba(7,12,48,0.80) 100%)" }}
-      />
-
-      <div className="relative z-10 w-full max-w-[420px] rounded-[22px] bg-white p-8 text-center shadow-[0_24px_64px_rgba(0,0,0,0.40)] sm:p-10">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={MARCA.cor} alt="ManuFlow" className="mx-auto mb-4 h-14 w-auto" />
-        <div className="mx-auto inline-block rounded-full border border-[#2a45f8]/20 bg-[#2a45f8]/[0.08] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-[#2a45f8]">
-          Plataforma de Inteligência
+    // Login com a cara do PRODUTO (ManuFlow, 20/10/2026): a capa e a cor da
+    // campanha saíram — a plataforma atende mais de uma candidatura, e a marca
+    // de cada uma entra lá dentro, não na porta.
+    <main className="area-app fundo-app relative flex min-h-dvh w-full items-center justify-center p-4 sm:p-6">
+      <div className="relative z-10 w-full max-w-[420px] rounded-[22px] border border-tinta-200 bg-white p-8 text-center text-tinta-900 shadow-[0_24px_64px_rgba(0,0,0,0.35)] backdrop-blur sm:p-10">
+        <LogoManuFlow tamanho={46} className="mx-auto mb-4 justify-center" />
+        <div className="mx-auto inline-block rounded-full border border-tema/25 bg-tema/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-tema">
+          Inteligência eleitoral
         </div>
         <div className="mt-2 text-sm text-zinc-500">
-          {modo === "geral" ? "Bahia" : modo === "criar" ? "Criar sua conta" : "Painel da Liderança"}
+          {modo === "geral" ? "Entre na sua conta" : modo === "criar" ? "Criar sua conta" : "Painel da Liderança"}
         </div>
 
         {/* ══ GERAL ══ */}
@@ -165,19 +158,19 @@ export default function LoginPage() {
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" autoComplete="email" className={INPUT_CLS} />
             <SenhaInput senha={senha} setSenha={setSenha} verSenha={verSenha} setVerSenha={setVerSenha} />
 
-            <button type="button" onClick={esqueciSenha} className="-mt-1 self-end text-[12px] text-[#2a45f8] hover:underline">
+            <button type="button" onClick={esqueciSenha} className="-mt-1 self-end text-[12px] text-tema hover:underline">
               Esqueci minha senha
             </button>
 
             {msg && <Aviso msg={msg} detalhe={detalhe} />}
 
-            <BotaoVerde type="submit" disabled={carregando}>
+            <BotaoPrincipal type="submit" disabled={carregando}>
               {carregando ? "..." : "Entrar na plataforma →"}
-            </BotaoVerde>
+            </BotaoPrincipal>
 
             <p className="mt-3 text-center text-[13px] text-zinc-500">
               Não tem conta?{" "}
-              <button type="button" onClick={() => trocarModo("criar")} className="font-semibold text-[#2a45f8] underline underline-offset-2">
+              <button type="button" onClick={() => trocarModo("criar")} className="font-semibold text-tema underline underline-offset-2">
                 Criar conta
               </button>
             </p>
@@ -190,14 +183,14 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => trocarModo("lideranca")}
-                className="flex w-full items-center gap-3 rounded-md border-2 border-[#65a30d]/25 bg-[#65a30d]/[0.06] px-4 py-3 text-left transition-colors hover:border-[#65a30d]/50 hover:bg-[#65a30d]/10"
+                className="flex w-full items-center gap-3 rounded-md border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-left transition-colors hover:border-emerald-500 hover:bg-emerald-100"
               >
                 <span className="text-[18px] leading-none" aria-hidden>🔑</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-bold text-[#4d7c0f]">Sou liderança</span>
+                  <span className="block text-[14px] font-bold text-emerald-700">Sou liderança</span>
                   <span className="block text-[12px] text-zinc-500">Acessar o meu painel</span>
                 </span>
-                <span className="text-[16px] font-bold text-[#65a30d]" aria-hidden>→</span>
+                <span className="text-[16px] font-bold text-emerald-600" aria-hidden>→</span>
               </button>
             </div>
           </form>
@@ -225,9 +218,9 @@ export default function LoginPage() {
 
             {msg && <Aviso msg={msg} detalhe={detalhe} />}
 
-            <BotaoVerde type="submit" disabled={carregando}>
+            <BotaoPrincipal type="submit" disabled={carregando}>
               {carregando ? "..." : "Criar conta →"}
-            </BotaoVerde>
+            </BotaoPrincipal>
 
             <p className="text-center text-[11.5px] leading-relaxed text-zinc-400">
               Um administrador libera o seu acesso antes do primeiro login.
@@ -240,7 +233,7 @@ export default function LoginPage() {
               {/* A maioria de quem chega aqui é liderança e tem código próprio.
                   Sem esta linha, elas criam a conta errada e não conseguem
                   vincular depois. */}
-              <button type="button" onClick={() => trocarModo("lideranca")} className="block w-full text-[12.5px] font-semibold text-[#4d7c0f] hover:underline">
+              <button type="button" onClick={() => trocarModo("lideranca")} className="block w-full text-[12.5px] font-semibold text-emerald-700 hover:underline">
                 🔑 Sou liderança e tenho um código
               </button>
             </div>
@@ -268,13 +261,13 @@ export default function LoginPage() {
             {msg && <Aviso msg={msg} detalhe={detalhe} />}
 
             {primeiroAcesso ? (
-              <BotaoVerde type="button" onClick={criarAcessoLideranca} disabled={carregando}>
+              <BotaoPrincipal type="button" onClick={criarAcessoLideranca} disabled={carregando}>
                 Criar acesso e entrar →
-              </BotaoVerde>
+              </BotaoPrincipal>
             ) : (
-              <BotaoVerde type="submit" disabled={carregando}>
+              <BotaoPrincipal type="submit" disabled={carregando}>
                 {carregando ? "..." : "Entrar no meu painel →"}
-              </BotaoVerde>
+              </BotaoPrincipal>
             )}
 
             <button
@@ -283,7 +276,7 @@ export default function LoginPage() {
                 setPrimeiroAcesso((v) => !v);
                 setMsg(null);
               }}
-              className="mt-1 text-center text-[13px] font-semibold text-[#2a45f8] hover:underline"
+              className="mt-1 text-center text-[13px] font-semibold text-tema hover:underline"
             >
               {primeiroAcesso ? "← Já tenho acesso (entrar)" : "Primeiro acesso? Criar com código de vínculo →"}
             </button>
@@ -300,14 +293,14 @@ export default function LoginPage() {
   );
 }
 
-function BotaoVerde({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function BotaoPrincipal({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...props}
       className="mt-2 h-12 w-full rounded-[10px] text-[15px] font-bold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60"
       style={{
-        background: "linear-gradient(135deg,#22b455 0%,#149a45 100%)",
-        boxShadow: "0 4px 20px rgba(20,154,69,0.30)",
+        background: "linear-gradient(135deg,#3b6cff 0%,#5b4fe0 100%)",
+        boxShadow: "0 8px 24px rgba(59,108,255,0.38)",
       }}
     >
       {children}

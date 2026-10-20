@@ -15,14 +15,18 @@ import { Cabecalho } from "@/components/ui/pagina";
 // vezes é o que fazia o sistema parecer remendado.
 
 /** As cores dos quadradinhos de ícone. Nome em vez de hexadecimal solto. */
+// As cores moram em variáveis (globals.css, "tons das centrais") para o modo
+// escuro trocá-las por versões translúcidas — hexadecimal aqui ficaria claro
+// em cima do fundo escuro.
+const tom = (n: string) => ({ fundo: `var(--tom-${n}-fundo)`, tinta: `var(--tom-${n}-tinta)` });
 const TONS = {
-  azul: { fundo: "#eceafe", tinta: "#0525f7" },
-  verde: { fundo: "#e9f3ec", tinta: "#12703c" },
-  roxo: { fundo: "#f1eefc", tinta: "#5b34c9" },
-  ambar: { fundo: "#fbf2e2", tinta: "#8a6009" },
-  rosa: { fundo: "#fceef3", tinta: "#c2185b" },
-  vermelho: { fundo: "#fdf1f1", tinta: "#c02020" },
-  cinza: { fundo: "#f1f1f3", tinta: "#52535c" },
+  azul: tom("azul"),
+  verde: tom("verde"),
+  roxo: tom("roxo"),
+  ambar: tom("ambar"),
+  rosa: tom("rosa"),
+  vermelho: tom("vermelho"),
+  cinza: tom("cinza"),
 } as const;
 
 export type Tom = keyof typeof TONS;
@@ -35,31 +39,17 @@ export type Numero = {
   tom?: "neutro" | "bom" | "atencao" | "ruim";
 };
 
+const numeroTom = (n: string) => ({
+  borda: `var(--num-${n}-borda)`,
+  fundo: `var(--num-${n}-fundo)`,
+  rotulo: `var(--num-${n}-rotulo)`,
+  valor: `var(--num-${n}-valor)`,
+});
 const NUMERO_TOM = {
-  neutro: {
-    borda: "#e6e6e9",
-    fundo: "#ffffff",
-    rotulo: "#9b9ca4",
-    valor: "#101114",
-  },
-  bom: {
-    borda: "#cbe3d4",
-    fundo: "#f1f8f3",
-    rotulo: "#12703c",
-    valor: "#12703c",
-  },
-  atencao: {
-    borda: "#f0dcc0",
-    fundo: "#fdf6ea",
-    rotulo: "#a35a00",
-    valor: "#a35a00",
-  },
-  ruim: {
-    borda: "#f3d3d3",
-    fundo: "#fdf1f1",
-    rotulo: "#c02020",
-    valor: "#c02020",
-  },
+  neutro: numeroTom("neutro"),
+  bom: numeroTom("bom"),
+  atencao: numeroTom("atencao"),
+  ruim: numeroTom("ruim"),
 } as const;
 
 export function Central({
@@ -134,18 +124,18 @@ export function Central({
         <div
           className={`rounded-lg border px-4 py-3.5 ${
             aviso.urgente
-              ? "border-[#f0dcc0] bg-[#fdf6ea]"
+              ? "border-amber-200 bg-amber-50"
               : "border-tinta-200 bg-white "
           }`}
         >
           <span
-            className={`text-[12.5px] font-bold ${aviso.urgente ? "text-[#a35a00]" : "text-tinta-800"}`}
+            className={`text-[12.5px] font-bold ${aviso.urgente ? "text-amber-800" : "text-tinta-800"}`}
           >
             O que precisa de você agora
           </span>
           <p
             className={`mt-1 text-[12.5px] leading-relaxed ${
-              aviso.urgente ? "text-[#8a4a10]" : "text-tinta-500"
+              aviso.urgente ? "text-amber-700" : "text-tinta-500"
             }`}
           >
             {aviso.texto}
@@ -258,7 +248,7 @@ export function Atalho({
       prefetch
       className={`min-w-0 rounded-lg border bg-white px-4 py-3.5  transition-colors hover:border-tema ${
         destaque
-          ? "border-tema shadow-[0_0_0_3px_rgba(5,37,247,0.08)]"
+          ? "border-tema shadow-[0_0_0_3px_color-mix(in_srgb,var(--tema)_14%,transparent)]"
           : "border-tinta-200"
       }`}
     >

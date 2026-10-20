@@ -139,12 +139,12 @@ export default async function AppLayout({
   // fora.
   if (noSubdominio) {
     return (
-      <main className="h-dvh overflow-y-auto bg-tinta-50">{children}</main>
+      <main className="area-app fundo-app h-dvh overflow-y-auto bg-tinta-50">{children}</main>
     );
   }
 
   return (
-    <div className="flex h-dvh bg-tinta-50">
+    <div className="area-app fundo-app flex h-dvh bg-tinta-50">
       <AppSidebar userEmail={user.email} papel={perfil?.role ?? undefined} modulos={conta.modulos} />
       <main className="h-dvh min-w-0 flex-1 overflow-y-auto pt-14 md:pt-0">
         {children}

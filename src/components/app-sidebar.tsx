@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Briefcase,
@@ -20,7 +19,7 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { SeletorTema } from "@/components/seletor-tema";
-import { MARCA } from "@/lib/candidato";
+import { LogoManuFlow } from "@/components/marca/logo-manuflow";
 import { contaVe, moduloDoCaminho } from "@/lib/modulos";
 
 // Cada item tem ícone porque menu se varre, não se lê: o símbolo é reconhecido
@@ -196,30 +195,9 @@ function Conteudo({
       <div
         className={`flex items-center gap-2 ${recolhido ? "justify-center" : "justify-between"}`}
       >
-        {recolhido ? (
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-tema text-[13px] font-extrabold text-white">
-            MF
-          </span>
-        ) : (
-          <>
-            <Image
-              src={MARCA.branca}
-              alt="ManuFlow"
-              width={140}
-              height={36}
-              className="logo-escuro h-8 w-auto opacity-95"
-              priority
-            />
-            <Image
-              src={MARCA.cor}
-              alt="ManuFlow"
-              width={140}
-              height={36}
-              className="logo-claro h-8 w-auto"
-              priority
-            />
-          </>
-        )}
+        {/* A marca do PRODUTO (pino + ManuFlow). A da campanha fica no login e
+            nas páginas públicas — ver src/components/marca/logo-manuflow.tsx. */}
+        <LogoManuFlow tamanho={recolhido ? 34 : 32} semNome={recolhido} className="text-barra-texto" />
         {onRecolher && (
           <button
             type="button"
@@ -374,20 +352,7 @@ export function AppSidebar({
     <>
       {/* Barra superior (só no celular) */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-barra-traco bg-barra px-4 md:hidden">
-        <Image
-          src={MARCA.branca}
-          alt="ManuFlow"
-          width={120}
-          height={32}
-          className="logo-escuro h-7 w-auto opacity-95"
-        />
-        <Image
-          src={MARCA.cor}
-          alt="ManuFlow"
-          width={120}
-          height={32}
-          className="logo-claro h-7 w-auto"
-        />
+        <LogoManuFlow tamanho={28} className="text-barra-texto" />
         <button
           onClick={() => setAberto(true)}
           className="text-barra-texto"

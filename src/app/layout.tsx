@@ -1,23 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { CANDIDATO, MARCA, estiloDaMarca } from "@/lib/candidato";
 
-// UMA FONTE SÓ.
+// DUAS FONTES, CADA UMA NO SEU PAPEL (identidade ManuFlow, 20/10/2026).
 //
-// Antes eram três: Poppins no corpo, Bebas Neue como display e Playfair
-// Display em itálico. Bebas nunca chegou a ser usada em lugar nenhum, e
-// Playfair aparecia numa assinatura só, na barra lateral.
-//
-// Poppins é geométrica arredondada — a fonte de material de divulgação, e é
-// justamente isso que ela dizia numa ferramenta de trabalho. IBM Plex Sans foi
-// desenhada para painel e leitura longa: humanista, dígitos de largura fixa de
-// origem, e não chama atenção para si. Numa tela que a atendente encara oito
-// horas, a fonte que some é a certa.
-const plex = IBM_Plex_Sans({
+// Inter no corpo: feita para tela, legível em 12px, com dígitos de largura
+// fixa para as colunas de votos alinharem. Sora nos títulos e nos números
+// grandes: geométrica, dá a cara de produto que a plataforma passou a ter
+// quando deixou de ser de uma campanha só. Antes era IBM Plex em tudo.
+const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const sora = Sora({
+  variable: "--fonte-titulo",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
   display: "swap",
 });
 
@@ -65,7 +67,7 @@ export default function RootLayout({
       lang="pt-BR"
       translate="no"
       suppressHydrationWarning
-      className={`${plex.variable} h-full antialiased`}
+      className={`${inter.variable} ${sora.variable} h-full antialiased`}
       style={estiloDaMarca()}
     >
       <head>
@@ -73,11 +75,12 @@ export default function RootLayout({
             aparece no padrão e pisca para a escolha da pessoa. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var c=localStorage.getItem('pie_tema_cor');var b=localStorage.getItem('pie_tema_barra');if(c&&c!=='#4C8DF6')document.documentElement.style.setProperty('--tema',c);if(b==='escuro'||b==='claro')document.documentElement.setAttribute('data-barra',b)}catch(e){}`,
+            // Modo escuro é o padrão; "claro" só se a pessoa escolheu.
+            __html: `try{var d=document.documentElement;var m=localStorage.getItem('pie_tema_modo');d.setAttribute('data-tema',m==='claro'?'claro':'escuro');var c=localStorage.getItem('pie_tema_cor');if(c)d.style.setProperty('--tema',c)}catch(e){document.documentElement.setAttribute('data-tema','escuro')}`,
           }}
         />
       </head>
-      <body suppressHydrationWarning className="flex min-h-full flex-col bg-barra font-sans">
+      <body suppressHydrationWarning className="flex min-h-full flex-col bg-background font-sans">
         {children}
       </body>
     </html>

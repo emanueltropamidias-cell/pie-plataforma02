@@ -178,7 +178,7 @@
      #4c8df6 era um azul de template — o mesmo de qualquer painel pronto. O da
      marca é este, e ele é forte o bastante para aparecer pouco: fica no que se
      clica e no que está selecionado, em mais nada. */
-  --tema: #0525f7;
+  --tema: #3b6cff; /* azul elétrico da identidade ManuFlow (20/10/2026) */
 
   /* BARRA DE GRAFITE.
      A barra era o tema puxado para o escuro, ou seja, uma placa azul de 260px
@@ -228,6 +228,7 @@
 }
 
 @theme inline {
+  --font-titulo: var(--fonte-titulo), var(--font-sans);
   --color-tema: var(--tema);
   --color-barra: var(--barra-fundo);
   --color-barra-texto: var(--barra-texto);
@@ -333,3 +334,304 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-\[pulsa_1\.1s_ease-in-out_infinite\] { animation: none; }
 }
+
+/* ===========================================================================
+   IDENTIDADE MANUFLOW — MODO ESCURO (PADRÃO) E MODO CLARO
+   ===========================================================================
+
+   Escolhida em 20/10/2026, quando a plataforma deixou de ser de uma campanha
+   só: escuro com vidro e brilho como padrão, claro com menu preto no botão de
+   tema (src/components/seletor-tema.tsx). O atributo `data-tema` vai no
+   <html> antes da primeira pintura (src/app/layout.tsx).
+
+   ── SÓ DENTRO DA ÁREA DO APP ──────────────────────────────────────────────
+   Tudo aqui vale dentro de `.area-app` (layout logado, login e as janelas de
+   diálogo). As páginas públicas da campanha — /1022, /instituto, /portal —
+   têm identidade própria e não podem escurecer junto.
+
+   ── POR QUE TROCAR A PALETA, E NÃO CADA TELA ──────────────────────────────
+   Medido no dia: 304 `bg-white`, 232 `slate-*` e 2.045 `tinta-*` em 111
+   arquivos. Reescrever tela por tela seria semanas e deixaria metade para
+   trás. No modo escuro os NOMES de cor passam a apontar para as versões
+   escuras — "tinta-50" vira fundo escuro, "tinta-900" vira texto claro,
+   "emerald-50" vira um verde translúcido — e as telas acompanham sozinhas.
+   O que não acompanha: cor escrita em hexadecimal na classe (bg-[#f1f8f3]).
+   Essas foram corrigidas nas telas principais e o resto fica listado no commit.
+   =========================================================================== */
+
+:root[data-tema="escuro"] .area-app {
+  color-scheme: dark;
+  --background: #080b14;
+  --foreground: #e8ecf6;
+  --card: #111727;
+  --card-foreground: #e8ecf6;
+  --popover: #111727;
+  --popover-foreground: #e8ecf6;
+  --primary-foreground: #ffffff;
+  --secondary: #151b2c;
+  --secondary-foreground: #e8ecf6;
+  --muted: #151b2c;
+  --muted-foreground: #8a93a8;
+  --accent: #151b2c;
+  --accent-foreground: #e8ecf6;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: rgba(143, 168, 255, 0.5);
+  --tinta-50: #0E1322;
+  --color-slate-50: #0E1322;
+  --color-zinc-50: #0E1322;
+  --color-gray-50: #0E1322;
+  --tinta-100: #151B2C;
+  --color-slate-100: #151B2C;
+  --color-zinc-100: #151B2C;
+  --color-gray-100: #151B2C;
+  --tinta-200: #20283B;
+  --color-slate-200: #20283B;
+  --color-zinc-200: #20283B;
+  --color-gray-200: #20283B;
+  --tinta-300: #2D3649;
+  --color-slate-300: #2D3649;
+  --color-zinc-300: #2D3649;
+  --color-gray-300: #2D3649;
+  --tinta-400: #6B7489;
+  --color-slate-400: #6B7489;
+  --color-zinc-400: #6B7489;
+  --color-gray-400: #6B7489;
+  --tinta-500: #8A93A8;
+  --color-slate-500: #8A93A8;
+  --color-zinc-500: #8A93A8;
+  --color-gray-500: #8A93A8;
+  --tinta-600: #A9B2C7;
+  --color-slate-600: #A9B2C7;
+  --color-zinc-600: #A9B2C7;
+  --color-gray-600: #A9B2C7;
+  --tinta-700: #C9D0E0;
+  --color-slate-700: #C9D0E0;
+  --color-zinc-700: #C9D0E0;
+  --color-gray-700: #C9D0E0;
+  --tinta-800: #DDE2EE;
+  --color-slate-800: #DDE2EE;
+  --color-zinc-800: #DDE2EE;
+  --color-gray-800: #DDE2EE;
+  --tinta-900: #F1F4FA;
+  --color-slate-900: #F1F4FA;
+  --color-zinc-900: #F1F4FA;
+  --color-gray-900: #F1F4FA;
+  --color-slate-950: #F8FAFD;
+  --color-zinc-950: #F8FAFD;
+  --color-gray-950: #F8FAFD;
+  --color-red-50: rgba(239,68,68,0.10);
+  --color-red-100: rgba(239,68,68,0.16);
+  --color-red-200: rgba(239,68,68,0.28);
+  --color-red-300: rgba(239,68,68,0.42);
+  --color-red-600: #fca5a5;
+  --color-red-700: #fca5a5;
+  --color-red-800: #fecaca;
+  --color-red-900: #fee2e2;
+  --color-amber-50: rgba(245,158,11,0.10);
+  --color-amber-100: rgba(245,158,11,0.16);
+  --color-amber-200: rgba(245,158,11,0.28);
+  --color-amber-300: rgba(245,158,11,0.42);
+  --color-amber-600: #fcd34d;
+  --color-amber-700: #fcd34d;
+  --color-amber-800: #fde68a;
+  --color-amber-900: #fef3c7;
+  --color-blue-50: rgba(59,130,246,0.10);
+  --color-blue-100: rgba(59,130,246,0.16);
+  --color-blue-200: rgba(59,130,246,0.28);
+  --color-blue-300: rgba(59,130,246,0.42);
+  --color-blue-600: #93c5fd;
+  --color-blue-700: #93c5fd;
+  --color-blue-800: #bfdbfe;
+  --color-blue-900: #dbeafe;
+  --color-emerald-50: rgba(16,185,129,0.10);
+  --color-emerald-100: rgba(16,185,129,0.16);
+  --color-emerald-200: rgba(16,185,129,0.28);
+  --color-emerald-300: rgba(16,185,129,0.42);
+  --color-emerald-600: #6ee7b7;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-800: #a7f3d0;
+  --color-emerald-900: #d1fae5;
+  --color-rose-50: rgba(244,63,94,0.10);
+  --color-rose-100: rgba(244,63,94,0.16);
+  --color-rose-200: rgba(244,63,94,0.28);
+  --color-rose-300: rgba(244,63,94,0.42);
+  --color-rose-600: #fda4af;
+  --color-rose-700: #fda4af;
+  --color-rose-800: #fecdd3;
+  --color-rose-900: #ffe4e6;
+  --color-green-50: rgba(34,197,94,0.10);
+  --color-green-100: rgba(34,197,94,0.16);
+  --color-green-200: rgba(34,197,94,0.28);
+  --color-green-300: rgba(34,197,94,0.42);
+  --color-green-600: #86efac;
+  --color-green-700: #86efac;
+  --color-green-800: #bbf7d0;
+  --color-green-900: #dcfce7;
+  --color-orange-50: rgba(249,115,22,0.10);
+  --color-orange-100: rgba(249,115,22,0.16);
+  --color-orange-200: rgba(249,115,22,0.28);
+  --color-orange-300: rgba(249,115,22,0.42);
+  --color-orange-600: #fdba74;
+  --color-orange-700: #fdba74;
+  --color-orange-800: #fed7aa;
+  --color-orange-900: #ffedd5;
+  --color-sky-50: rgba(14,165,233,0.10);
+  --color-sky-100: rgba(14,165,233,0.16);
+  --color-sky-200: rgba(14,165,233,0.28);
+  --color-sky-300: rgba(14,165,233,0.42);
+  --color-sky-600: #7dd3fc;
+  --color-sky-700: #7dd3fc;
+  --color-sky-800: #bae6fd;
+  --color-sky-900: #e0f2fe;
+  --color-purple-50: rgba(168,85,247,0.10);
+  --color-purple-100: rgba(168,85,247,0.16);
+  --color-purple-200: rgba(168,85,247,0.28);
+  --color-purple-300: rgba(168,85,247,0.42);
+  --color-purple-600: #d8b4fe;
+  --color-purple-700: #d8b4fe;
+  --color-purple-800: #e9d5ff;
+  --color-purple-900: #f3e8ff;
+}
+
+/* Superfície: o "branco" vira o vidro grafite dos cartões. */
+:root[data-tema="escuro"] .area-app .bg-white {
+  background-color: rgba(17, 23, 39, 0.78);
+}
+:root[data-tema="escuro"] .area-app [class*="bg-white/"] {
+  background-color: rgba(17, 23, 39, 0.6);
+}
+:root[data-tema="escuro"] .area-app .hover\:bg-white:hover {
+  background-color: #151b2c;
+}
+
+/* Botão escuro com texto branco: invertida a paleta, o fundo ficaria claro e
+   o texto sumiria. Fica um azul-grafite que segura o branco. */
+:root[data-tema="escuro"] .area-app :is(.bg-tinta-900, .bg-tinta-800, .bg-slate-900, .bg-slate-800) {
+  background-color: #2b3550;
+}
+
+/* O fundo do app: noite com o brilho violeta e laranja das referências. */
+:root[data-tema="escuro"] .area-app.fundo-app,
+:root[data-tema="escuro"] .area-app .fundo-app {
+  background:
+    radial-gradient(900px 520px at 88% -8%, rgba(124, 92, 255, 0.16), transparent 62%),
+    radial-gradient(700px 520px at 105% 105%, rgba(255, 138, 61, 0.09), transparent 62%),
+    #080b14;
+}
+
+/* Menu no modo escuro: vidro sobre a noite. */
+:root[data-tema="escuro"] {
+  --barra-fundo: #0b1020;
+  --barra-texto: #e8ecf6;
+  --barra-suave: rgba(232, 236, 246, 0.62);
+  --barra-fraca: rgba(232, 236, 246, 0.36);
+  --barra-ativo: rgba(59, 108, 255, 0.22);
+  --barra-hover: rgba(255, 255, 255, 0.05);
+  --barra-traco: rgba(255, 255, 255, 0.07);
+  --barra-realce: #8fa8ff;
+}
+
+/* Modo claro: menu preto, conteúdo em papel levemente quente. */
+:root[data-tema="claro"] {
+  --barra-fundo: #0b0d12;
+  --barra-texto: #e8ecf6;
+  --barra-suave: rgba(232, 236, 246, 0.6);
+  --barra-fraca: rgba(232, 236, 246, 0.34);
+  --barra-ativo: #1a2340;
+  --barra-hover: rgba(255, 255, 255, 0.05);
+  --barra-traco: rgba(255, 255, 255, 0.08);
+  --barra-realce: #9db0ff;
+}
+:root[data-tema="claro"] .area-app {
+  --tinta-50: #f6f4f0;
+}
+:root[data-tema="claro"] .area-app.fundo-app,
+:root[data-tema="claro"] .area-app .fundo-app {
+  background: #f6f4f0;
+}
+
+/* Títulos em Sora dentro do app. */
+.area-app :is(h1, h2, h3) {
+  font-family: var(--fonte-titulo), var(--font-sans);
+  letter-spacing: -0.02em;
+}
+
+/* ── Tons das centrais (src/components/ui/central.tsx) ─────────────────────
+   Quadradinho de ícone e cartão de número. Claros por padrão; no modo escuro,
+   translúcidos com a tinta clareada para ler sobre o vidro. */
+:root {
+  --tom-azul-fundo: #eceafe; --tom-azul-tinta: #3b6cff;
+  --tom-verde-fundo: #e9f3ec; --tom-verde-tinta: #12703c;
+  --tom-roxo-fundo: #f1eefc; --tom-roxo-tinta: #5b34c9;
+  --tom-ambar-fundo: #fbf2e2; --tom-ambar-tinta: #8a6009;
+  --tom-rosa-fundo: #fceef3; --tom-rosa-tinta: #c2185b;
+  --tom-vermelho-fundo: #fdf1f1; --tom-vermelho-tinta: #c02020;
+  --tom-cinza-fundo: #f1f1f3; --tom-cinza-tinta: #52535c;
+  --num-neutro-borda: #e6e6e9; --num-neutro-fundo: #ffffff; --num-neutro-rotulo: #71727a; --num-neutro-valor: #101114;
+  --num-bom-borda: #cbe3d4; --num-bom-fundo: #f1f8f3; --num-bom-rotulo: #12703c; --num-bom-valor: #12703c;
+  --num-atencao-borda: #f0dcc0; --num-atencao-fundo: #fdf6ea; --num-atencao-rotulo: #a35a00; --num-atencao-valor: #a35a00;
+  --num-ruim-borda: #f3d3d3; --num-ruim-fundo: #fdf1f1; --num-ruim-rotulo: #c02020; --num-ruim-valor: #c02020;
+}
+:root[data-tema="escuro"] .area-app {
+  --tom-azul-fundo: rgba(59,108,255,0.18); --tom-azul-tinta: #9db0ff;
+  --tom-verde-fundo: rgba(52,211,153,0.16); --tom-verde-tinta: #6ee7b7;
+  --tom-roxo-fundo: rgba(124,92,255,0.20); --tom-roxo-tinta: #c4b5fd;
+  --tom-ambar-fundo: rgba(245,158,11,0.16); --tom-ambar-tinta: #fcd34d;
+  --tom-rosa-fundo: rgba(244,114,182,0.16); --tom-rosa-tinta: #f9a8d4;
+  --tom-vermelho-fundo: rgba(239,68,68,0.16); --tom-vermelho-tinta: #fca5a5;
+  --tom-cinza-fundo: rgba(255,255,255,0.07); --tom-cinza-tinta: #c9d0e0;
+  --num-neutro-borda: rgba(255,255,255,0.08); --num-neutro-fundo: rgba(17,23,39,0.78); --num-neutro-rotulo: #8a93a8; --num-neutro-valor: #f1f4fa;
+  --num-bom-borda: rgba(52,211,153,0.28); --num-bom-fundo: rgba(52,211,153,0.10); --num-bom-rotulo: #6ee7b7; --num-bom-valor: #a7f3d0;
+  --num-atencao-borda: rgba(245,158,11,0.30); --num-atencao-fundo: rgba(245,158,11,0.10); --num-atencao-rotulo: #fcd34d; --num-atencao-valor: #fde68a;
+  --num-ruim-borda: rgba(239,68,68,0.30); --num-ruim-fundo: rgba(239,68,68,0.10); --num-ruim-rotulo: #fca5a5; --num-ruim-valor: #fecaca;
+}
+
+/* Azul de destaque como TEXTO no escuro: puro, ele não chega a 4,5:1 sobre a
+   noite em letra pequena ("Esqueci minha senha"). Clareado, passa. */
+:root[data-tema="escuro"] .area-app .text-tema {
+  color: color-mix(in srgb, var(--tema) 62%, white);
+}
+
+/* A cor do texto vem do <body>, que fica FORA da área do app e guarda o texto
+   escuro do modo claro. Sem isto, campo sem cor própria herdava preto: no
+   escuro, o que se digitava e a dica do campo ("Pesquisar candidato…")
+   sumiam. Aqui a área do app repõe a cor do próprio modo. */
+.area-app {
+  color: var(--foreground);
+}
+.area-app ::placeholder {
+  color: var(--tinta-500);
+  opacity: 1;
+}
+
+/* ── Avisos com cor fixa (hexadecimal na classe) ────────────────────────────
+   Erro, atenção, sucesso e informação foram escritos como bg-[#fdf1f1] e
+   companhia em ~25 componentes. Em vez de editar um a um, o modo escuro troca
+   ESSES valores pela versão translúcida. Hexadecimal novo não entra aqui
+   sozinho: prefira as classes de paleta (red-50, amber-50…), que já trocam. */
+:root[data-tema="escuro"] .area-app .bg-\[\#fdf1f1\] { background-color: rgba(239,68,68,0.12); }
+:root[data-tema="escuro"] .area-app .bg-\[\#fdf6ea\] { background-color: rgba(245,158,11,0.12); }
+:root[data-tema="escuro"] .area-app .bg-\[\#f1f8f3\] { background-color: rgba(52,211,153,0.11); }
+:root[data-tema="escuro"] .area-app .bg-\[\#f2f7ff\] { background-color: rgba(59,130,246,0.12); }
+:root[data-tema="escuro"] .area-app .bg-\[\#eceafe\] { background-color: rgba(124,92,255,0.16); }
+:root[data-tema="escuro"] .area-app .bg-\[\#eef7f1\] { background-color: rgba(52,211,153,0.11); }
+:root[data-tema="escuro"] .area-app .bg-\[\#e6f4ec\] { background-color: rgba(52,211,153,0.13); }
+:root[data-tema="escuro"] .area-app .bg-\[\#e8e8ea\] { background-color: rgba(255,255,255,0.08); }
+:root[data-tema="escuro"] .area-app .bg-\[\#e2e8f0\] { background-color: rgba(255,255,255,0.08); }
+:root[data-tema="escuro"] .area-app .bg-\[\#e9edd8\] { background-color: rgba(192,235,2,0.10); }
+:root[data-tema="escuro"] .area-app .text-\[\#c02020\] { color: #fca5a5; }
+:root[data-tema="escuro"] .area-app .text-\[\#12703c\] { color: #6ee7b7; }
+:root[data-tema="escuro"] .area-app .text-\[\#a35a00\] { color: #fcd34d; }
+:root[data-tema="escuro"] .area-app .text-\[\#8a4a10\] { color: #fcd34d; }
+:root[data-tema="escuro"] .area-app .text-\[\#2f6fd0\] { color: #93c5fd; }
+:root[data-tema="escuro"] .area-app .text-\[\#7a4a00\] { color: #fcd34d; }
+:root[data-tema="escuro"] .area-app .text-\[\#0525f7\] { color: #9db0ff; }
+:root[data-tema="escuro"] .area-app .text-\[\#9a6b00\] { color: #fcd34d; }
+:root[data-tema="escuro"] .area-app .text-\[\#8a1c1c\] { color: #fca5a5; }
+:root[data-tema="escuro"] .area-app .text-\[\#0a0d0b\] { color: #e8ecf6; }
+:root[data-tema="escuro"] .area-app .border-\[\#f3d3d3\] { border-color: rgba(239,68,68,0.30); }
+:root[data-tema="escuro"] .area-app .border-\[\#f0dcc0\] { border-color: rgba(245,158,11,0.30); }
+:root[data-tema="escuro"] .area-app .border-\[\#cbe3d4\] { border-color: rgba(52,211,153,0.28); }
+:root[data-tema="escuro"] .area-app .border-\[\#d9e6fb\] { border-color: rgba(59,130,246,0.30); }
+:root[data-tema="escuro"] .area-app .border-\[\#f0c4c4\] { border-color: rgba(239,68,68,0.30); }
