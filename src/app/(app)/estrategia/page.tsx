@@ -52,6 +52,9 @@ export default async function CentralEstrategia({
 
   const cidadesComBase = territorio.mapa.map((m) => m.municipio);
 
+  // O que existe no banco, por ano e estado: a tela só oferece isso.
+  const { data: cobertura } = await supabase.rpc("eleicao_cobertura");
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">
       <Cabecalho
@@ -123,6 +126,7 @@ export default async function CentralEstrategia({
           <PainelEstrategiaEleitoral
             candidatoInicial={raioX}
             cidadesComBase={cidadesComBase}
+            cobertura={cobertura ?? []}
           />
         ) : (
           <div className="rounded-2xl border border-tinta-200 bg-white p-8 text-center text-tinta-500">

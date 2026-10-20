@@ -20,6 +20,7 @@ import { spawn, execSync } from "node:child_process";
 import readline from "node:readline";
 import pg from "pg";
 import { escolherBanco } from "./banco.mjs";
+import UFS from "../src/lib/ufs.json" with { type: "json" };
 
 const RAIZ = resolve(dirname(new URL(import.meta.url).pathname), "..");
 const CACHE_DIR = resolve(RAIZ, ".cache/tse");
@@ -37,11 +38,8 @@ function obterArg(nome, padrao) {
 const ano = parseInt(obterArg("ano", "2022"), 10);
 const ufParam = obterArg("uf", "BA").toUpperCase();
 
-const UFS_BRASIL = [
-  "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA",
-  "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN",
-  "RO", "RR", "RS", "SC", "SE", "SP", "TO",
-];
+// A mesma lista que a tela usa — um lugar só (src/lib/ufs.json).
+const UFS_BRASIL = UFS.map((e) => e.uf);
 
 const ufsParaProcessar = ufParam === "TODAS" || ufParam === "BR" ? UFS_BRASIL : [ufParam];
 

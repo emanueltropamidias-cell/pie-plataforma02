@@ -25,16 +25,23 @@ const CORES_REGIAO: Record<string, string> = {
 export function MapaBrasil({
   ufAtiva,
   votosPorUf,
+  ufsComDados,
   onSelecionarUf,
 }: {
   ufAtiva?: string;
   votosPorUf?: Record<string, number>;
+  /**
+   * Estados com dados do TSE no banco. Os outros NÃO são "sem votação": são
+   * "não importado", e o mapa precisa dizer isso — senão o vazio do banco
+   * parece fraqueza do candidato.
+   */
+  ufsComDados: string[];
   onSelecionarUf: (uf: string) => void;
 }) {
   const [features, setFeatures] = useState<EstadoFeature[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [hoverUf, setHoverUf] = useState<string | null>(null);
-  const [tip, setTip] = useState<{ x: number; y: number; nome: string; uf: string; votos: number } | null>(null);
+  const [tip, setTip] = useState<{ x: number; y: number; nome: string; uf: string; votos: number; importado: boolean } | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -80,11 +87,12 @@ export function MapaBrasil({
         cor = "#2563eb";
       }
 
-      return { uf, nome, regiao, votos, d, corPadrao: cor };
+      const importado = ufsComDados.includes(uf);
+      return { uf, nome, regiao, votos, d, importado, corPadrao: importado ? cor : "url(#nao-importado)" };
     });
 
     return { paths: ps };
-  }, [features, votosPorUf, maiorVoto, ufAtiva]);
+  }, [features, votosPorUf, maiorVoto, ufAtiva, ufsComDados]);
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-tinta-200 bg-white p-4 shadow-sm">
@@ -99,6 +107,11 @@ export function MapaBrasil({
         <div className="flex items-center gap-2 text-[11px] font-medium text-tinta-500">
           <span className="inline-block h-3 w-3 rounded-full bg-blue-600" /> Votos concentrados
           <span className="ml-2 inline-block h-3 w-3 rounded-full bg-tinta-200" /> Sem votação
+          <span
+            className="ml-2 inline-block h-3 w-3 rounded-full border border-tinta-200"
+            style={{ background: "repeating-linear-gradient(45deg,#f1f5f9 0 2px,#cbd5e1 2px 4px)" }}
+          />{" "}
+          Não importado
         </div>
       </div>
 
@@ -111,11 +124,17 @@ export function MapaBrasil({
 
         {!carregando && (
           <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full max-w-[620px]">
+            <defs>
+              <pattern id="nao-importado" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="6" height="6" fill="#f1f5f9" />
+                <rect width="3" height="6" fill="#cbd5e1" />
+              </pattern>
+            </defs>
             {paths.map((p) => {
               const estaAtivo = p.uf === ufAtiva;
               const estaHover = p.uf === hoverUf;
               let fill = p.corPadrao;
-              if (estaHover) fill = "#1e40af";
+              if (estaHover && p.importado) fill = "#1e40af";
               if (estaAtivo) fill = "#1d4ed8";
 
               return (
@@ -125,8 +144,8 @@ export function MapaBrasil({
                   fill={fill}
                   stroke="#ffffff"
                   strokeWidth={estaAtivo ? 2.5 : estaHover ? 1.8 : 0.8}
-                  className="cursor-pointer transition-all duration-150 hover:opacity-90"
-                  onClick={() => onSelecionarUf(p.uf)}
+                  className={`transition-all duration-150 ${p.importado ? "cursor-pointer hover:opacity-90" : "cursor-not-allowed"}`}
+                  onClick={() => p.importado && onSelecionarUf(p.uf)}
                   onMouseEnter={() => setHoverUf(p.uf)}
                   onMouseMove={(e) => {
                     const r = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
@@ -136,6 +155,7 @@ export function MapaBrasil({
                       nome: p.nome,
                       uf: p.uf,
                       votos: p.votos,
+                      importado: p.importado,
                     });
                   }}
                   onMouseLeave={() => {
@@ -158,7 +178,9 @@ export function MapaBrasil({
               <span className="rounded bg-white/20 px-1 py-0.2 text-[10px] uppercase font-mono">{tip.uf}</span>
             </div>
             <div className="mt-0.5 text-white/80">
-              {tip.votos > 0 ? (
+              {!tip.importado ? (
+                <span className="text-white/60">Dados do TSE ainda não importados</span>
+              ) : tip.votos > 0 ? (
                 <span>
                   <b className="text-emerald-400">{tip.votos.toLocaleString("pt-BR")}</b> votos computados
                 </span>

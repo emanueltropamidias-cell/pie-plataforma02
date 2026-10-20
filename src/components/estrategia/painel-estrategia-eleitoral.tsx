@@ -20,6 +20,7 @@ import { MapaVotos } from "@/components/estrategia/mapa-votos";
 import { DetalheMunicipioEstrategia } from "@/components/estrategia/detalhe-municipio-estrategia";
 import { chave, ehDaCasa, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
 import { CANDIDATO } from "@/lib/candidato";
+import UFS from "@/lib/ufs.json";
 
 export interface CandidatoBusca {
   id: number;
@@ -51,43 +52,27 @@ export interface RaioXCandidato {
   }>;
 }
 
-const ESTADOS_BR = [
-  { uf: "BR", nome: "Brasil (Nacional)" },
-  { uf: "BA", nome: "Bahia" },
-  { uf: "SP", nome: "São Paulo" },
-  { uf: "RJ", nome: "Rio de Janeiro" },
-  { uf: "MG", nome: "Minas Gerais" },
-  { uf: "PE", nome: "Pernambuco" },
-  { uf: "CE", nome: "Ceará" },
-  { uf: "PR", nome: "Paraná" },
-  { uf: "RS", nome: "Rio Grande do Sul" },
-  { uf: "SC", nome: "Santa Catarina" },
-  { uf: "GO", nome: "Goiás" },
-  { uf: "DF", nome: "Distrito Federal" },
-  { uf: "ES", nome: "Espírito Santo" },
-  { uf: "MA", nome: "Maranhão" },
-  { uf: "PB", nome: "Paraíba" },
-  { uf: "PA", nome: "Pará" },
-  { uf: "RN", nome: "Rio Grande do Norte" },
-  { uf: "AL", nome: "Alagoas" },
-  { uf: "PI", nome: "Piauí" },
-  { uf: "MT", nome: "Mato Grosso" },
-  { uf: "MS", nome: "Mato Grosso do Sul" },
-  { uf: "SE", nome: "Sergipe" },
-  { uf: "RO", nome: "Rondônia" },
-  { uf: "TO", nome: "Tocantins" },
-  { uf: "AC", nome: "Acre" },
-  { uf: "AP", nome: "Amapá" },
-  { uf: "RR", nome: "Roraima" },
-  { uf: "AM", nome: "Amazonas" },
-];
+// Um lugar só para os estados — o importador lê o mesmo arquivo.
+const ESTADOS_BR = [{ uf: "BR", nome: "Brasil (Nacional)" }, ...UFS];
+
+const ANOS = [2022, 2024, 2026];
+
+/** Uma linha de `eleicao_cobertura()`: o que já foi importado do TSE. */
+export interface CoberturaEleicao {
+  ano: number;
+  uf: string;
+  candidaturas: number;
+  municipios: number;
+}
 
 export function PainelEstrategiaEleitoral({
   candidatoInicial,
   cidadesComBase,
+  cobertura,
 }: {
   candidatoInicial: RaioXCandidato;
   cidadesComBase: string[];
+  cobertura: CoberturaEleicao[];
 }) {
   const [raioX, setRaioX] = useState<RaioXCandidato>(candidatoInicial);
 
@@ -113,9 +98,17 @@ export function PainelEstrategiaEleitoral({
 
   const cSet = new Set(cidadesComBase.map(chave));
 
+  const anosComDados = new Set(cobertura.map((c) => c.ano));
+  const ufsDoAno = cobertura.filter((c) => c.ano === anoFiltro).map((c) => c.uf);
+  const coberturaAtual = cobertura.find((c) => c.ano === anoFiltro && c.uf === ufFiltro);
+  // Denominador da presença: cidades com voto naquele ano e estado, do banco.
+  const municipiosDoEstado =
+    cobertura.find((c) => c.ano === raioX.candidato.ano && c.uf === raioX.candidato.uf)?.municipios ?? 0;
+  const ehMunicipal = ["PREFEITO", "VICE-PREFEITO", "VEREADOR"].includes(raioX.candidato.cargo);
+
   // Opções de cargos conforme o ano selecionado
   const opcoesCargos =
-    anoFiltro === 2024
+    anoFiltro % 4 === 0
       ? [
           { valor: "TODOS", rotulo: "Todos os Cargos Municipais" },
           { valor: "PREFEITO", rotulo: "Prefeito" },
@@ -251,19 +244,27 @@ export function PainelEstrategiaEleitoral({
               <Filter size={13} /> Eleição:
             </span>
             <div className="inline-flex rounded-xl border border-tinta-200 bg-tinta-50/70 p-1">
-              {[2022, 2024, 2026].map((ano) => (
-                <button
-                  key={ano}
-                  onClick={() => alternarAno(ano)}
-                  className={`rounded-lg px-3 py-1 text-[12px] font-bold transition ${
-                    anoFiltro === ano
-                      ? "bg-tema text-white shadow-sm"
-                      : "text-tinta-600 hover:text-tinta-900"
-                  }`}
-                >
-                  {ano} {ano === 2026 ? "(1º Turno)" : ""}
-                </button>
-              ))}
+              {ANOS.map((ano) => {
+                const temDados = anosComDados.has(ano);
+                return (
+                  <button
+                    key={ano}
+                    onClick={() => alternarAno(ano)}
+                    disabled={!temDados}
+                    title={temDados ? undefined : "Ainda não importado do TSE"}
+                    className={`rounded-lg px-3 py-1 text-[12px] font-bold transition ${
+                      anoFiltro === ano
+                        ? "bg-tema text-white shadow-sm"
+                        : temDados
+                          ? "text-tinta-600 hover:text-tinta-900"
+                          : "cursor-not-allowed text-tinta-300"
+                    }`}
+                  >
+                    {ano}
+                    {!temDados && <span className="ml-1 text-[10px] font-medium">· sem dados</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -305,11 +306,15 @@ export function PainelEstrategiaEleitoral({
                 }}
                 className="h-8.5 rounded-xl border border-tinta-200 bg-white px-3 text-[12.5px] font-medium text-tinta-800 outline-none transition focus:border-tema"
               >
-                {ESTADOS_BR.map((e) => (
-                  <option key={e.uf} value={e.uf}>
-                    {e.uf === "BR" ? "🇧🇷 " : "📍 "} {e.nome}
-                  </option>
-                ))}
+                {ESTADOS_BR.map((e) => {
+                  const temDados = e.uf === "BR" || ufsDoAno.includes(e.uf);
+                  return (
+                    <option key={e.uf} value={e.uf} disabled={!temDados}>
+                      {e.nome}
+                      {temDados ? "" : " — não importado"}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
@@ -318,21 +323,12 @@ export function PainelEstrategiaEleitoral({
         {/* Faixa explicativa do ano selecionado */}
         <div className="mt-3 flex items-center justify-between border-t border-tinta-100 pt-2.5 text-[11.5px]">
           <span className="text-tinta-500">
-            {anoFiltro === 2022 && (
-              <>
-                <b className="text-emerald-700">Eleição Geral 2022:</b> Base oficial completa do TSE apurada com fotos e mapa de calor município a município.
-              </>
-            )}
-            {anoFiltro === 2024 && (
-              <>
-                <b className="text-blue-700">Eleição Municipal 2024:</b> Cargos de Prefeito e Vereador. Digite o nome de qualquer candidato na busca ao lado.
-              </>
-            )}
-            {anoFiltro === 2026 && (
-              <>
-                <b className="text-purple-700">Eleição Geral 2026 (1º Turno):</b> Planejamento e metas eleitorais. A busca ao lado pesquisa qualquer candidato histórico do TSE.
-              </>
-            )}
+            <b className="text-tinta-800">
+              {anoFiltro % 4 === 0 ? "Eleição municipal" : "Eleição geral"} {anoFiltro}:
+            </b>{" "}
+            {coberturaAtual
+              ? `${coberturaAtual.candidaturas.toLocaleString("pt-BR")} candidaturas e votação em ${coberturaAtual.municipios.toLocaleString("pt-BR")} municípios de ${coberturaAtual.uf}, do arquivo oficial do TSE.`
+              : "ainda não importado do TSE para este estado."}
           </span>
           <span className="text-tinta-400">
             {totalVotos > 0 ? `${totalVotos.toLocaleString("pt-BR")} votos válidos apurados` : "Pronto para análise"}
@@ -541,6 +537,7 @@ export function PainelEstrategiaEleitoral({
           <MapaBrasil
             ufAtiva={ufFiltro}
             votosPorUf={votosPorUf}
+            ufsComDados={ufsDoAno}
             onSelecionarUf={transitarParaEstado}
           />
         </div>
@@ -566,11 +563,23 @@ export function PainelEstrategiaEleitoral({
               valor={votosSemRede.toLocaleString("pt-BR")}
               contexto={`${lacunas.length} municípios com voto sem liderança`}
             />
-            <Indicador
-              rotulo="Presença Eleitoral"
-              valor={`${((raioX.candidato.municipios_com_voto / 417) * 100).toFixed(0)}%`}
-              contexto="cobertura do território estadual"
-            />
+            {ehMunicipal ? (
+              <Indicador
+                rotulo="Cidade disputada"
+                valor={raioX.candidato.nm_ue ?? "—"}
+                contexto="cargo municipal: o voto é de uma cidade só"
+              />
+            ) : (
+              <Indicador
+                rotulo="Presença Eleitoral"
+                valor={
+                  municipiosDoEstado
+                    ? `${((raioX.candidato.municipios_com_voto / municipiosDoEstado) * 100).toFixed(0)}%`
+                    : "—"
+                }
+                contexto={`de ${municipiosDoEstado} municípios de ${raioX.candidato.uf}`}
+              />
+            )}
           </div>
 
           <div className="space-y-2">
