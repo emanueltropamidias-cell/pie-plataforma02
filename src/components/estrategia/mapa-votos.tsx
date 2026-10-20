@@ -51,9 +51,11 @@ function faixa(v: number) {
 export function MapaVotos({
   semRede,
   votosPorMunicipio,
+  onAbrirMunicipio,
 }: {
   semRede: string[];
   votosPorMunicipio?: Record<string, number>;
+  onAbrirMunicipio?: (municipio: string) => void;
 }) {
   const [features, setFeatures] = useState<MunFeature[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -276,16 +278,26 @@ export function MapaVotos({
                 )}
               </p>
             </div>
-            <button
-              onClick={() => {
-                setSel(null);
-                setBusca("");
-              }}
-              className="rounded-md p-1.5 text-tinta-400 transition-colors hover:bg-tinta-100 hover:text-tinta-700"
-              aria-label="Fechar"
-            >
-              <X size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              {onAbrirMunicipio && (
+                <button
+                  onClick={() => onAbrirMunicipio(detalhe.nome)}
+                  className="rounded-lg bg-tema px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:opacity-95 shadow-sm"
+                >
+                  Ver Camada Municipal →
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setSel(null);
+                  setBusca("");
+                }}
+                className="rounded-md p-1.5 text-tinta-400 transition-colors hover:bg-tinta-100 hover:text-tinta-700"
+                aria-label="Fechar"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {detalhe.bairros.length === 0 ? (

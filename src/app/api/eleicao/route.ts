@@ -47,16 +47,22 @@ export async function GET(request: Request) {
     return NextResponse.json(data);
   }
 
+  const cargo = searchParams.get("cargo")?.trim();
+
   // 2. Busca de Candidatos por Nome, Número ou Partido
   let query = supabase
     .from("eleicao_candidatos")
     .select("id, ano, turno, uf, cargo, numero, nome_urna, nome_completo, partido_sigla, situacao, foto_url")
     .eq("ano", ano)
     .order("numero", { ascending: true })
-    .limit(30);
+    .limit(40);
 
   if (uf && uf !== "TODAS" && uf !== "BR") {
     query = query.eq("uf", uf);
+  }
+
+  if (cargo && cargo !== "TODOS") {
+    query = query.ilike("cargo", `%${cargo}%`);
   }
 
   if (q) {
