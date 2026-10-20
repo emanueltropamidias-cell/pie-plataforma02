@@ -64,6 +64,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       translate="no"
+      suppressHydrationWarning
       className={`${plex.variable} h-full antialiased`}
       style={estiloDaMarca()}
     >
@@ -76,7 +77,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="flex min-h-full flex-col bg-barra font-sans">
+      <body suppressHydrationWarning className="flex min-h-full flex-col bg-barra font-sans">
         {children}
       </body>
     </html>
