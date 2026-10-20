@@ -10,7 +10,7 @@ import { MARCA } from "@/lib/candidato";
 type Msg = { tipo: "erro" | "ok"; texto: string } | null;
 
 const INPUT_CLS =
-  "h-12 border-[#e8ecf2] bg-[#f7f8fc] focus-visible:border-[#2a45f8] focus-visible:ring-[#0525f7]/10";
+  "h-12 border-white/10 bg-white/[0.04] text-white placeholder:text-zinc-500 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 rounded-xl";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -139,65 +139,89 @@ export default function LoginPage() {
   }
 
   return (
-    <main
-      className="relative flex min-h-dvh w-full items-center justify-center p-4 sm:p-6"
-      style={{ background: "#0a1430" }}
-    >
-      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${MARCA.capa})` }} />
-      <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(150deg, rgba(5,37,247,0.42) 0%, rgba(7,12,48,0.80) 100%)" }}
-      />
+    <main className="relative flex min-h-dvh w-full items-center justify-center p-4 sm:p-6 overflow-hidden bg-[#07090e]">
+      {/* Luzes ambiente de fundo (Glow estilo Apple Dark) */}
+      <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-indigo-500/10 blur-[140px]" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-sky-500/[0.04] blur-[150px]" />
 
-      <div className="relative z-10 w-full max-w-[420px] rounded-[22px] bg-white p-8 text-center shadow-[0_24px_64px_rgba(0,0,0,0.40)] sm:p-10">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={MARCA.cor} alt="Talita Oliveira" className="mx-auto mb-4 h-14 w-auto" />
-        <div className="mx-auto inline-block rounded-full border border-[#2a45f8]/20 bg-[#2a45f8]/[0.08] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-[#2a45f8]">
-          Plataforma de Inteligência
-        </div>
-        <div className="mt-2 text-sm text-zinc-500">
-          {modo === "geral" ? "Bahia" : modo === "criar" ? "Criar sua conta" : "Painel da Liderança"}
+      {/* Card Principal em Apple Glass */}
+      <div className="relative z-10 w-full max-w-[420px] rounded-[28px] border border-white/[0.12] bg-zinc-950/50 p-8 text-center backdrop-blur-2xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] sm:p-10">
+        {/* Marca Manuflow */}
+        <div className="mb-6 flex flex-col items-center">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/25">
+              <span className="text-xl font-black tracking-tighter">M</span>
+            </div>
+            <span className="text-2xl font-bold tracking-tight text-white font-sans">
+              manu<span className="text-blue-400 font-extrabold">flow</span>
+            </span>
+          </div>
+
+          <div className="mt-3 inline-flex items-center rounded-full border border-blue-400/20 bg-blue-500/[0.08] px-3.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">
+            Inteligência & Gestão Política
+          </div>
+
+          <div className="mt-2 text-xs text-zinc-400 font-medium">
+            {modo === "geral" ? "Acesse sua conta" : modo === "criar" ? "Criar novo acesso" : "Painel da Liderança"}
+          </div>
         </div>
 
         {/* ══ GERAL ══ */}
         {modo === "geral" && (
-          <form onSubmit={entrar} className="mt-7 flex flex-col gap-3 text-left">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" autoComplete="email" className={INPUT_CLS} />
-            <SenhaInput senha={senha} setSenha={setSenha} verSenha={verSenha} setVerSenha={setVerSenha} />
+          <form onSubmit={entrar} className="mt-6 flex flex-col gap-3.5 text-left">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="E-mail"
+              autoComplete="email"
+              className="h-12 border-white/10 bg-white/[0.04] text-white placeholder:text-zinc-500 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 rounded-xl"
+            />
+            <SenhaInput
+              senha={senha}
+              setSenha={setSenha}
+              verSenha={verSenha}
+              setVerSenha={setVerSenha}
+            />
 
-            <button type="button" onClick={esqueciSenha} className="-mt-1 self-end text-[12px] text-[#2a45f8] hover:underline">
+            <button
+              type="button"
+              onClick={esqueciSenha}
+              className="-mt-1 self-end text-[12px] text-blue-400 hover:text-blue-300 transition-colors"
+            >
               Esqueci minha senha
             </button>
 
             {msg && <Aviso msg={msg} detalhe={detalhe} />}
 
             <BotaoVerde type="submit" disabled={carregando}>
-              {carregando ? "..." : "Entrar na plataforma →"}
+              {carregando ? "Acessando..." : "Entrar na plataforma →"}
             </BotaoVerde>
 
-            <p className="mt-3 text-center text-[13px] text-zinc-500">
+            <p className="mt-3 text-center text-[13px] text-zinc-400">
               Não tem conta?{" "}
-              <button type="button" onClick={() => trocarModo("criar")} className="font-semibold text-[#2a45f8] underline underline-offset-2">
+              <button
+                type="button"
+                onClick={() => trocarModo("criar")}
+                className="font-semibold text-blue-400 hover:text-blue-300 underline underline-offset-2"
+              >
                 Criar conta
               </button>
             </p>
 
-            {/* As lideranças são a maior parte de quem chega nesta tela, e
-                entravam por um link de rodapé que parecia aviso legal. Agora é
-                um caminho do mesmo tamanho do outro — muda o peso, não o lugar,
-                para quem já decorou a posição não se perder. */}
-            <div className="mt-4 border-t border-zinc-200 pt-4">
+            <div className="mt-4 border-t border-white/[0.08] pt-4">
               <button
                 type="button"
                 onClick={() => trocarModo("lideranca")}
-                className="flex w-full items-center gap-3 rounded-md border-2 border-[#65a30d]/25 bg-[#65a30d]/[0.06] px-4 py-3 text-left transition-colors hover:border-[#65a30d]/50 hover:bg-[#65a30d]/10"
+                className="flex w-full items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-3 text-left transition-all hover:border-emerald-500/40 hover:bg-emerald-500/[0.12]"
               >
                 <span className="text-[18px] leading-none" aria-hidden>🔑</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-bold text-[#4d7c0f]">Sou liderança</span>
-                  <span className="block text-[12px] text-zinc-500">Acessar o meu painel</span>
+                  <span className="block text-[13px] font-bold text-emerald-400">Sou liderança</span>
+                  <span className="block text-[11px] text-zinc-400">Acessar com código de vínculo</span>
                 </span>
-                <span className="text-[16px] font-bold text-[#65a30d]" aria-hidden>→</span>
+                <span className="text-[15px] font-bold text-emerald-400" aria-hidden>→</span>
               </button>
             </div>
           </form>
@@ -233,14 +257,11 @@ export default function LoginPage() {
               Um administrador libera o seu acesso antes do primeiro login.
             </p>
 
-            <div className="mt-2 space-y-2 border-t border-zinc-200 pt-3 text-center">
-              <button type="button" onClick={() => trocarModo("geral")} className="block w-full text-[12.5px] text-zinc-500 hover:text-zinc-800">
+            <div className="mt-3 space-y-2 border-t border-white/[0.08] pt-3 text-center">
+              <button type="button" onClick={() => trocarModo("geral")} className="block w-full text-[12.5px] text-zinc-400 hover:text-white transition-colors">
                 ← Já tenho conta (entrar)
               </button>
-              {/* A maioria de quem chega aqui é liderança e tem código próprio.
-                  Sem esta linha, elas criam a conta errada e não conseguem
-                  vincular depois. */}
-              <button type="button" onClick={() => trocarModo("lideranca")} className="block w-full text-[12.5px] font-semibold text-[#4d7c0f] hover:underline">
+              <button type="button" onClick={() => trocarModo("lideranca")} className="block w-full text-[12.5px] font-semibold text-emerald-400 hover:underline">
                 🔑 Sou liderança e tenho um código
               </button>
             </div>
@@ -283,13 +304,13 @@ export default function LoginPage() {
                 setPrimeiroAcesso((v) => !v);
                 setMsg(null);
               }}
-              className="mt-1 text-center text-[13px] font-semibold text-[#2a45f8] hover:underline"
+              className="mt-1 text-center text-[13px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
             >
               {primeiroAcesso ? "← Já tenho acesso (entrar)" : "Primeiro acesso? Criar com código de vínculo →"}
             </button>
 
-            <div className="mt-3 border-t border-zinc-200 pt-3 text-center">
-              <button type="button" onClick={() => trocarModo("geral")} className="text-[12px] text-zinc-500 hover:text-zinc-800">
+            <div className="mt-3 border-t border-white/[0.08] pt-3 text-center">
+              <button type="button" onClick={() => trocarModo("geral")} className="text-[12px] text-zinc-400 hover:text-white transition-colors">
                 ← Voltar para o login geral
               </button>
             </div>

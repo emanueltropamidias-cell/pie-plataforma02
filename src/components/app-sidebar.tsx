@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Briefcase,
@@ -19,7 +18,6 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { SeletorTema } from "@/components/seletor-tema";
-import { MARCA } from "@/lib/candidato";
 import { moduloAtivo, moduloDoCaminho } from "@/lib/modulos";
 
 // Cada item tem ícone porque menu se varre, não se lê: o símbolo é reconhecido
@@ -190,28 +188,20 @@ function Conteudo({
         className={`flex items-center gap-2 ${recolhido ? "justify-center" : "justify-between"}`}
       >
         {recolhido ? (
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-tema text-[13px] font-extrabold text-white">
-            TO
-          </span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-[14px] font-black text-white shadow-md shadow-blue-500/20">
+            M
+          </div>
         ) : (
-          <>
-            <Image
-              src={MARCA.branca}
-              alt="Talita Oliveira"
-              width={130}
-              height={34}
-              className="logo-escuro h-7 w-auto opacity-95"
-              priority
-            />
-            <Image
-              src={MARCA.cor}
-              alt="Talita Oliveira"
-              width={130}
-              height={34}
-              className="logo-claro h-7 w-auto"
-              priority
-            />
-          </>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 text-[13px] font-black text-white shadow-md shadow-blue-500/20">
+              M
+            </div>
+            <div className="flex flex-col">
+              <span className="text-base font-bold tracking-tight text-white">
+                manu<span className="text-blue-400 font-extrabold">flow</span>
+              </span>
+            </div>
+          </div>
         )}
         {onRecolher && (
           <button
@@ -228,12 +218,9 @@ function Conteudo({
         )}
       </div>
 
-      {/* Era uma assinatura em Playfair itálico, a única serifada da plataforma
-          inteira e a única razão para carregar aquela fonte. Vira uma linha de
-          apoio: diz a mesma coisa e não pede holofote na barra de trabalho. */}
       {!recolhido && (
-        <p className="mt-2 text-[11px] tracking-[0.01em] text-barra-fraca">
-          Plataforma de Inteligência
+        <p className="mt-1 text-[10.5px] font-medium tracking-[0.04em] text-zinc-400">
+          Inteligência & Gestão Política
         </p>
       )}
 
@@ -365,20 +352,14 @@ export function AppSidebar({
     <>
       {/* Barra superior (só no celular) */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-barra-traco bg-barra px-4 md:hidden">
-        <Image
-          src={MARCA.branca}
-          alt="Talita Oliveira"
-          width={110}
-          height={28}
-          className="logo-escuro h-6 w-auto opacity-95"
-        />
-        <Image
-          src={MARCA.cor}
-          alt="Talita Oliveira"
-          width={110}
-          height={28}
-          className="logo-claro h-6 w-auto"
-        />
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 text-[12px] font-black text-white shadow-sm shadow-blue-500/20">
+            M
+          </div>
+          <span className="text-sm font-bold tracking-tight text-white font-sans">
+            manu<span className="text-blue-400 font-extrabold">flow</span>
+          </span>
+        </div>
         <button
           onClick={() => setAberto(true)}
           className="text-barra-texto"
