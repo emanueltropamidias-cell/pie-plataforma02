@@ -49,7 +49,7 @@ export function Cabecalho({
           <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-tema">
             {sobretitulo}
           </span>
-          <h1 className="mt-1.5 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-tinta-900">
+          <h1 className="mt-1.5 break-words text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-tinta-900 sm:text-[28px]">
             {titulo}
           </h1>
           {descricao && (
@@ -131,12 +131,14 @@ export function Indicador({
   destaque?: boolean;
 }) {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-xl border border-tinta-200 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(22,32,46,0.04)]">
+    // No celular o indicador divide a linha com outro (~160px cada): 30px
+    // cortava "Presente ✓" e números de seis dígitos pela metade.
+    <div className="relative min-w-0 overflow-hidden rounded-xl border border-tinta-200 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(22,32,46,0.04)] sm:px-5 sm:py-4">
       {destaque && <span className="absolute inset-x-0 top-0 h-0.5 bg-tema" />}
-      <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-tinta-500">
+      <p className="text-[10.5px] font-bold uppercase leading-snug tracking-[0.12em] text-tinta-500">
         {rotulo}
       </p>
-      <p className="tabular mt-2 text-[30px] font-extrabold leading-none tracking-[-0.03em] text-tinta-900">
+      <p className="tabular mt-2 break-words text-[22px] font-extrabold leading-none tracking-[-0.03em] text-tinta-900 sm:text-[30px]">
         {valor}
       </p>
       {contexto && (

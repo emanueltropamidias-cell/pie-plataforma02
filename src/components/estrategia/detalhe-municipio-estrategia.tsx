@@ -88,22 +88,24 @@ export function DetalheMunicipioEstrategia({
   const maiorLocal = locais[0]?.votos || 1;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* ── BARRA SUPERIOR DE AÇÃO E NAVEGAÇÃO ───────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-tinta-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={onVoltarEstado}
-            className="flex items-center gap-2 rounded-xl border border-tinta-200 bg-tinta-50 px-3.5 py-2 text-[12.5px] font-bold text-tinta-700 transition hover:bg-tinta-100"
+            aria-label={`Voltar para ${uf}`}
+            className="flex shrink-0 items-center gap-2 rounded-xl border border-tinta-200 bg-tinta-50 px-3 py-2 text-[12.5px] font-bold text-tinta-700 transition hover:bg-tinta-100 sm:px-3.5"
           >
             <ArrowLeft size={16} />
-            Voltar para {uf}
+            <span className="hidden sm:inline">Voltar para {uf}</span>
+            <span className="sm:hidden">{uf}</span>
           </button>
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-tema">
+          <div className="min-w-0">
+            <span className="block truncate text-[10.5px] font-bold uppercase tracking-wider text-tema">
               Camada 3 · {nomeCandidato} em {ano}
             </span>
-            <h2 className="text-xl font-extrabold text-tinta-900">
+            <h2 className="break-words text-lg font-extrabold text-tinta-900 sm:text-xl">
               {municipio} ({uf})
             </h2>
           </div>
@@ -111,7 +113,7 @@ export function DetalheMunicipioEstrategia({
 
         <Link
           href={`/crm?nova=1&municipio=${encodeURIComponent(municipio)}`}
-          className="flex items-center gap-2 rounded-xl bg-tema px-4 py-2 text-[12.5px] font-bold text-white shadow-sm transition hover:opacity-95"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-tema px-4 py-2.5 text-[12.5px] font-bold text-white shadow-sm transition hover:opacity-95 sm:w-auto sm:py-2"
         >
           <UserPlus size={15} />
           Cadastrar Liderança em {municipio}
@@ -151,7 +153,7 @@ export function DetalheMunicipioEstrategia({
 
       {/* ── BAIRROS (SÓ ONDE HÁ MALHA E DETALHE POR LOCAL) ───────────── */}
       {!carregando && isSalvador && bairros && (
-        <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
+        <div className="min-w-0 rounded-2xl border border-tinta-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-4">
             <h3 className="text-base font-bold text-tinta-900">Votos por bairro em Salvador</h3>
             <p className="text-[12px] text-tinta-500">
@@ -164,9 +166,9 @@ export function DetalheMunicipioEstrategia({
       )}
 
       {!carregando && (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* ── ZONAS ELEITORAIS ─────────────────────────────────────── */}
-          <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
+          <div className="min-w-0 rounded-2xl border border-tinta-200 bg-white p-4 shadow-sm sm:p-5">
             <h3 className="flex items-center gap-2 text-sm font-bold text-tinta-900">
               <MapPin size={15} className="text-tema" /> Zonas eleitorais
             </h3>
@@ -174,14 +176,14 @@ export function DetalheMunicipioEstrategia({
               <div className="mt-3 space-y-1.5">
                 {zonas.map((z) => (
                   <div key={z.zona} className="flex items-center gap-3">
-                    <span className="w-16 shrink-0 text-[11.5px] font-semibold text-tinta-600">Zona {z.zona}</span>
+                    <span className="w-14 shrink-0 text-[11.5px] font-semibold text-tinta-600 sm:w-16">Zona {z.zona}</span>
                     <span className="h-3 flex-1 rounded bg-tinta-100">
                       <span
                         className="block h-full rounded bg-tema"
                         style={{ width: `${Math.max(2, (z.votos / maiorZona) * 100)}%` }}
                       />
                     </span>
-                    <span className="tabular w-20 shrink-0 text-right text-[12px] font-bold text-tinta-900">
+                    <span className="tabular w-16 shrink-0 text-right text-[12px] font-bold text-tinta-900 sm:w-20">
                       {z.votos.toLocaleString("pt-BR")}
                     </span>
                   </div>
@@ -193,7 +195,7 @@ export function DetalheMunicipioEstrategia({
           </div>
 
           {/* ── LOCAIS DE VOTAÇÃO ────────────────────────────────────── */}
-          <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
+          <div className="min-w-0 rounded-2xl border border-tinta-200 bg-white p-4 shadow-sm sm:p-5">
             <h3 className="flex items-center gap-2 text-sm font-bold text-tinta-900">
               <School size={15} className="text-tema" /> Locais de votação mais fortes
             </h3>
@@ -218,7 +220,7 @@ export function DetalheMunicipioEstrategia({
                         {l.bairro ?? "bairro não informado"} · zona {l.zona}
                       </span>
                     </span>
-                    <span className="h-2.5 w-24 shrink-0 rounded bg-tinta-100">
+                    <span className="h-2.5 w-14 shrink-0 rounded bg-tinta-100 sm:w-24">
                       <span
                         className="block h-full rounded bg-tema"
                         style={{ width: `${Math.max(3, (l.votos / maiorLocal) * 100)}%` }}

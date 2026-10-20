@@ -178,14 +178,14 @@ export function MapaVotos({
     <div className="space-y-3">
       <div className="rounded-xl border border-tinta-200 bg-white p-4 shadow-[0_1px_2px_rgba(22,32,46,0.04)] sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="relative w-full max-w-xs">
+          <div className="relative w-full sm:max-w-xs">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-tinta-400" />
             <input
               value={busca}
               onChange={(e) => buscar(e.target.value)}
               list="mun-estrategia"
               placeholder="Buscar município…"
-              className="h-9 w-full rounded-lg border border-tinta-200 bg-white pl-9 pr-3 text-[13px] outline-none focus:border-tema"
+              className="h-10 w-full rounded-lg border border-tinta-200 bg-white pl-9 pr-3 text-[13px] outline-none focus:border-tema sm:h-9"
             />
             <datalist id="mun-estrategia">
               {paths.map((p) => (
@@ -241,7 +241,7 @@ export function MapaVotos({
           }`}
         >
           {carregando && (
-            <div className="flex h-[380px] items-center justify-center text-[13px] text-tinta-400">
+            <div className="flex h-[280px] items-center justify-center text-[13px] text-tinta-400 sm:h-[380px]">
               Carregando o mapa…
             </div>
           )}
@@ -282,7 +282,7 @@ export function MapaVotos({
 
           {tip && (
             <div
-              className="pointer-events-none absolute z-10 rounded-lg bg-tinta-900 px-2.5 py-1.5 text-[11.5px] text-white shadow-lg"
+              className="pointer-events-none absolute z-10 rounded-lg bg-tinta-900 px-2.5 py-1.5 [@media(hover:none)]:hidden text-[11.5px] text-white shadow-lg"
               style={{ left: tip.x + 12, top: tip.y + 12 }}
             >
               <div className="font-bold">{tip.nome}</div>
@@ -296,7 +296,7 @@ export function MapaVotos({
 
       {detalhe && (
         <div className="rounded-xl border border-tinta-200 bg-white shadow-[0_1px_2px_rgba(22,32,46,0.04)]">
-          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-tinta-100 px-5 py-4">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-tinta-100 px-4 py-4 sm:px-5">
             <div className="min-w-0">
               <p
                 className="text-[10.5px] font-bold uppercase tracking-[0.12em]"
@@ -304,7 +304,7 @@ export function MapaVotos({
               >
                 {detalhe.regiao || "Bahia"}
               </p>
-              <h2 className="mt-1 text-[22px] font-extrabold tracking-[-0.02em] text-tinta-900">
+              <h2 className="mt-1 break-words text-[20px] font-extrabold tracking-[-0.02em] text-tinta-900 sm:text-[22px]">
                 {detalhe.nome}
               </h2>
               <p className="mt-0.5 text-[12.5px] text-tinta-500">
@@ -350,7 +350,7 @@ export function MapaVotos({
               </p>
             </div>
           ) : (
-            <div className="px-5 py-4">
+            <div className="px-4 py-4 sm:px-5">
               {!detalhe.conf.bate && (
                 <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-[11.5px] leading-relaxed text-amber-800">
                   Os {detalhe.conf.quantos} bairros somam{" "}
@@ -404,7 +404,7 @@ export function MapaVotos({
           )}
 
           {detalhe.zonas.length > 0 && (
-            <div className="border-t border-tinta-100 px-5 py-4">
+            <div className="border-t border-tinta-100 px-4 py-4 sm:px-5">
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-tinta-500">
                 Zonas importadas
               </p>

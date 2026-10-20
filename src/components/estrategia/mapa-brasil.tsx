@@ -216,7 +216,7 @@ export function MapaBrasil({
       <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 border border-blue-200/60 flex items-center gap-1">
                 <Globe2 size={12} /> Camada Nacional · 27 UFs
               </span>
@@ -228,19 +228,20 @@ export function MapaBrasil({
               Mapa Político e Eleitoral do Brasil
             </h2>
             <p className="text-[12px] text-slate-500">
-              Clique em qualquer estado para descer à malha municipal. Passe o cursor para ver os dados geopolíticos.
+              <span className="sm:hidden">Toque em qualquer estado para descer à malha municipal.</span>
+              <span className="hidden sm:inline">Clique em qualquer estado para descer à malha municipal. Passe o cursor para ver os dados geopolíticos.</span>
             </p>
           </div>
 
           {/* Seletor de Modo de Visualização do Mapa */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+            <span className="mr-1 hidden items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 sm:flex">
               <Layers size={12} /> Visão:
             </span>
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[12px]">
+            <div className="grid w-full grid-cols-3 rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[11.5px] sm:inline-flex sm:w-auto sm:text-[12px]">
               <button
                 onClick={() => setModoVisao("regioes")}
-                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                className={`rounded-lg px-2 py-1.5 font-semibold leading-tight transition sm:px-2.5 sm:py-1 ${
                   modoVisao === "regioes"
                     ? "bg-white text-blue-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -250,7 +251,7 @@ export function MapaBrasil({
               </button>
               <button
                 onClick={() => setModoVisao("bancadas")}
-                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                className={`rounded-lg px-2 py-1.5 font-semibold leading-tight transition sm:px-2.5 sm:py-1 ${
                   modoVisao === "bancadas"
                     ? "bg-white text-blue-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -260,7 +261,7 @@ export function MapaBrasil({
               </button>
               <button
                 onClick={() => setModoVisao("votos")}
-                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                className={`rounded-lg px-2 py-1.5 font-semibold leading-tight transition sm:px-2.5 sm:py-1 ${
                   modoVisao === "votos"
                     ? "bg-white text-blue-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -275,7 +276,7 @@ export function MapaBrasil({
         {/* Legenda visual elegante */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px]">
           {modoVisao === "regioes" ? (
-            <div className="flex flex-wrap items-center gap-4 text-slate-600 font-medium">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-slate-600 font-medium">
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#059669]" /> Norte (7 estados)
               </span>
@@ -293,7 +294,7 @@ export function MapaBrasil({
               </span>
             </div>
           ) : modoVisao === "bancadas" ? (
-            <div className="flex flex-wrap items-center gap-4 text-slate-600 font-medium">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-slate-600 font-medium">
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#1e3a8a]" /> Bancadas Máximas (40+ dep)
               </span>
@@ -308,7 +309,7 @@ export function MapaBrasil({
               </span>
             </div>
           ) : (
-            <div className="flex flex-wrap items-center gap-4 text-slate-600 font-medium">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-slate-600 font-medium">
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#1d4ed8]" /> Alta Votação
               </span>
@@ -331,10 +332,10 @@ export function MapaBrasil({
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         
         {/* COLUNA ESQUERDA (65%): O MAPA CARTOGRÁFICO COM AS SIGLAS */}
-        <div className="xl:col-span-8 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.02)] relative overflow-hidden flex flex-col items-center justify-center min-h-[580px]">
+        <div className="xl:col-span-8 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.02)] relative min-w-0 overflow-hidden flex flex-col items-center justify-center p-3 sm:min-h-[580px]">
           
           {carregando && (
-            <div className="flex h-[420px] items-center justify-center text-[13px] text-slate-400">
+            <div className="flex h-[300px] items-center justify-center text-[13px] text-slate-400 sm:h-[420px]">
               Carregando mapa cartográfico nacional...
             </div>
           )}
@@ -416,7 +417,7 @@ export function MapaBrasil({
               {/* Tooltip Executivo Flutuante (Glassmorphism Escuro) */}
               {tip && (
                 <div
-                  className="pointer-events-none absolute z-30 min-w-[210px] rounded-xl bg-slate-900/95 p-3 text-[12px] text-white shadow-2xl backdrop-blur-md border border-slate-700/60"
+                  className="pointer-events-none absolute z-30 min-w-[210px] [@media(hover:none)]:hidden rounded-xl bg-slate-900/95 p-3 text-[12px] text-white shadow-2xl backdrop-blur-md border border-slate-700/60"
                   style={{ left: tip.x + 14, top: tip.y - 10 }}
                 >
                   <div className="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -465,7 +466,7 @@ export function MapaBrasil({
         </div>
 
         {/* COLUNA DIREITA (35%): PAINEL DE INTELIGÊNCIA GEOPOLÍTICA */}
-        <div className="xl:col-span-4 space-y-4">
+        <div className="min-w-0 xl:col-span-4 space-y-4">
           
           {/* Card Resumo do Congresso Nacional */}
           <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm">
@@ -517,8 +518,8 @@ export function MapaBrasil({
                   onClick={() => onSelecionarUf(item.uf)}
                   className="group flex w-full items-center justify-between rounded-xl border border-slate-100 p-2.5 text-left transition hover:border-blue-200 hover:bg-blue-50/40"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 font-mono text-[11px] font-bold text-slate-700 group-hover:bg-blue-600 group-hover:text-white transition">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 font-mono text-[11px] font-bold text-slate-700 group-hover:bg-blue-600 group-hover:text-white transition">
                       {item.uf}
                     </span>
                     <div>
@@ -531,7 +532,7 @@ export function MapaBrasil({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700 group-hover:bg-blue-100 group-hover:text-blue-800">
                       {item.bancada} dep.
                     </span>
@@ -546,7 +547,7 @@ export function MapaBrasil({
           <div className="rounded-xl border border-blue-200/60 bg-blue-50/50 p-3.5 text-[11.5px] text-blue-900 flex items-start gap-2.5">
             <Sparkles size={16} className="text-blue-600 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              <b>Navegação Instantânea:</b> Clicando em qualquer estado do mapa ou da lista, o painel abre na hora a malha completa com todos os municípios e o raio-x daquele estado.
+              <b>Navegação Instantânea:</b> Tocando ou clicando em qualquer estado do mapa ou da lista, o painel abre na hora a malha completa com todos os municípios e o raio-x daquele estado.
             </p>
           </div>
 

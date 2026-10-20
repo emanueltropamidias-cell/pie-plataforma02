@@ -277,13 +277,13 @@ export function PainelEstrategiaEleitoral({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           
           {/* Identidade Sóbria do Candidato */}
-          <div className="flex items-center gap-3.5">
-            <span className="rounded-full border-2 border-slate-200 shadow-sm">
+          <div className="flex min-w-0 items-center gap-3.5">
+            <span className="shrink-0 rounded-full border-2 border-slate-200 shadow-sm">
               <FotoUrna key={raioX.candidato.id} src={fotoDoCandidato(raioX.candidato)} nome={raioX.candidato.nome_urna} tamanho={88} />
             </span>
 
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 border border-blue-200/60">
                   {raioX.candidato.partido_sigla} · {raioX.candidato.numero}
                 </span>
@@ -296,7 +296,7 @@ export function PainelEstrategiaEleitoral({
                 </span>
               </div>
 
-              <h1 className="mt-1 text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="mt-1 break-words text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">
                 {raioX.candidato.nome_urna}
               </h1>
               <p className="text-[12px] text-slate-500">
@@ -306,16 +306,20 @@ export function PainelEstrategiaEleitoral({
             </div>
           </div>
 
-          {/* Controles de Navegação, Filtros e Busca Spotlight */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          {/* Controles de Navegação, Filtros e Busca Spotlight
+              No celular cada controle ocupa a linha inteira: soltos em
+              flex-wrap, cada um ficava do tamanho do próprio texto e a pilha
+              parecia montada ao acaso; lado a lado, o 16px que o celular
+              força nos campos cortava "Todos os cargos" no meio. */}
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2.5">
             {/* Pílula de Navegação de Camadas */}
-            <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[12px]">
+            <div className="flex min-w-0 items-center overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[12px] sm:inline-flex">
               <button
                 onClick={() => {
                   setCamada("brasil");
                   setMunicipioSelecionado(null);
                 }}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-semibold transition ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold transition sm:py-1 ${
                   camada === "brasil"
                     ? "bg-white text-blue-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -325,14 +329,14 @@ export function PainelEstrategiaEleitoral({
                 Brasil
               </button>
 
-              <ChevronRight size={13} className="text-slate-300" />
+              <ChevronRight size={13} className="shrink-0 text-slate-300" />
 
               <button
                 onClick={() => {
                   setCamada("estado");
                   setMunicipioSelecionado(null);
                 }}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-semibold transition ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold transition sm:py-1 ${
                   camada === "estado"
                     ? "bg-white text-blue-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -344,29 +348,29 @@ export function PainelEstrategiaEleitoral({
 
               {municipioSelecionado && (
                 <>
-                  <ChevronRight size={13} className="text-slate-300" />
+                  <ChevronRight size={13} className="shrink-0 text-slate-300" />
                   <button
                     onClick={() => setCamada("municipio")}
-                    className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-semibold transition ${
+                    className={`flex min-w-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold transition sm:py-1 ${
                       camada === "municipio"
                         ? "bg-white text-blue-700 shadow-sm"
                         : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    <Building2 size={13} />
-                    {municipioSelecionado}
+                    <Building2 size={13} className="shrink-0" />
+                    <span className="truncate">{municipioSelecionado}</span>
                   </button>
                 </>
               )}
             </div>
 
             {/* Alternador de Ano: 2026, 2024, 2022 */}
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[12px]">
+            <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[12px] sm:inline-flex">
               {ANOS.map((ano) => (
                 <button
                   key={ano}
                   onClick={() => trocarEleicao(ano, "TODOS")}
-                  className={`rounded-lg px-2.5 py-1 font-bold transition flex items-center gap-1 ${
+                  className={`flex items-center justify-center gap-1 rounded-lg px-2.5 py-1.5 font-bold transition sm:py-1 ${
                     anoFiltro === ano
                       ? ano === 2026
                         ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm"
@@ -383,7 +387,7 @@ export function PainelEstrategiaEleitoral({
             <select
               value={ufFiltro}
               onChange={(e) => transitarParaEstado(e.target.value)}
-              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
+              className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 sm:h-9 sm:w-auto"
             >
               {ESTADOS_BR.map((e) => (
                 <option key={e.uf} value={e.uf}>
@@ -396,7 +400,7 @@ export function PainelEstrategiaEleitoral({
             <select
               value={cargosDaTela.some((o) => o.valor === cargoFiltro) ? cargoFiltro : "TODOS"}
               onChange={(e) => trocarEleicao(anoFiltro, e.target.value)}
-              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
+              className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 sm:h-9 sm:w-auto"
             >
               {cargosDaTela.map((o) => (
                 <option key={o.valor} value={o.valor}>
@@ -409,7 +413,7 @@ export function PainelEstrategiaEleitoral({
             <select
               value={partidoFiltro}
               onChange={(e) => trocarPartido(e.target.value)}
-              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
+              className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 sm:h-9 sm:w-auto"
             >
               <option value="TODOS">Todos os partidos ({opcoes.partidos.length})</option>
               {[...opcoes.partidos]
@@ -434,7 +438,7 @@ export function PainelEstrategiaEleitoral({
                   onChange={(e) => setBusca(e.target.value)}
                   onFocus={() => sugestoes.length > 0 && setMenuAberto(true)}
                   placeholder="Pesquisar candidato..."
-                  className="h-9 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-9 pr-3 text-[12.5px] outline-none transition focus:border-blue-500 focus:bg-white"
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-9 pr-3 text-[12.5px] outline-none transition focus:border-blue-500 focus:bg-white sm:h-9"
                 />
               </div>
 
@@ -448,11 +452,11 @@ export function PainelEstrategiaEleitoral({
                     >
                       <FotoUrna src={fotoDoCandidato(c)} nome={c.nome_urna} tamanho={40} />
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-slate-900 text-[12.5px]">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <span className="truncate font-bold text-slate-900 text-[12.5px]">
                             {c.nome_urna}
                           </span>
-                          <span className="rounded bg-blue-50 px-1.5 py-0.2 text-[10px] font-bold text-blue-700">
+                          <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
                             {c.partido_sigla} · {c.numero}
                           </span>
                         </div>
@@ -522,19 +526,20 @@ export function PainelEstrategiaEleitoral({
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
           
           {/* COLUNA ESQUERDA (65%): MAPA VETORIAL IMERSIVO */}
-          <div className="xl:col-span-8 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] sm:p-5">
+          <div className="min-w-0 xl:col-span-8 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] sm:p-5">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
                   Mapa Cartográfico Interativo · {ufFiltro}
                 </span>
-                <h2 className="text-base font-extrabold text-slate-900">
+                <h2 className="text-[15px] font-extrabold text-slate-900 sm:text-base">
                   Calor da Votação por Município {partidoFiltro !== "TODOS" ? `· ${partidoFiltro}` : ""}
                 </h2>
               </div>
 
               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
-                Clique na cidade para detalhar
+                <span className="sm:hidden">Toque</span>
+                <span className="hidden sm:inline">Clique</span> na cidade para detalhar
               </span>
             </div>
 
@@ -551,7 +556,7 @@ export function PainelEstrategiaEleitoral({
           </div>
 
           {/* COLUNA DIREITA (35%): PAINEL DE INTELIGÊNCIA E REDUTOS */}
-          <div className="xl:col-span-4 space-y-4">
+          <div className="min-w-0 xl:col-span-4 space-y-4">
             
             {/* 4 Métricas Executivas em Grid Compacto */}
             <div className="grid grid-cols-2 gap-2.5">
@@ -626,12 +631,12 @@ export function PainelEstrategiaEleitoral({
                       onClick={() => transitarParaMunicipio(m.municipio)}
                       className="group flex w-full flex-col gap-1 rounded-xl p-2 text-left transition hover:bg-slate-50"
                     >
-                      <div className="flex items-center justify-between text-[12.5px]">
-                        <span className="font-semibold text-slate-800 group-hover:text-blue-600 flex items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-slate-400">#{i + 1}</span>
-                          {m.municipio}
+                      <div className="flex min-w-0 items-center justify-between text-[12.5px]">
+                        <span className="flex min-w-0 items-center gap-1.5 font-semibold text-slate-800 group-hover:text-blue-600">
+                          <span className="shrink-0 text-[11px] font-bold text-slate-400">#{i + 1}</span>
+                          <span className="truncate">{m.municipio}</span>
                         </span>
-                        <span className="font-mono font-bold text-slate-700">
+                        <span className="shrink-0 pl-2 font-mono font-bold text-slate-700">
                           {m.votos.toLocaleString("pt-BR")}
                         </span>
                       </div>
@@ -661,13 +666,14 @@ export function PainelEstrategiaEleitoral({
               
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {lacunas.slice(0, 3).map((l) => (
-                  <span
+                  <button
                     key={l.municipio}
+                    type="button"
                     onClick={() => transitarParaMunicipio(l.municipio)}
-                    className="cursor-pointer inline-flex items-center gap-1 rounded-lg border border-amber-300/60 bg-white px-2 py-0.5 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100"
+                    className="inline-flex items-center gap-1 rounded-lg border border-amber-300/60 bg-white px-2 py-1 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100 sm:py-0.5"
                   >
                     {l.municipio}: {l.votos.toLocaleString("pt-BR")} <ArrowUpRight size={10} />
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
