@@ -42,6 +42,10 @@ const URLS_TSE = {
     candidatos: "https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2024.zip",
     votos: "https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_2024.zip",
   },
+  2026: {
+    candidatos: "https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip",
+    votos: "https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_2026.zip",
+  },
 };
 
 function normalizarChave(s) {
@@ -134,6 +138,7 @@ for (const uf of ufsParaProcessar) {
   });
 
   const idPorChaveCand = new Map();
+  const idPorSq = new Map();
 
   if (gravar && candidatosMap.size > 0) {
     const cands = Array.from(candidatosMap.values());
@@ -169,11 +174,12 @@ for (const uf of ufsParaProcessar) {
     }
 
     const { rows: todosCandBanco } = await cliente.query(
-      `select id, cargo, numero, turno from public.eleicao_candidatos where ano = $1 and uf = $2`,
+      `select id, cargo, numero, turno, sq_candidato from public.eleicao_candidatos where ano = $1 and uf = $2`,
       [ano, uf]
     );
     for (const r of todosCandBanco) {
       idPorChaveCand.set(`${r.cargo}_${r.numero}_${r.turno}`, r.id);
+      if (r.sq_candidato) idPorSq.set(r.sq_candidato, r.id);
     }
   }
 
@@ -186,19 +192,20 @@ for (const uf of ufsParaProcessar) {
     const turno = parseInt(colunas[h.indexOf("NR_TURNO")], 10) || 1;
     const codigoTse = colunas[h.indexOf("CD_MUNICIPIO")];
     const municipio = colunas[h.indexOf("NM_MUNICIPIO")];
+    const sq = colunas[h.indexOf("SQ_CANDIDATO")];
     const votosValidos = parseInt(colunas[h.indexOf("QT_VOTOS_NOMINAIS_VALIDOS")], 10) || 0;
 
     if (!cargo || isNaN(numero) || !codigoTse || votosValidos <= 0) return;
 
     const cargoNorm = cargo.toUpperCase();
-    const k = `${cargoNorm}_${numero}_${turno}_${codigoTse}`;
+    const k = sq ? `${sq}_${codigoTse}` : `${cargoNorm}_${numero}_${turno}_${codigoTse}`;
     const atual = votosAgregados.get(k);
 
     if (atual) {
       atual.votos += votosValidos;
     } else {
       votosAgregados.set(k, {
-        cargo: cargoNorm, numero, turno, codigo_tse: codigoTse, municipio, votos: votosValidos,
+        cargo: cargoNorm, numero, turno, sq, codigo_tse: codigoTse, municipio, votos: votosValidos,
       });
     }
   });
@@ -213,7 +220,7 @@ for (const uf of ufsParaProcessar) {
     const votosList = [];
 
     for (const v of votosAgregados.values()) {
-      const candId = idPorChaveCand.get(`${v.cargo}_${v.numero}_${v.turno}`);
+      const candId = (v.sq && idPorSq.get(v.sq)) || idPorChaveCand.get(`${v.cargo}_${v.numero}_${v.turno}`);
       if (!candId) continue;
       candIds.push(candId);
       anos.push(ano);

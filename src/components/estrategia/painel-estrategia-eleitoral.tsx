@@ -215,11 +215,35 @@ export function PainelEstrategiaEleitoral({
     [raioX.candidato.uf]: totalVotos,
   };
 
-  // URL da foto via nosso proxy com cache para evitar 403 / CORS do TSE
+  // Foto oficial da urna: para Talita sempre a foto oficial da urna do TSE (talita-urna.jpg)
+  // Para os demais, usa o CDN público do Supabase Storage ou o proxy oficial
   const fotoSrc =
-    raioX.candidato.foto_url && !fotoErro
-      ? `/api/eleicao/foto?url=${encodeURIComponent(raioX.candidato.foto_url)}`
+    raioX.candidato.numero === 1022 || raioX.candidato.nome_urna?.toLowerCase().includes("talita")
+      ? "/talita-urna.jpg"
+      : raioX.candidato.foto_url && !fotoErro
+      ? raioX.candidato.foto_url.includes("supabase.co")
+        ? raioX.candidato.foto_url
+        : `/api/eleicao/foto?url=${encodeURIComponent(raioX.candidato.foto_url)}&sq=${(raioX.candidato as any).sq_candidato || ""}&uf=${raioX.candidato.uf || "BA"}`
       : null;
+
+  async function alternarAno(novoAno: number) {
+    setAnoFiltro(novoAno);
+    setCargoFiltro("TODOS");
+    setFotoErro(false);
+    try {
+      let url = `/api/eleicao?ano=${novoAno}&uf=${ufFiltro}`;
+      if (novoAno === 2022) {
+        url += "&q=1022";
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.candidatos && data.candidatos.length > 0) {
+        await selecionarCandidato(data.candidatos[0]);
+      }
+    } catch (err) {
+      console.error("Erro ao alternar ano:", err);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -234,10 +258,7 @@ export function PainelEstrategiaEleitoral({
               {[2022, 2024, 2026].map((ano) => (
                 <button
                   key={ano}
-                  onClick={() => {
-                    setAnoFiltro(ano);
-                    setCargoFiltro("TODOS");
-                  }}
+                  onClick={() => alternarAno(ano)}
                   className={`rounded-lg px-3 py-1 text-[12px] font-bold transition ${
                     anoFiltro === ano
                       ? "bg-tema text-white shadow-sm"
@@ -393,9 +414,22 @@ export function PainelEstrategiaEleitoral({
                     className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-tinta-50"
                   >
                     <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-tinta-200 bg-tinta-100">
-                      {c.foto_url ? (
+                      {c.numero === 1022 || c.nome_urna?.toLowerCase().includes("talita") ? (
                         <Image
-                          src={`/api/eleicao/foto?url=${encodeURIComponent(c.foto_url)}`}
+                          src="/talita-urna.jpg"
+                          alt={c.nome_urna}
+                          fill
+                          sizes="36px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : c.foto_url ? (
+                        <Image
+                          src={
+                            c.foto_url.includes("supabase.co")
+                              ? c.foto_url
+                              : `/api/eleicao/foto?url=${encodeURIComponent(c.foto_url)}&sq=${(c as any).sq_candidato || ""}&uf=${c.uf || "BA"}`
+                          }
                           alt={c.nome_urna}
                           fill
                           sizes="36px"
