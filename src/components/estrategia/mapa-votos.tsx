@@ -37,10 +37,10 @@ function clarear(hex: string, t: number) {
 }
 
 const FORCA = [
-  { ate: 0, t: 0.93, rotulo: "nenhum" },
-  { ate: 49, t: 0.68, rotulo: "1 a 49" },
-  { ate: 199, t: 0.46, rotulo: "50 a 199" },
-  { ate: 999, t: 0.23, rotulo: "200 a 999" },
+  { ate: 0, t: 0.88, rotulo: "nenhum" },
+  { ate: 49, t: 0.45, rotulo: "1 a 49" },
+  { ate: 199, t: 0.25, rotulo: "50 a 199" },
+  { ate: 999, t: 0.10, rotulo: "200 a 999" },
   { ate: Infinity, t: 0, rotulo: "1.000+" },
 ];
 
@@ -49,12 +49,16 @@ function faixa(v: number) {
 }
 
 export function MapaVotos({
+  uf = "BA",
   semRede,
   votosPorMunicipio,
+  corTema = "#1d4ed8",
   onAbrirMunicipio,
 }: {
+  uf?: string;
   semRede: string[];
   votosPorMunicipio?: Record<string, number>;
+  corTema?: string;
   onAbrirMunicipio?: (municipio: string) => void;
 }) {
   const [features, setFeatures] = useState<MunFeature[]>([]);
@@ -76,34 +80,60 @@ export function MapaVotos({
 
   useEffect(() => {
     let vivo = true;
-    carregarMalha()
-      .then((f) => vivo && setFeatures(f))
-      .finally(() => vivo && setCarregando(false));
+    setCarregando(true);
+    setFeatures([]);
+    setSel(null);
+
+    const ufUpper = (uf || "BA").toUpperCase();
+    const url =
+      ufUpper === "BA"
+        ? "/bahia-municipios.json"
+        : `/malhas/${ufUpper.toLowerCase()}-municipios.json`;
+
+    fetch(url)
+      .then((r) => r.json())
+      .then((geo) => {
+        if (vivo && geo?.features) {
+          setFeatures(geo.features as MunFeature[]);
+        }
+      })
+      .catch((err) => {
+        console.warn(`Erro ao carregar malha de ${ufUpper}:`, err);
+        if (vivo) carregarMalha().then((f) => vivo && setFeatures(f));
+      })
+      .finally(() => {
+        if (vivo) setCarregando(false);
+      });
+
     return () => {
       vivo = false;
     };
-  }, []);
+  }, [uf]);
 
   const { paths, path } = useMemo(() => {
     if (!features.length) return { paths: [], path: null as ReturnType<typeof geoPath> | null };
     const fc = { type: "FeatureCollection", features } as unknown as GeoPermissibleObjects;
     const p = geoPath(geoMercator().fitSize([W, H], fc));
     const ps = features.map((f) => {
-      const nome = f.properties?.name ?? "";
+      const nome = f.properties?.name || (f.properties as { nome?: string })?.nome || "";
       const k = chave(nome);
       const votos = mapaChave ? (mapaChave.get(k) ?? 0) : votosDe(nome);
       const regiao = REGIAO_DO_MUN[k] ?? "";
+      const corBase =
+        uf.toUpperCase() === "BA" && regiao && REGION_COLORS[regiao]
+          ? REGION_COLORS[regiao]
+          : corTema;
       return {
         k,
         nome,
         votos,
         regiao,
         d: p(f as unknown as GeoPermissibleObjects) || "",
-        cor: clarear(regiao ? REGION_COLORS[regiao] : CINZA, faixa(votos).t),
+        cor: votos > 0 ? clarear(corBase, faixa(votos).t) : "#f1f5f9",
       };
     });
     return { paths: ps, path: p };
-  }, [features, mapaChave]);
+  }, [features, mapaChave, corTema, uf]);
 
   const detalhe = useMemo(() => {
     if (!sel || !path) return null;
@@ -218,8 +248,8 @@ export function MapaVotos({
                     key={p.k}
                     d={p.d}
                     fill={p.cor}
-                    stroke={ativo ? "#16202e" : "#ffffff"}
-                    strokeWidth={ativo ? 2 : 0.4}
+                    stroke={ativo ? "#0f172a" : p.votos > 0 ? "#ffffff" : "#cbd5e1"}
+                    strokeWidth={ativo ? 2.5 : p.votos > 0 ? 0.7 : 0.4}
                     className="cursor-pointer transition-[stroke-width]"
                     onClick={() => {
                       setSel(p.k);

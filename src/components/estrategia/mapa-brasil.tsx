@@ -77,64 +77,71 @@ export function MapaBrasil({
       const votos = votosPorUf?.[uf] ?? 0;
       const d = pathGenerator(f as unknown as GeoPermissibleObjects) || "";
 
-      let cor = "#e5e7eb"; // cinza claro padrão
+      let cor = CORES_REGIAO[regiao] || "#94a3b8"; // Cores vivas por região
       if (votos > 0 && maiorVoto > 0) {
         const proporcao = votos / maiorVoto;
-        if (proporcao > 0.6) cor = "#1d4ed8"; // azul forte
-        else if (proporcao > 0.2) cor = "#3b82f6"; // azul médio
-        else cor = "#93c5fd"; // azul suave
+        if (proporcao > 0.6) cor = "#1d4ed8"; // azul royal intenso
+        else if (proporcao > 0.2) cor = "#2563eb"; // azul vivo
+        else cor = "#3b82f6"; // azul médio
       } else if (uf === ufAtiva) {
-        cor = "#2563eb";
+        cor = "#1e40af";
       }
 
-      const importado = ufsComDados.includes(uf);
-      return { uf, nome, regiao, votos, d, importado, corPadrao: importado ? cor : "url(#nao-importado)" };
+      return { uf, nome, regiao, votos, d, corPadrao: cor };
     });
 
     return { paths: ps };
-  }, [features, votosPorUf, maiorVoto, ufAtiva, ufsComDados]);
+  }, [features, votosPorUf, maiorVoto, ufAtiva]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-tinta-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between border-b border-tinta-100 pb-3">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-tema">Camada 1 · Nacional</span>
-          <h3 className="text-[16px] font-extrabold text-tinta-900">Mapa do Brasil</h3>
-          <p className="text-[12px] text-tinta-500">
-            Clique em qualquer estado para descer automaticamente à camada estadual.
+          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+            Camada 1 · Visão Nacional
+          </span>
+          <h3 className="text-base font-extrabold text-slate-900">
+            Mapa do Brasil por Estados
+          </h3>
+          <p className="text-[12px] text-slate-500">
+            Clique em qualquer estado para abrir imediatamente o mapa municipal daquele estado.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[11px] font-medium text-tinta-500">
-          <span className="inline-block h-3 w-3 rounded-full bg-blue-600" /> Votos concentrados
-          <span className="ml-2 inline-block h-3 w-3 rounded-full bg-tinta-200" /> Sem votação
-          <span
-            className="ml-2 inline-block h-3 w-3 rounded-full border border-tinta-200"
-            style={{ background: "repeating-linear-gradient(45deg,#f1f5f9 0 2px,#cbd5e1 2px 4px)" }}
-          />{" "}
-          Não importado
+        
+        {/* Legenda visual viva */}
+        <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-600">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#10b981]" /> Norte
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]" /> Nordeste
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#8b5cf6]" /> Centro-Oeste
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#3b82f6]" /> Sudeste
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#ec4899]" /> Sul
+          </span>
         </div>
       </div>
 
-      <div className="relative mt-3 flex justify-center">
+      <div className="relative mt-4 flex justify-center">
         {carregando && (
-          <div className="flex h-[360px] items-center justify-center text-[13px] text-tinta-400">
+          <div className="flex h-[380px] items-center justify-center text-[13px] text-slate-400">
             Carregando malha do Brasil...
           </div>
         )}
 
         {!carregando && (
-          <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full max-w-[620px]">
-            <defs>
-              <pattern id="nao-importado" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <rect width="6" height="6" fill="#f1f5f9" />
-                <rect width="3" height="6" fill="#cbd5e1" />
-              </pattern>
-            </defs>
+          <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full max-w-[640px] drop-shadow-sm">
             {paths.map((p) => {
               const estaAtivo = p.uf === ufAtiva;
               const estaHover = p.uf === hoverUf;
               let fill = p.corPadrao;
-              if (estaHover && p.importado) fill = "#1e40af";
+              if (estaHover) fill = "#1e3a8a";
               if (estaAtivo) fill = "#1d4ed8";
 
               return (
@@ -143,9 +150,9 @@ export function MapaBrasil({
                   d={p.d}
                   fill={fill}
                   stroke="#ffffff"
-                  strokeWidth={estaAtivo ? 2.5 : estaHover ? 1.8 : 0.8}
-                  className={`transition-all duration-150 ${p.importado ? "cursor-pointer hover:opacity-90" : "cursor-not-allowed"}`}
-                  onClick={() => p.importado && onSelecionarUf(p.uf)}
+                  strokeWidth={estaAtivo ? 2.5 : estaHover ? 2 : 1}
+                  className="cursor-pointer transition-all duration-150 hover:opacity-95"
+                  onClick={() => onSelecionarUf(p.uf)}
                   onMouseEnter={() => setHoverUf(p.uf)}
                   onMouseMove={(e) => {
                     const r = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
@@ -155,7 +162,7 @@ export function MapaBrasil({
                       nome: p.nome,
                       uf: p.uf,
                       votos: p.votos,
-                      importado: p.importado,
+                      importado: true,
                     });
                   }}
                   onMouseLeave={() => {
@@ -170,7 +177,7 @@ export function MapaBrasil({
 
         {tip && (
           <div
-            className="pointer-events-none absolute z-20 rounded-xl bg-tinta-950/95 px-3 py-2 text-[12px] text-white shadow-xl backdrop-blur-sm"
+            className="pointer-events-none absolute z-20 rounded-xl bg-slate-900/95 px-3 py-2 text-[12px] text-white shadow-xl backdrop-blur-sm"
             style={{ left: tip.x + 12, top: tip.y + 12 }}
           >
             <div className="font-bold flex items-center gap-1.5">
