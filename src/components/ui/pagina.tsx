@@ -83,7 +83,7 @@ export function Cartao({
 }) {
   return (
     <section
-      className={`min-w-0 rounded-2xl border border-white/[0.08] bg-[#0f1422]/75 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.28)] transition-all hover:border-white/[0.12] ${className}`}
+      className={`min-w-0 rounded-lg border border-white/[0.08] bg-[#0f1422]/75 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] transition-all hover:border-white/[0.12] ${className}`}
     >
       {(titulo || acoes) && (
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-3.5">
@@ -121,9 +121,12 @@ export function Indicador({
   destaque?: boolean;
 }) {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0f1422]/75 px-5 py-4 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.28)] transition-all hover:border-white/[0.14] hover:shadow-[0_8px_30px_rgba(0,100,255,0.08)]">
+    <div className="relative min-w-0 overflow-hidden rounded-lg border border-white/[0.08] bg-[#0f1422]/75 px-5 py-4 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] transition-all hover:border-white/[0.14]">
       {destaque && (
-        <span className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 shadow-[0_0_12px_#38bdf8]" />
+        <span
+          className="absolute inset-x-0 top-0 h-[2px]"
+          style={{ backgroundColor: "var(--tema)", boxShadow: "0 0 10px var(--tema)" }}
+        />
       )}
       <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-cyan-400/90">
         {rotulo}

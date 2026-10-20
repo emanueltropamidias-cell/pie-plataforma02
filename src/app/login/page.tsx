@@ -11,7 +11,7 @@ import { LogoManuFlow } from "@/components/brand/logo-manuflow";
 type Msg = { tipo: "erro" | "ok"; texto: string } | null;
 
 const INPUT_CLS =
-  "h-12 border-white/10 bg-white/[0.04] text-white placeholder:text-zinc-500 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 rounded-xl";
+  "h-12 border-white/10 bg-white/[0.04] text-white placeholder:text-zinc-500 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 rounded-lg";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -146,8 +146,8 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/10 blur-[150px]" />
       <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-blue-600/8 blur-[160px]" />
 
-      {/* Card Principal em Apple Glass */}
-      <div className="relative z-10 w-full max-w-[420px] rounded-[32px] border border-white/[0.12] bg-[#0c101b]/80 p-8 text-center backdrop-blur-2xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] sm:p-10">
+      {/* Card Principal em Apple Glass mais quadrado */}
+      <div className="relative z-10 w-full max-w-[420px] rounded-xl border border-white/[0.12] bg-[#0c101b]/80 p-8 text-center backdrop-blur-2xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] sm:p-10">
         {/* Marca Manuflow com nova Logo */}
         <div className="mb-6 flex flex-col items-center">
           <LogoManuFlow size="lg" className="justify-center" />
@@ -320,7 +320,7 @@ function BotaoVerde({ children, ...props }: React.ButtonHTMLAttributes<HTMLButto
   return (
     <button
       {...props}
-      className="mt-2 h-12 w-full rounded-xl text-[15px] font-bold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.99] disabled:opacity-60 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] border border-white/20"
+      className="mt-2 h-12 w-full rounded-lg text-[15px] font-bold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.99] disabled:opacity-60 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] border border-white/20"
     >
       {children}
     </button>

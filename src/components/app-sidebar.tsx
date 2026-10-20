@@ -227,26 +227,29 @@ function Conteudo({
 
       {/* Usuário logado */}
       <div
-        className={`mt-5 flex items-center gap-2.5 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md ${
-          recolhido ? "justify-center px-0 py-2.5" : "px-3 py-2.5"
+        className={`mt-4 flex items-center gap-2.5 rounded-lg border border-barra-traco bg-barra-hover backdrop-blur-md ${
+          recolhido ? "justify-center px-0 py-2" : "px-3 py-2"
         }`}
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 text-[11.5px] font-bold text-white shadow-[0_0_12px_rgba(37,99,235,0.35)]">
+        <span
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[11.5px] font-bold text-white shadow-sm"
+          style={{ backgroundColor: "var(--tema)" }}
+        >
           {iniciais(nome)}
         </span>
         {!recolhido && (
           <span className="min-w-0">
-            <span className="block truncate text-[12.5px] font-semibold text-white">
+            <span className="block truncate text-[12.5px] font-semibold text-barra-texto">
               {nome}
             </span>
-            <span className="block truncate text-[10.5px] text-zinc-400">
+            <span className="block truncate text-[10.5px] text-barra-suave">
               {CARGO[papel ?? ""] ?? "Equipe"}
             </span>
           </span>
         )}
       </div>
 
-      <nav className="mt-5 flex flex-1 flex-col gap-5 overflow-y-auto pr-0.5">
+      <nav className="mt-4 flex flex-1 flex-col gap-4 overflow-y-auto pr-0.5">
         {visiveis.map((grupo) => (
           <div key={grupo.titulo} className="flex flex-col gap-0.5">
             {!recolhido && (
@@ -269,12 +272,7 @@ function Conteudo({
                   key={item.href}
                   href={item.href}
                   title={recolhido ? item.label : undefined}
-                  // Busca a página inteira antes do clique, não só o esqueleto.
-                  // O padrão do Next traz apenas o esqueleto em tela que depende
-                  // de sessão — que é justamente o branco que aparecia antes.
                   prefetch={item.pesado ? undefined : true}
-                  // E de novo ao passar o mouse: aí o conteúdo já chegou quando
-                  // o dedo desce, e a tela troca sem espera.
                   onMouseEnter={() => router.prefetch(item.href)}
                   onFocus={() => router.prefetch(item.href)}
                   onTouchStart={() => router.prefetch(item.href)}
@@ -282,18 +280,26 @@ function Conteudo({
                     setIndo(item.href);
                     onNav?.();
                   }}
-                  className={`group relative flex items-center gap-3 rounded-xl py-2.5 text-[13px] transition-all duration-200 ${
+                  style={
+                    ativo || indoPara
+                      ? {
+                          backgroundColor: "var(--tema)",
+                          boxShadow: "0 0 16px color-mix(in srgb, var(--tema) 35%, transparent)",
+                        }
+                      : undefined
+                  }
+                  className={`group relative flex items-center gap-3 rounded-lg py-2 text-[13px] transition-all duration-150 ${
                     recolhido ? "justify-center px-0" : "px-3"
                   } ${
                     ativo || indoPara
-                      ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 text-white font-semibold shadow-[0_0_20px_rgba(37,99,235,0.35)] border border-white/20"
-                      : "font-medium text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+                      ? "text-white font-semibold border border-white/20"
+                      : "font-medium text-barra-suave hover:bg-barra-hover hover:text-barra-texto"
                   }`}
                 >
                   <Icone
-                    size={17}
-                    className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-                      ativo || indoPara ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]" : "text-zinc-400 group-hover:text-cyan-400"
+                    size={16}
+                    className={`shrink-0 transition-transform duration-150 group-hover:scale-105 ${
+                      ativo || indoPara ? "text-white" : "text-barra-suave group-hover:text-barra-texto"
                     }`}
                     strokeWidth={ativo || indoPara ? 2.4 : 1.9}
                   />
@@ -353,11 +359,11 @@ export function AppSidebar({
   return (
     <>
       {/* Barra superior (só no celular) */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#090d16]/90 backdrop-blur-xl px-4 md:hidden">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-barra-traco bg-barra backdrop-blur-xl px-4 text-barra-texto md:hidden">
         <LogoManuFlow size="sm" />
         <button
           onClick={() => setAberto(true)}
-          className="text-white hover:text-cyan-400 transition-colors"
+          className="text-barra-texto hover:text-cyan-400 transition-colors"
           aria-label="Abrir menu"
         >
           <Menu size={24} />
@@ -371,10 +377,10 @@ export function AppSidebar({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setAberto(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-white/[0.08] bg-[#090d16]/95 backdrop-blur-2xl px-4 py-5 text-white">
+          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-barra-traco bg-barra backdrop-blur-2xl px-4 py-5 text-barra-texto">
             <button
               onClick={() => setAberto(false)}
-              className="mb-2 self-end text-zinc-400 hover:text-white"
+              className="mb-2 self-end text-barra-suave hover:text-barra-texto"
               aria-label="Fechar menu"
             >
               <X size={22} />
@@ -393,7 +399,7 @@ export function AppSidebar({
 
       {/* Barra fixa (computador) */}
       <aside
-        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-white/[0.08] bg-[#090d16]/85 backdrop-blur-2xl px-3.5 py-5 text-white transition-[width] duration-300 md:flex ${
+        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-barra-traco bg-barra backdrop-blur-2xl px-3.5 py-5 text-barra-texto transition-[width] duration-200 md:flex ${
           recolhido ? "w-[76px]" : "w-64"
         }`}
       >

@@ -99,7 +99,7 @@ export function Central({
             return (
               <div
                 key={n.rotulo}
-                className="rounded-2xl border px-4 py-3.5 backdrop-blur-xl shadow-[0_8px_25px_rgba(0,0,0,0.25)] transition-all hover:scale-[1.01]"
+                className="rounded-lg border px-4 py-3.5 backdrop-blur-xl shadow-sm transition-all hover:scale-[1.01]"
                 style={{ borderColor: t.borda, background: t.fundo }}
               >
                 <span
@@ -124,7 +124,7 @@ export function Central({
 
       {aviso && (
         <div
-          className={`rounded-2xl border px-5 py-4 backdrop-blur-xl ${
+          className={`rounded-lg border px-5 py-4 backdrop-blur-xl ${
             aviso.urgente
               ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
               : "border-white/[0.08] bg-[#0f1422]/75 text-zinc-300"
@@ -198,7 +198,7 @@ export function Atalho({
     <>
       <div className="flex items-center gap-2.5">
         <span
-          className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-xl shadow-sm"
+          className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md shadow-sm"
           style={{ background: c.fundo, color: c.tinta }}
         >
           <Icone size={14} strokeWidth={2.4} />
@@ -235,7 +235,7 @@ export function Atalho({
 
   if (emBreve) {
     return (
-      <div className="min-w-0 rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] px-4 py-3.5 opacity-60">
+      <div className="min-w-0 rounded-lg border border-dashed border-white/[0.08] bg-white/[0.02] px-4 py-3.5 opacity-60">
         {miolo}
       </div>
     );
@@ -245,10 +245,10 @@ export function Atalho({
     <Link
       href={href}
       prefetch
-      className={`group min-w-0 rounded-2xl border px-4 py-3.5 backdrop-blur-xl transition-all duration-200 ${
+      className={`group min-w-0 rounded-lg border px-4 py-3.5 backdrop-blur-xl transition-all duration-150 ${
         destaque
-          ? "border-cyan-500/40 bg-gradient-to-b from-blue-900/25 to-[#0f1422]/80 shadow-[0_0_24px_rgba(0,240,255,0.12)] hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(0,240,255,0.22)]"
-          : "border-white/[0.08] bg-[#0f1422]/70 shadow-[0_8px_25px_rgba(0,0,0,0.22)] hover:border-white/20 hover:bg-[#121829]/80 hover:shadow-[0_8px_30px_rgba(0,100,255,0.1)]"
+          ? "border-cyan-500/40 bg-[#0f1422]/90 shadow-[0_0_16px_rgba(0,240,255,0.08)] hover:border-cyan-400"
+          : "border-white/[0.08] bg-[#0f1422]/70 shadow-sm hover:border-white/20 hover:bg-[#121829]/80"
       }`}
     >
       {miolo}

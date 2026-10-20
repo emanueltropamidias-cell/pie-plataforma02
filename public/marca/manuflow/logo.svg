@@ -1,45 +1,20 @@
 <svg width="240" height="60" viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="glow_grad" x1="0" y1="0" x2="60" y2="60" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.3"/>
-      <stop offset="50%" stop-color="#2563EB" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.3"/>
-    </linearGradient>
-    <linearGradient id="mf_flow_primary" x1="4" y1="8" x2="44" y2="42" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#00F0FF" />
-      <stop offset="35%" stop-color="#38BDF8" />
-      <stop offset="70%" stop-color="#2563EB" />
-      <stop offset="100%" stop-color="#7C3AED" />
-    </linearGradient>
-    <linearGradient id="mf_flow_secondary" x1="40" y1="8" x2="8" y2="40" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#60A5FA" />
-      <stop offset="50%" stop-color="#3B82F6" />
-      <stop offset="100%" stop-color="#1D4ED8" />
-    </linearGradient>
-    <linearGradient id="mf_text_flow" x1="120" y1="20" x2="200" y2="40" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#38BDF8" />
-      <stop offset="50%" stop-color="#60A5FA" />
-      <stop offset="100%" stop-color="#818CF8" />
-    </linearGradient>
-  </defs>
-
-  <!-- Icon Container with glass styling -->
-  <g transform="translate(6, 6)">
-    <rect width="48" height="48" rx="14" fill="#0B132B" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>
-    <rect width="48" height="48" rx="14" fill="url(#glow_grad)"/>
-    
-    <!-- Fluid geometric "M" ribbon -->
-    <path d="M 12 37 C 12 37, 10 21, 17 13 C 22 7, 24 17, 24 22 C 24 17, 26 7, 31 13 C 38 21, 36 37, 36 37" stroke="url(#mf_flow_primary)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M 16 34 C 19 30, 21 31, 24 33 C 27 31, 29 30, 32 34" stroke="url(#mf_flow_secondary)" stroke-width="3" stroke-linecap="round"/>
-    <!-- Specular Highlight -->
-    <path d="M 14 17 C 18 11, 21 13, 24 19 C 27 13, 30 11, 34 17" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
-    <!-- Luminous dot -->
-    <circle cx="24" cy="22" r="2.2" fill="#00F0FF" />
+  <!-- Container quadrado -->
+  <g transform="translate(8, 8)">
+    <rect width="44" height="44" rx="8" fill="#0E1526" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
+    <!-- Asa Esquerda do M -->
+    <path d="M 8 33 L 8 15 L 17 25 L 17 33 Z" fill="#00F0FF" />
+    <!-- Asa Direita do M -->
+    <path d="M 36 33 L 36 15 L 27 25 L 27 33 Z" fill="#3B82F6" />
+    <!-- Vértice Central -->
+    <polygon points="22,9 28.5,18 22,25 15.5,18" fill="#60A5FA" />
+    <circle cx="22" cy="18" r="2.5" fill="#FFFFFF" />
+    <circle cx="22" cy="29" r="2.2" fill="#00F0FF" />
   </g>
 
   <!-- Typography -->
-  <text x="68" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="800" fill="#FFFFFF" letter-spacing="-0.04em">Manu</text>
-  <text x="131" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="900" fill="url(#mf_text_flow)" letter-spacing="-0.03em">Flow</text>
-  <circle cx="187" cy="26" r="3" fill="#00F0FF" />
-  <text x="68" y="49" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" font-weight="700" fill="#94A3B8" letter-spacing="0.18em">INTELLIGENCE &amp; FLOW</text>
+  <text x="66" y="34" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#FFFFFF" letter-spacing="-0.03em">Manu</text>
+  <text x="124" y="34" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" fill="#38BDF8" letter-spacing="-0.02em">Flow</text>
+  <rect x="175" y="24" width="5" height="5" rx="1" fill="#00F0FF" />
+  <text x="66" y="47" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" font-weight="700" fill="#94A3B8" letter-spacing="0.16em">INTELLIGENCE &amp; FLOW</text>
 </svg>

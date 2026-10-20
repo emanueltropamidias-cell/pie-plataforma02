@@ -142,16 +142,16 @@
   --accent-foreground: #f8fafc;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #38bdf8;
-  --radius: 0.875rem;
-  --sidebar: rgba(11, 15, 23, 0.88);
+  --ring: var(--tema);
+  --radius: 0.4375rem;
+  --sidebar: rgba(18, 22, 34, 0.95);
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #38bdf8;
+  --sidebar-primary: var(--tema);
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(255, 255, 255, 0.06);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #38bdf8;
+  --sidebar-ring: var(--tema);
 
   --marca-azul: #2563eb;
   --marca-ciano: #00f0ff;
@@ -191,37 +191,51 @@
   --color-tinta-900: var(--tinta-900);
 }
 
-:root {
-  --tema: #2563eb;
-  --barra-fundo: rgba(11, 15, 23, 0.88);
+:root,
+:root[data-barra="grafite"] {
+  --tema: #0525F7;
+  --barra-fundo: #121622;
   --barra-realce: #ffffff;
   --barra-texto: #f8fafc;
   --barra-suave: #94a3b8;
   --barra-fraca: #64748b;
-  --barra-ativo: rgba(37, 99, 235, 0.22);
+  --barra-ativo: var(--tema);
   --barra-hover: rgba(255, 255, 255, 0.06);
   --barra-traco: rgba(255, 255, 255, 0.08);
 }
 
 :root[data-barra="escuro"] {
-  --barra-fundo: rgba(6, 9, 14, 0.95);
-  --barra-realce: #38bdf8;
+  --barra-fundo: #05070c;
+  --barra-realce: var(--tema);
+  --barra-texto: #f8fafc;
   --barra-suave: #94a3b8;
   --barra-fraca: #64748b;
-  --barra-ativo: rgba(56, 189, 248, 0.18);
+  --barra-ativo: var(--tema);
   --barra-hover: rgba(255, 255, 255, 0.05);
   --barra-traco: rgba(255, 255, 255, 0.08);
 }
 
 :root[data-barra="claro"] {
-  --barra-fundo: #fafafa;
+  --barra-fundo: #ffffff;
   --barra-texto: #101114;
   --barra-suave: #52535c;
   --barra-fraca: #9b9ca4;
-  --barra-ativo: #eaeaec;
+  --barra-ativo: var(--tema);
   --barra-hover: #f2f2f3;
   --barra-traco: #e6e6e9;
   --barra-realce: var(--tema);
+}
+
+/* Previne quebras visuais em cartões e blocos com bg-white no tema escuro */
+:root:not([data-barra="claro"]) .bg-white {
+  background-color: #0f1422 !important;
+  color: #f8fafc;
+}
+:root:not([data-barra="claro"]) .border-tinta-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+:root:not([data-barra="claro"]) .border-tinta-100 {
+  border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 /* O logo branco some no fundo claro e o azul some no escuro. */

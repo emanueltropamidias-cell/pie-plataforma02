@@ -107,10 +107,10 @@ export function SomatoriaBases({ s, venn }: { s: Somatoria; venn?: Venn | null }
   }
 
   return (
-    <section className="min-w-0 rounded-xl border border-tinta-200 bg-white shadow-[0_1px_2px_rgba(22,32,46,0.04)]">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-tinta-100 px-5 py-4">
+    <section className="min-w-0 rounded-lg border border-white/[0.08] bg-[#0f1422]/75 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.06] px-5 py-4">
         <div>
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-tema">
+          <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-cyan-400">
             {todas ? "Todas as bases" : `${marcadas.size} de ${linhas.length} bases`}
           </span>
           <p className="tabular mt-1 text-[32px] font-extrabold leading-none tracking-[-0.03em] text-tinta-900">
