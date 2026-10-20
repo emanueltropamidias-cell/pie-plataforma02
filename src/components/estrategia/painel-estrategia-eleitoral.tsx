@@ -279,7 +279,7 @@ export function PainelEstrategiaEleitoral({
           {/* Identidade Sóbria do Candidato */}
           <div className="flex items-center gap-3.5">
             <span className="rounded-full border-2 border-slate-200 shadow-sm">
-              <FotoUrna key={raioX.candidato.id} src={fotoDoCandidato(raioX.candidato)} nome={raioX.candidato.nome_urna} tamanho={56} />
+              <FotoUrna key={raioX.candidato.id} src={fotoDoCandidato(raioX.candidato)} nome={raioX.candidato.nome_urna} tamanho={88} />
             </span>
 
             <div>
@@ -446,7 +446,7 @@ export function PainelEstrategiaEleitoral({
                       onClick={() => selecionarCandidato(c)}
                       className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-slate-50"
                     >
-                      <FotoUrna src={fotoDoCandidato(c)} nome={c.nome_urna} tamanho={32} />
+                      <FotoUrna src={fotoDoCandidato(c)} nome={c.nome_urna} tamanho={40} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-slate-900 text-[12.5px]">

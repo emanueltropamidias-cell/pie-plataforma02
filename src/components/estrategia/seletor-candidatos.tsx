@@ -172,7 +172,7 @@ export function SeletorCandidatos({
                 ativo ? "border-blue-500 bg-blue-50/60" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
-              <FotoUrna src={c.foto_url} nome={c.nome_urna} tamanho={40} />
+              <FotoUrna src={c.foto_url} nome={c.nome_urna} tamanho={60} />
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1.5">
                   <span className="truncate text-[12.5px] font-bold text-slate-900">{c.nome_urna}</span>
