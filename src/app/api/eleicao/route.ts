@@ -5,13 +5,21 @@ import { createClient } from "@/lib/supabase/server";
 // API DE DADOS ELEITORAIS (TSE CONSOLIDADO)
 // ============================================================================
 //
-// 1. Busca de Candidatos:
-//    GET /api/eleicao?q=talita&ano=2022&uf=BA
+// 1. Busca Inteligente de Candidatos (Insensível a acentos, multi-eleição):
+//    GET /api/eleicao?q=Capitão%20Alden&ano=2022&uf=BA
 //
 // 2. Raio-X Completo do Candidato (Mapa de Votos + Top Municípios + Métricas):
 //    GET /api/eleicao?candidatoId=1627
 //
 // ────────────────────────────────────────────────────────────────────────────
+
+function normalizar(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -25,9 +33,11 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const candidatoId = searchParams.get("candidatoId");
-  const q = searchParams.get("q")?.trim();
-  const ano = parseInt(searchParams.get("ano") || "2022", 10);
+  const qRaw = searchParams.get("q")?.trim();
+  const anoParam = searchParams.get("ano");
+  const ano = anoParam ? parseInt(anoParam, 10) : 2022;
   const uf = searchParams.get("uf")?.trim().toUpperCase();
+  const cargo = searchParams.get("cargo")?.trim();
 
   // 1. Raio-X por Candidato ID
   if (candidatoId) {
@@ -47,15 +57,20 @@ export async function GET(request: Request) {
     return NextResponse.json(data);
   }
 
-  const cargo = searchParams.get("cargo")?.trim();
+  // 2. Busca de Candidatos
+  const qNorm = qRaw ? normalizar(qRaw) : "";
+  const isNumero = qNorm && /^\d+$/.test(qNorm);
 
-  // 2. Busca de Candidatos por Nome, Número ou Partido
+  // Tentativa 1: Busca respeitando os filtros selecionados
   let query = supabase
     .from("eleicao_candidatos")
     .select("id, ano, turno, uf, cargo, numero, nome_urna, nome_completo, partido_sigla, situacao, foto_url")
-    .eq("ano", ano)
     .order("numero", { ascending: true })
     .limit(40);
+
+  if (ano) {
+    query = query.eq("ano", ano);
+  }
 
   if (uf && uf !== "TODAS" && uf !== "BR") {
     query = query.eq("uf", uf);
@@ -65,12 +80,15 @@ export async function GET(request: Request) {
     query = query.ilike("cargo", `%${cargo}%`);
   }
 
-  if (q) {
-    const isNumero = /^\d+$/.test(q);
+  if (qNorm) {
     if (isNumero) {
-      query = query.eq("numero", parseInt(q, 10));
+      query = query.eq("numero", parseInt(qNorm, 10));
     } else {
-      query = query.ilike("chave_busca", `%${q.toLowerCase()}%`);
+      // Divide por palavras para casar "capitao" e "alden" simultaneamente
+      const palavras = qNorm.split(/\s+/).filter(Boolean);
+      for (const p of palavras) {
+        query = query.ilike("chave_busca", `%${p}%`);
+      }
     }
   }
 
@@ -80,5 +98,39 @@ export async function GET(request: Request) {
     return NextResponse.json({ erro: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ candidatos: candidatos || [] });
+  // Se encontrou candidatos com os filtros atuais, retorna
+  if (candidatos && candidatos.length > 0) {
+    return NextResponse.json({ candidatos });
+  }
+
+  // Tentativa 2 (Fallback Inteligente): Se o usuário buscou por nome/número mas não achou
+  // (ex: digitou "Capitão Alden" enquanto estava com ano=2026 ou cargo errado selecionado),
+  // fazemos uma busca global ampla em todas as eleições e cargos para achar o candidato!
+  if (qNorm) {
+    let fallback = supabase
+      .from("eleicao_candidatos")
+      .select("id, ano, turno, uf, cargo, numero, nome_urna, nome_completo, partido_sigla, situacao, foto_url")
+      .order("ano", { ascending: false })
+      .order("numero", { ascending: true })
+      .limit(30);
+
+    if (isNumero) {
+      fallback = fallback.eq("numero", parseInt(qNorm, 10));
+    } else {
+      const palavras = qNorm.split(/\s+/).filter(Boolean);
+      for (const p of palavras) {
+        fallback = fallback.ilike("chave_busca", `%${p}%`);
+      }
+    }
+
+    const { data: achadosFallback } = await fallback;
+    if (achadosFallback && achadosFallback.length > 0) {
+      return NextResponse.json({
+        candidatos: achadosFallback,
+        aviso: "Candidatos encontrados em outras eleições ou cargos disponíveis.",
+      });
+    }
+  }
+
+  return NextResponse.json({ candidatos: [] });
 }

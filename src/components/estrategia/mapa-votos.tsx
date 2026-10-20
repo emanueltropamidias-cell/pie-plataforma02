@@ -224,6 +224,9 @@ export function MapaVotos({
                     onClick={() => {
                       setSel(p.k);
                       setBusca(p.nome);
+                      if (onAbrirMunicipio) {
+                        onAbrirMunicipio(p.nome);
+                      }
                     }}
                     onMouseMove={(e) => {
                       const r = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();

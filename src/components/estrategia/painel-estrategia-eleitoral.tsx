@@ -168,6 +168,7 @@ export function PainelEstrategiaEleitoral({
           setRaioX(data);
           setAnoFiltro(data.candidato.ano);
           setUfFiltro(data.candidato.uf);
+          setCargoFiltro(data.candidato.cargo);
           // Se for cargo estadual, abre na camada de estado; se nacional, brasil
           if (data.candidato.cargo === "PRESIDENTE") {
             setCamada("brasil");
@@ -296,6 +297,30 @@ export function PainelEstrategiaEleitoral({
             </div>
           </div>
         </div>
+
+        {/* Faixa explicativa do ano selecionado */}
+        <div className="mt-3 flex items-center justify-between border-t border-tinta-100 pt-2.5 text-[11.5px]">
+          <span className="text-tinta-500">
+            {anoFiltro === 2022 && (
+              <>
+                <b className="text-emerald-700">Eleição Geral 2022:</b> Base oficial completa do TSE apurada com fotos e mapa de calor município a município.
+              </>
+            )}
+            {anoFiltro === 2024 && (
+              <>
+                <b className="text-blue-700">Eleição Municipal 2024:</b> Cargos de Prefeito e Vereador. Digite o nome de qualquer candidato na busca ao lado.
+              </>
+            )}
+            {anoFiltro === 2026 && (
+              <>
+                <b className="text-purple-700">Eleição Geral 2026 (1º Turno):</b> Planejamento e metas eleitorais. A busca ao lado pesquisa qualquer candidato histórico do TSE.
+              </>
+            )}
+          </span>
+          <span className="text-tinta-400">
+            {totalVotos > 0 ? `${totalVotos.toLocaleString("pt-BR")} votos válidos apurados` : "Pronto para análise"}
+          </span>
+        </div>
       </div>
 
       {/* ── 2. CARD DO CANDIDATO ATIVO & BUSCA INTELIGENTE ──────────── */}
@@ -365,19 +390,40 @@ export function PainelEstrategiaEleitoral({
                   <button
                     key={c.id}
                     onClick={() => selecionarCandidato(c)}
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-tinta-50"
+                    className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-tinta-50"
                   >
+                    <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-tinta-200 bg-tinta-100">
+                      {c.foto_url ? (
+                        <Image
+                          src={`/api/eleicao/foto?url=${encodeURIComponent(c.foto_url)}`}
+                          alt={c.nome_urna}
+                          fill
+                          sizes="36px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-tinta-400">
+                          {c.nome_urna.slice(0, 2)}
+                        </div>
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-tinta-900 text-[13px]">
                           {c.nome_urna}
                         </span>
-                        <span className="text-[11px] text-tinta-500">
+                        <span className="rounded bg-tema/10 px-1.5 py-0.2 text-[10.5px] font-bold text-tema">
                           {c.partido_sigla} · {c.numero}
                         </span>
+                        {c.ano !== anoFiltro && (
+                          <span className="rounded bg-amber-50 px-1.5 py-0.2 text-[10px] font-bold text-amber-700">
+                            {c.ano}
+                          </span>
+                        )}
                       </div>
-                      <span className="block truncate text-[11px] text-tinta-400">
-                        {c.cargo} · {c.uf} ({c.ano})
+                      <span className="block truncate text-[11px] text-tinta-500">
+                        {c.cargo} · {c.uf}
                       </span>
                     </div>
                     {c.id === raioX.candidato.id && (
