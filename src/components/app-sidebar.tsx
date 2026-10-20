@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Menu,
   Settings,
+  Shield,
   UsersRound,
   X,
   type LucideIcon,
@@ -73,10 +74,13 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
         icone: UsersRound,
         abrange: ["/rede", "/leads", "/mapa", "/municipios"],
       },
+      { href: "/estrategia", label: "Estratégia", icone: Compass },
+      // Saiu do topo da Estratégia em 20/10/2026: lá ficou só o painel
+      // eleitoral, e os atalhos de liderança, metas e dobradinha vieram para cá.
       {
-        href: "/estrategia",
-        label: "Estratégia",
-        icone: Compass,
+        href: "/liderancas",
+        label: "Lideranças",
+        icone: Shield,
         abrange: ["/crm", "/ranking", "/metas", "/dobradinha"],
       },
       {

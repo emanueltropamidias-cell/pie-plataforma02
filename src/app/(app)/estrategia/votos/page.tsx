@@ -59,7 +59,7 @@ export default async function EstrategiaPage() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
       <Cabecalho
-        voltar="/estrategia"
+        voltar="/liderancas"
         sobretitulo="Estratégia"
         titulo="Onde a Talita já teve voto"
         descricao="A eleição de 2022 no mapa. Clique num município para descer ao bairro, à zona e ao local de votação."

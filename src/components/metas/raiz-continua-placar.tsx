@@ -37,7 +37,7 @@ export function RaizContinuaPlacar({
     return (
       <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
         <Cabecalho
-          voltar="/estrategia"
+          voltar="/liderancas"
           sobretitulo="Estratégia"
           titulo="Meta por município"
           descricao="Onde a campanha quer chegar, cidade por cidade."
@@ -60,7 +60,7 @@ export function RaizContinuaPlacar({
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
       <Cabecalho
-        voltar="/estrategia"
+        voltar="/liderancas"
         sobretitulo="Estratégia 1"
         titulo="A Raiz Continua"
         descricao="Triplicar os votos nos 15 maiores municípios. Os cadastros contam ao vivo, por cidade."

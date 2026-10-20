@@ -41,7 +41,7 @@ export default async function RankingPage() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
       <Cabecalho
-        voltar="/estrategia"
+        voltar="/liderancas"
         sobretitulo="Rede"
         titulo="Placar das lideranças"
         descricao="Quantas pessoas cada liderança indicou. Atualiza sozinho."

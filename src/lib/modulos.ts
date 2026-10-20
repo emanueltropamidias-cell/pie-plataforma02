@@ -29,7 +29,7 @@ export const ROTAS_DO_MODULO: Record<Modulo, string[]> = {
   atendimento: ["/atendimento"],
   trafego: ["/trafego", "/api/trafego"],
   base: ["/base", "/rede", "/leads", "/mapa", "/municipios"],
-  estrategia: ["/estrategia", "/crm", "/ranking", "/metas", "/dobradinha"],
+  estrategia: ["/estrategia", "/liderancas", "/crm", "/ranking", "/metas", "/dobradinha"],
   gabinete: ["/gabinete", "/demandas", "/conversas"],
 };
 

@@ -91,7 +91,7 @@ export function CrmClient({ liderancas, abrirNova = false }: { liderancas: Lider
   return (
     <>
       <Cabecalho
-        voltar="/estrategia"
+        voltar="/liderancas"
         sobretitulo="Rede"
         titulo="Lideranças"
         descricao={`${liderancas.length} ${liderancas.length === 1 ? "liderança cadastrada" : "lideranças cadastradas"}`}
