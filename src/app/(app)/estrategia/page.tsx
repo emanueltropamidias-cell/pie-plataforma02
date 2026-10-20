@@ -53,7 +53,12 @@ export default async function CentralEstrategia({
   const cidadesComBase = territorio.mapa.map((m) => m.municipio);
 
   // O que existe no banco, por ano e estado: a tela só oferece isso.
-  const { data: cobertura } = await supabase.rpc("eleicao_cobertura");
+  //
+  // Falha aqui NÃO é "nada importado". Em 20/10/2026 a chamada falhou e a
+  // tela marcou 2022, 2024 e 2026 como "sem dados", com tudo no banco. Agora
+  // a falha chega como `null`, e o painel avisa em vez de esconder.
+  const { data: cobertura, error: erroCobertura } = await supabase.rpc("eleicao_cobertura");
+  if (erroCobertura) console.error("eleicao_cobertura falhou:", erroCobertura.message);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">
@@ -126,7 +131,7 @@ export default async function CentralEstrategia({
           <PainelEstrategiaEleitoral
             candidatoInicial={raioX}
             cidadesComBase={cidadesComBase}
-            cobertura={cobertura ?? []}
+            cobertura={erroCobertura ? null : (cobertura ?? [])}
           />
         ) : (
           <div className="rounded-2xl border border-tinta-200 bg-white p-8 text-center text-tinta-500">

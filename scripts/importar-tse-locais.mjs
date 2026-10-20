@@ -161,4 +161,7 @@ console.log(
   `Conferência: ${conf[0].fecham} de ${conf[0].candidatos} candidatos fecham com o total da cidade` +
     ` (diferença somada: ${conf[0].diferenca_total} votos)`,
 );
+// O que a tela oferece (anos e estados com dado) é contado uma vez aqui,
+// e não a cada abertura da Central de Estratégia — ver a migração 0059.
+await cliente.query("select public.atualizar_eleicao_cobertura()");
 await cliente.end();

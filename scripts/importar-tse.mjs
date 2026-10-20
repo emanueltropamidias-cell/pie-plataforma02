@@ -281,4 +281,7 @@ for (const uf of ufsParaProcessar) {
   }
 }
 
+// O que a tela oferece (anos e estados com dado) é contado uma vez aqui,
+// e não a cada abertura da Central de Estratégia — ver a migração 0059.
+if (gravar) await cliente.query("select public.atualizar_eleicao_cobertura()");
 await cliente.end();

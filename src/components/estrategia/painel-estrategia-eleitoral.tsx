@@ -72,7 +72,8 @@ export function PainelEstrategiaEleitoral({
 }: {
   candidatoInicial: RaioXCandidato;
   cidadesComBase: string[];
-  cobertura: CoberturaEleicao[];
+  /** null = não deu para ler o que foi importado; a tela avisa e não trava nada. */
+  cobertura: CoberturaEleicao[] | null;
 }) {
   const [raioX, setRaioX] = useState<RaioXCandidato>(candidatoInicial);
 
@@ -98,13 +99,17 @@ export function PainelEstrategiaEleitoral({
 
   const cSet = new Set(cidadesComBase.map(chave));
 
-  const anosComDados = new Set(cobertura.map((c) => c.ano));
-  const ufsDeAno = (a: number) => cobertura.filter((c) => c.ano === a).map((c) => c.uf);
+  // Sem a lista, nada é desativado: travar botão por falha de leitura é dizer
+  // "não existe" sobre o que existe.
+  const semCobertura = cobertura === null;
+  const anosComDados = new Set(semCobertura ? ANOS : cobertura.map((c) => c.ano));
+  const ufsDeAno = (a: number) =>
+    semCobertura ? UFS.map((u) => u.uf) : cobertura.filter((c) => c.ano === a).map((c) => c.uf);
   const ufsDoAno = ufsDeAno(anoFiltro);
-  const coberturaAtual = cobertura.find((c) => c.ano === anoFiltro && c.uf === ufFiltro);
+  const coberturaAtual = cobertura?.find((c) => c.ano === anoFiltro && c.uf === ufFiltro);
   // Denominador da presença: cidades com voto naquele ano e estado, do banco.
   const municipiosDoEstado =
-    cobertura.find((c) => c.ano === raioX.candidato.ano && c.uf === raioX.candidato.uf)?.municipios ?? 0;
+    cobertura?.find((c) => c.ano === raioX.candidato.ano && c.uf === raioX.candidato.uf)?.municipios ?? 0;
   const ehMunicipal = ["PREFEITO", "VICE-PREFEITO", "VEREADOR"].includes(raioX.candidato.cargo);
 
   // Opções de cargos conforme o ano selecionado
@@ -348,7 +353,9 @@ export function PainelEstrategiaEleitoral({
             <b className="text-tinta-800">
               {anoFiltro % 4 === 0 ? "Eleição municipal" : "Eleição geral"} {anoFiltro}:
             </b>{" "}
-            {coberturaAtual
+            {semCobertura
+              ? "não foi possível conferir agora quais eleições estão importadas — recarregue a página."
+              : coberturaAtual
               ? `${coberturaAtual.candidaturas.toLocaleString("pt-BR")} candidaturas e votação em ${coberturaAtual.municipios.toLocaleString("pt-BR")} municípios de ${coberturaAtual.uf}, do arquivo oficial do TSE.`
               : "ainda não importado do TSE para este estado."}
           </span>
