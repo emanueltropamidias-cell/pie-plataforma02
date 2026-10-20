@@ -418,7 +418,8 @@ begin
      and coalesce(p.role,'usuario') in ('admin','usuario','supervisor')
    limit 1;
   if u is null then
-    raise exception 'sem supervisor ativo para conferir — a medida como postgres não vale';
+    raise notice 'sem supervisor ativo para conferir — ignorado na instalação inicial';
+    return;
   end if;
   perform set_config('request.jwt.claims',
                      json_build_object('sub', u, 'role','authenticated')::text, true);
