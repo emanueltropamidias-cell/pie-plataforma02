@@ -56,3 +56,7 @@ next-env.d.ts
 supabase/.temp/
 site-talita/originais/
 .cache/
+
+# Fotos de urna do TSE: moram no Storage (scripts/subir-fotos-urna.mjs).
+# Em public/ só funcionariam na máquina, e são 50 MB por estado por eleição.
+/public/urna/

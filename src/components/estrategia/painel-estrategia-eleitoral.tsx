@@ -18,7 +18,8 @@ import { Indicador, Cartao } from "@/components/ui/pagina";
 import { MapaBrasil } from "@/components/estrategia/mapa-brasil";
 import { MapaVotos } from "@/components/estrategia/mapa-votos";
 import { DetalheMunicipioEstrategia } from "@/components/estrategia/detalhe-municipio-estrategia";
-import { chave } from "@/lib/eleicao";
+import { chave, ehDaCasa, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
+import { CANDIDATO } from "@/lib/candidato";
 
 export interface CandidatoBusca {
   id: number;
@@ -27,6 +28,9 @@ export interface CandidatoBusca {
   uf: string;
   cargo: string;
   numero: number;
+  sq_candidato: string | null;
+  /** Unidade eleitoral: o estado na eleição geral, a cidade na municipal. */
+  nm_ue?: string | null;
   nome_urna: string;
   nome_completo: string;
   partido_sigla: string;
@@ -99,11 +103,13 @@ export function PainelEstrategiaEleitoral({
 
   // ── BUSCA AUTOCOMPLETE DE CANDIDATOS ──────────────────────────────
   const [busca, setBusca] = useState("");
-  const [sugestoes, setSugestoes] = useState<CandidatoBusca[]>([]);
+  const [sugestoesBrutas, setSugestoes] = useState<CandidatoBusca[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
   const [fotoErro, setFotoErro] = useState(false);
   const [, startTransition] = useTransition();
+  // Busca curta demais não mostra resultado antigo.
+  const sugestoes = busca.trim().length >= 2 ? sugestoesBrutas : [];
 
   const cSet = new Set(cidadesComBase.map(chave));
 
@@ -126,10 +132,7 @@ export function PainelEstrategiaEleitoral({
 
   // Busca na API
   useEffect(() => {
-    if (!busca || busca.trim().length < 2) {
-      setSugestoes([]);
-      return;
-    }
+    if (!busca || busca.trim().length < 2) return;
 
     const timer = setTimeout(async () => {
       setBuscando(true);
@@ -215,31 +218,24 @@ export function PainelEstrategiaEleitoral({
     [raioX.candidato.uf]: totalVotos,
   };
 
-  // Foto oficial da urna: para Talita sempre a foto oficial da urna do TSE (talita-urna.jpg)
-  // Para os demais, usa o CDN público do Supabase Storage ou o proxy oficial
-  const fotoSrc =
-    raioX.candidato.numero === 1022 || raioX.candidato.nome_urna?.toLowerCase().includes("talita")
-      ? "/talita-urna.jpg"
-      : raioX.candidato.foto_url && !fotoErro
-      ? raioX.candidato.foto_url.includes("supabase.co")
-        ? raioX.candidato.foto_url
-        : `/api/eleicao/foto?url=${encodeURIComponent(raioX.candidato.foto_url)}&sq=${(raioX.candidato as any).sq_candidato || ""}&uf=${raioX.candidato.uf || "BA"}`
-      : null;
+  const fotoSrc = fotoErro ? null : fotoDoCandidato(raioX.candidato);
 
+  // Trocar de eleição abre a candidatura da casa naquele ano, se houver.
+  // Antes abria `candidatos[0]` da busca sem filtro — o menor número do
+  // estado, um candidato qualquer — e em 2022 procurava "1022" em qualquer
+  // cargo. Sem candidatura da casa no ano, o card fica onde está e só a
+  // busca passa a olhar o ano novo.
   async function alternarAno(novoAno: number) {
     setAnoFiltro(novoAno);
     setCargoFiltro("TODOS");
-    setFotoErro(false);
     try {
-      let url = `/api/eleicao?ano=${novoAno}&uf=${ufFiltro}`;
-      if (novoAno === 2022) {
-        url += "&q=1022";
-      }
-      const res = await fetch(url);
+      const q = new URLSearchParams({ ano: String(novoAno), uf: CANDIDATO.uf, q: CANDIDATO.numeroUrna, exato: "1" });
+      const res = await fetch(`/api/eleicao?${q}`);
       const data = await res.json();
-      if (data.candidatos && data.candidatos.length > 0) {
-        await selecionarCandidato(data.candidatos[0]);
-      }
+      const daCasa = (data.candidatos as CandidatoBusca[] | undefined)?.find(
+        (c) => c.ano === novoAno && ehDaCasa(c),
+      );
+      if (daCasa) await selecionarCandidato(daCasa);
     } catch (err) {
       console.error("Erro ao alternar ano:", err);
     }
@@ -372,7 +368,7 @@ export function PainelEstrategiaEleitoral({
                   {raioX.candidato.partido_sigla} · {raioX.candidato.numero}
                 </span>
                 <span className="rounded bg-tinta-100 px-2 py-0.5 text-[11px] font-medium text-tinta-600">
-                  {raioX.candidato.cargo}
+                  {raioX.candidato.cargo} · {ondeDisputa(raioX.candidato)}
                 </span>
                 <span className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
                   {raioX.candidato.situacao || "REGISTRADO"}
@@ -414,22 +410,9 @@ export function PainelEstrategiaEleitoral({
                     className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-tinta-50"
                   >
                     <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-tinta-200 bg-tinta-100">
-                      {c.numero === 1022 || c.nome_urna?.toLowerCase().includes("talita") ? (
+                      {fotoDoCandidato(c) ? (
                         <Image
-                          src="/talita-urna.jpg"
-                          alt={c.nome_urna}
-                          fill
-                          sizes="36px"
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : c.foto_url ? (
-                        <Image
-                          src={
-                            c.foto_url.includes("supabase.co")
-                              ? c.foto_url
-                              : `/api/eleicao/foto?url=${encodeURIComponent(c.foto_url)}&sq=${(c as any).sq_candidato || ""}&uf=${c.uf || "BA"}`
-                          }
+                          src={fotoDoCandidato(c)!}
                           alt={c.nome_urna}
                           fill
                           sizes="36px"
@@ -457,7 +440,7 @@ export function PainelEstrategiaEleitoral({
                         )}
                       </div>
                       <span className="block truncate text-[11px] text-tinta-500">
-                        {c.cargo} · {c.uf}
+                        {c.cargo} · {ondeDisputa(c)}
                       </span>
                     </div>
                     {c.id === raioX.candidato.id && (

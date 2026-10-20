@@ -13,6 +13,9 @@ import { createClient } from "@/lib/supabase/server";
 //
 // ────────────────────────────────────────────────────────────────────────────
 
+const CAMPOS =
+  "id, ano, turno, uf, nm_ue, cargo, numero, sq_candidato, nome_urna, nome_completo, partido_sigla, situacao, foto_url";
+
 function normalizar(s: string) {
   return s
     .toLowerCase()
@@ -38,6 +41,9 @@ export async function GET(request: Request) {
   const ano = anoParam ? parseInt(anoParam, 10) : 2022;
   const uf = searchParams.get("uf")?.trim().toUpperCase();
   const cargo = searchParams.get("cargo")?.trim();
+  // `exato=1`: quem chama quer aquele ano e aquele número, sem a busca ampla
+  // em outras eleições — a troca de ano procura a candidatura da casa assim.
+  const exato = searchParams.get("exato") === "1";
 
   // 1. Raio-X por Candidato ID
   if (candidatoId) {
@@ -64,7 +70,7 @@ export async function GET(request: Request) {
   // Tentativa 1: Busca respeitando os filtros selecionados
   let query = supabase
     .from("eleicao_candidatos")
-    .select("id, ano, turno, uf, cargo, numero, nome_urna, nome_completo, partido_sigla, situacao, foto_url")
+    .select(CAMPOS)
     .order("numero", { ascending: true })
     .limit(40);
 
@@ -106,10 +112,10 @@ export async function GET(request: Request) {
   // Tentativa 2 (Fallback Inteligente): Se o usuário buscou por nome/número mas não achou
   // (ex: digitou "Capitão Alden" enquanto estava com ano=2026 ou cargo errado selecionado),
   // fazemos uma busca global ampla em todas as eleições e cargos para achar o candidato!
-  if (qNorm) {
+  if (qNorm && !exato) {
     let fallback = supabase
       .from("eleicao_candidatos")
-      .select("id, ano, turno, uf, cargo, numero, nome_urna, nome_completo, partido_sigla, situacao, foto_url")
+      .select(CAMPOS)
       .order("ano", { ascending: false })
       .order("numero", { ascending: true })
       .limit(30);

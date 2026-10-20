@@ -1,3 +1,4 @@
+import { CANDIDATO } from "./candidato";
 import { VOTOS_TALITA } from "./votos-talita";
 import { VOTOS_BAIRRO } from "./votos-bairros";
 import { VOTOS_ZONA, zonasDe, totalDaZona } from "./votos-zonas";
@@ -89,4 +90,43 @@ export function topMunicipios(n = 15) {
     .map(([municipio, votos]) => ({ municipio, votos }))
     .sort((a, b) => b.votos - a.votos)
     .slice(0, n);
+}
+
+// ── FOTO DE URNA ────────────────────────────────────────────────────────────
+//
+// Um lugar só decide qual foto o candidato mostra. Antes a regra estava
+// escrita duas vezes no painel (card e lista de busca) como
+// `numero === 1022 || nome contém "talita"` — o que dava o rosto da Talita a
+// toda Talita do país e a qualquer 1022 de outro estado.
+
+type CandidatoComFoto = {
+  ano: number;
+  uf: string;
+  numero: number;
+  sq_candidato?: string | null;
+  foto_url: string | null;
+};
+
+/** É a candidatura da casa: mesmo estado e mesmo número de urna. */
+export function ehDaCasa(c: { uf: string; numero: number }) {
+  return c.uf === CANDIDATO.uf && String(c.numero) === CANDIDATO.numeroUrna;
+}
+
+export function fotoDoCandidato(c: CandidatoComFoto): string | null {
+  if (ehDaCasa(c) && CANDIDATO.fotoUrna) return CANDIDATO.fotoUrna;
+  // Já no Storage (scripts/subir-fotos-urna.mjs): endereço direto.
+  if (c.foto_url?.includes(".supabase.co/storage/")) return c.foto_url;
+  // Fora dele, o proxy tenta o TSE — que recusa acesso direto do navegador.
+  if (c.sq_candidato) {
+    const q = new URLSearchParams({ ano: String(c.ano), sq: c.sq_candidato, uf: c.uf });
+    return `/api/eleicao/foto?${q}`;
+  }
+  return null;
+}
+
+const CARGOS_MUNICIPAIS = new Set(["PREFEITO", "VICE-PREFEITO", "VEREADOR"]);
+
+/** Onde a candidatura foi disputada: a cidade no cargo municipal, a UF no resto. */
+export function ondeDisputa(c: { cargo: string; uf: string; nm_ue?: string | null }) {
+  return CARGOS_MUNICIPAIS.has(c.cargo) && c.nm_ue ? `${c.nm_ue} · ${c.uf}` : c.uf;
 }

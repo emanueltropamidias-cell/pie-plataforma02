@@ -3,6 +3,7 @@ import { UserPlus, Shield, Target, Handshake } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { lerTerritorio } from "@/lib/painel-territorio";
 import { Cabecalho } from "@/components/ui/pagina";
+import { CANDIDATO } from "@/lib/candidato";
 import { PainelEstrategiaEleitoral } from "@/components/estrategia/painel-estrategia-eleitoral";
 
 // Central de Estratégia e Inteligência Eleitoral.
@@ -28,24 +29,26 @@ export default async function CentralEstrategia({
     .select("id", { count: "exact", head: true })
     .eq("tipo", "lideranca");
 
-  // Candidato pedido na URL ou padrão da casa (Talita 1022)
-  let candQuery = supabase
-    .from("eleicao_candidatos")
-    .select("id")
-    .eq("ano", 2022);
+  // Candidato pedido na URL ou a candidatura da casa — a mais recente com
+  // aquele número no estado. Antes era `numero = 1022` em 2022 sem estado nem
+  // cargo, com o id 1627 escrito à mão como reserva: na instalação de outro
+  // candidato abria a Talita.
+  const pedido = params.c ? parseInt(params.c, 10) : NaN;
+  const { data: candRows } = Number.isFinite(pedido)
+    ? await supabase.from("eleicao_candidatos").select("id").eq("id", pedido).limit(1)
+    : await supabase
+        .from("eleicao_candidatos")
+        .select("id")
+        .eq("uf", CANDIDATO.uf)
+        .eq("numero", parseInt(CANDIDATO.numeroUrna, 10))
+        .order("ano", { ascending: false })
+        .order("turno", { ascending: false })
+        .limit(1);
+  const candidatoId = candRows?.[0]?.id;
 
-  if (params.c) {
-    candQuery = candQuery.eq("id", parseInt(params.c, 10));
-  } else {
-    candQuery = candQuery.eq("numero", 1022);
-  }
-
-  const { data: candRows } = await candQuery.limit(1);
-  const candidatoId = candRows?.[0]?.id || 1627;
-
-  const { data: raioX } = await supabase.rpc("obter_raio_x_candidato", {
-    p_candidato_id: candidatoId,
-  });
+  const { data: raioX } = candidatoId
+    ? await supabase.rpc("obter_raio_x_candidato", { p_candidato_id: candidatoId })
+    : { data: null };
 
   const cidadesComBase = territorio.mapa.map((m) => m.municipio);
 
