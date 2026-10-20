@@ -97,18 +97,6 @@ export const CANDIDATO = {
   numeroUrna: process.env.NEXT_PUBLIC_CANDIDATO_URNA?.trim() || "1022",
 
   /**
-   * Retrato de urna em alta, para o painel eleitoral.
-   *
-   * A do pacote do TSE tem 161x225; esta é a recortada para a urna simulada
-   * (483x642). Só vale para a instalação da Talita: o padrão depende da marca,
-   * e não do número, porque outro candidato com outro número herdaria o rosto
-   * dela no próprio card. Vazio = usa a foto do TSE.
-   */
-  fotoUrna:
-    process.env.NEXT_PUBLIC_CANDIDATO_FOTO_URNA?.trim() ??
-    ((process.env.NEXT_PUBLIC_CANDIDATO_MARCA?.trim() || "talita") === "talita" ? "/talita-urna.jpg" : ""),
-
-  /**
    * O número que atende a campanha. Sem padrão — ver a nota no topo.
    *
    * Formato: DDI + DDD + número, só dígitos.

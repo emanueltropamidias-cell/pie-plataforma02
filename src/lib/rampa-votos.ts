@@ -35,8 +35,37 @@ export const FAIXAS = [
   { ate: Infinity, cor: clarear(AZUL, 0.34), rotulo: "80+" },
 ];
 
+export type Faixa = { ate: number; cor: string; rotulo: string };
+
+/** Arredonda para um número "de legenda": 1, 2 ou 5 vezes uma potência de 10. */
+function redondo(n: number) {
+  const p = 10 ** Math.floor(Math.log10(Math.max(n, 1)));
+  return [1, 2, 5, 10].map((m) => m * p).find((v) => v >= n) ?? n;
+}
+
+/**
+ * As faixas para uma tela cujo maior número é `maior`.
+ *
+ * A escala absoluta acima foi feita para a Talita, que tem dezenas de votos
+ * por bairro. Com a camada municipal aberta para qualquer candidato, o
+ * prefeito de Salvador tem milhares por bairro, e tudo cairia em "80+": um
+ * mapa de uma cor só. Até 160 a escala continua a absoluta; acima, os cortes
+ * acompanham o maior número, e a legenda diz quais são.
+ */
+export function faixasPara(maior: number): Faixa[] {
+  if (maior <= 160) return FAIXAS;
+  const [a, b, c] = [0.08, 0.25, 0.5].map((f) => redondo(maior * f));
+  const n = (v: number) => v.toLocaleString("pt-BR");
+  return [
+    { ate: a, cor: FAIXAS[0].cor, rotulo: `até ${n(a)}` },
+    { ate: b, cor: FAIXAS[1].cor, rotulo: `${n(a + 1)} a ${n(b)}` },
+    { ate: c, cor: FAIXAS[2].cor, rotulo: `${n(b + 1)} a ${n(c)}` },
+    { ate: Infinity, cor: FAIXAS[3].cor, rotulo: `${n(c + 1)}+` },
+  ];
+}
+
 /** A cor de um número de votos. Zero é cinza, e cinza aqui quer dizer zero. */
-export function corDoVoto(votos: number) {
+export function corDoVoto(votos: number, faixas: Faixa[] = FAIXAS) {
   if (votos <= 0) return SEM_VOTO;
-  return (FAIXAS.find((f) => votos <= f.ate) ?? FAIXAS[FAIXAS.length - 1]).cor;
+  return (faixas.find((f) => votos <= f.ate) ?? faixas[faixas.length - 1]).cor;
 }

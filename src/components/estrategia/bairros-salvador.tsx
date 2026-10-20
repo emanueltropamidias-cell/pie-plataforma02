@@ -7,7 +7,7 @@ import {
   cruzarBairros,
   type MalhaSalvador,
 } from "@/lib/bairros-salvador";
-import { corDoVoto, FAIXAS, SEM_VOTO } from "@/lib/rampa-votos";
+import { corDoVoto, faixasPara, SEM_VOTO } from "@/lib/rampa-votos";
 import { usarZoom } from "./usar-zoom";
 
 // Salvador por dentro, com fronteira de verdade.
@@ -39,7 +39,15 @@ type Alvo = { nome: string; votos: number | null; nomes: string[]; vizinhanca?: 
 // calculado pela área do bairro. `votos` null é bairro que não consta.
 type Rotulo = { nome: string; cx: number; cy: number; area: number; votos: number | null; fonte: number };
 
-export function BairrosSalvador() {
+/**
+ * Sem `bairros`, mostra a votação da instalação em 2022 (o arquivo de sempre).
+ * Com `bairros`, mostra a de quem a camada municipal tiver aberto — qualquer
+ * candidato, qualquer eleição.
+ */
+export function BairrosSalvador({
+  bairros,
+  ano = 2022,
+}: { bairros?: { nome: string; votos: number }[]; ano?: number } = {}) {
   const [malha, setMalha] = useState<MalhaSalvador | null>(null);
   const [erro, setErro] = useState(false);
   const [tip, setTip] = useState<{ x: number; y: number; alvo: Alvo } | null>(null);
@@ -55,7 +63,8 @@ export function BairrosSalvador() {
     };
   }, []);
 
-  const dados = useMemo(() => (malha ? cruzarBairros(malha) : null), [malha]);
+  const dados = useMemo(() => (malha ? cruzarBairros(malha, bairros) : null), [malha, bairros]);
+  const faixas = useMemo(() => faixasPara(dados?.maior ?? 0), [dados]);
   const zoom = usarZoom(malha?.w ?? 900, malha?.h ?? 699);
   const { k, x: vx, y: vy } = zoom.vista;
   const larguraMapa = malha?.w ?? 900;
@@ -127,7 +136,7 @@ export function BairrosSalvador() {
     );
   }
 
-  const { pintados, naoConsta, votosNoMapa } = dados;
+  const { pintados, naoConsta, votosNoMapa, foraDoMapa, votosFora } = dados;
   const aceso = tip?.alvo.nome ?? fixo?.nome;
 
   function tocar(alvo: Alvo) {
@@ -142,7 +151,7 @@ export function BairrosSalvador() {
             legenda mora, em vez de comer altura acima do mapa. */}
         <div className="left-4 top-4 z-[1] px-3 pt-3 sm:absolute sm:rounded-lg sm:bg-white/85 sm:p-2.5 sm:shadow-sm sm:ring-1 sm:ring-black/5 sm:backdrop-blur">
           <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-tinta-500">
-            Votos em 2022
+            Votos em {ano}
           </p>
           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10.5px] text-tinta-500 sm:max-w-[132px] sm:flex-col sm:items-start sm:gap-1">
             <span className="inline-flex items-center gap-1.5">
@@ -152,7 +161,7 @@ export function BairrosSalvador() {
               />
               não consta
             </span>
-            {FAIXAS.map((f) => (
+            {faixas.map((f) => (
               <span key={f.rotulo} className="inline-flex items-center gap-1.5">
                 <span
                   className="h-3 w-3 rounded-sm ring-1 ring-inset ring-black/10"
@@ -207,7 +216,7 @@ export function BairrosSalvador() {
               return (
                 <g
                   key={b.nome}
-                  fill={corDoVoto(b.votos)}
+                  fill={corDoVoto(b.votos, faixas)}
                   stroke={aceso === b.nome ? "#16202e" : "#ffffff"}
                   strokeWidth={aceso === b.nome ? 2.4 : 0.9}
                   vectorEffect="non-scaling-stroke"
@@ -282,7 +291,7 @@ export function BairrosSalvador() {
             <div className="tabular text-white/70">
               {tip.alvo.votos === null
                 ? "não consta na apuração"
-                : `${tip.alvo.votos.toLocaleString("pt-BR")} votos em 2022`}
+                : `${tip.alvo.votos.toLocaleString("pt-BR")} votos em ${ano}`}
             </div>
             {tip.alvo.nomes.length > 1 && (
               <div className="mt-1 text-[10.5px] leading-snug text-white/50">
@@ -301,7 +310,7 @@ export function BairrosSalvador() {
             <p className="tabular mt-0.5 text-[11.5px] text-white/70">
               {fixo.votos === null
                 ? "não consta na apuração"
-                : `${fixo.votos.toLocaleString("pt-BR")} votos em 2022`}
+                : `${fixo.votos.toLocaleString("pt-BR")} votos em ${ano}`}
             </p>
             {fixo.votos === null && (
               <p className="mt-1 text-[11px] leading-snug text-white/50">
@@ -336,6 +345,20 @@ export function BairrosSalvador() {
         {pintados.length} bairros pintados, somando{" "}
         <b className="text-tinta-600">{votosNoMapa.toLocaleString("pt-BR")}</b> votos.
       </p>
+      {/* O cadastro de locais do TSE usa nomes que a malha oficial não tem
+          (Campo Grande, Piedade, Itapagipe…). Esses votos não somem calados:
+          ficam listados, sem chute de bairro vizinho. */}
+      {foraDoMapa.length > 0 && (
+        <p className="mt-1 text-[11px] leading-relaxed text-amber-700">
+          Fora do mapa: <b>{votosFora.toLocaleString("pt-BR")}</b> votos em nomes de bairro que o desenho
+          oficial não tem —{" "}
+          {foraDoMapa
+            .slice(0, 12)
+            .map((b) => `${b.nome || "sem bairro"} (${b.votos.toLocaleString("pt-BR")})`)
+            .join(", ")}
+          {foraDoMapa.length > 12 ? ` e mais ${foraDoMapa.length - 12}` : ""}.
+        </p>
+      )}
       <p className="mt-1 text-[11px] leading-relaxed text-tinta-400">
         Todo bairro tem nome: de longe aparecem os que cabem sem se atropelar, e aproximar revela os
         demais. Toque num bairro para fixar os detalhes embaixo. Duplo clique ou dois dedos aproximam;

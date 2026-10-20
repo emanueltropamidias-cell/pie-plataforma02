@@ -45,6 +45,33 @@ export async function GET(request: Request) {
   // em outras eleições — a troca de ano procura a candidatura da casa assim.
   const exato = searchParams.get("exato") === "1";
 
+  // 0. Camada municipal: zonas e locais de UM candidato numa cidade.
+  //    GET /api/eleicao?candidatoId=1627&municipio=SALVADOR
+  const municipio = searchParams.get("municipio")?.trim();
+  if (candidatoId && municipio) {
+    const { data, error } = await supabase.rpc("obter_detalhe_municipio", {
+      p_candidato_id: parseInt(candidatoId, 10),
+      p_municipio: municipio,
+    });
+    if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  }
+
+  // 0b. O mais votado de uma eleição — para onde a tela vai ao trocar de ano
+  //     ou de cargo. GET /api/eleicao?destaque=1&ano=2024&uf=BA&cargo=VEREADOR
+  if (searchParams.get("destaque") === "1" && uf) {
+    const { data: id, error } = await supabase.rpc("eleicao_destaque", {
+      p_ano: ano,
+      p_uf: uf,
+      p_cargo: cargo && cargo !== "TODOS" ? cargo : null,
+    });
+    if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
+    if (!id) return NextResponse.json({ candidato: null });
+    const { data, error: e2 } = await supabase.rpc("obter_raio_x_candidato", { p_candidato_id: id });
+    if (e2) return NextResponse.json({ erro: e2.message }, { status: 500 });
+    return NextResponse.json(data);
+  }
+
   // 1. Raio-X por Candidato ID
   if (candidatoId) {
     const idNum = parseInt(candidatoId, 10);

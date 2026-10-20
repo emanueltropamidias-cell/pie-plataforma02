@@ -1,14 +1,34 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, UserPlus, Building2, MapPin, Vote, Users } from "lucide-react";
-import { Indicador, Cartao } from "@/components/ui/pagina";
+import { ArrowLeft, UserPlus, Building2, MapPin, School } from "lucide-react";
+import { Indicador } from "@/components/ui/pagina";
 import { BairrosSalvador } from "@/components/estrategia/bairros-salvador";
-import { VOTOS_ZONA } from "@/lib/eleicao";
+
+// Camada 3 — o município, para o candidato que estiver aberto.
+//
+// Até aqui as zonas e os bairros vinham de `votos-zonas.ts` e `votos_bairro`,
+// que só têm a Talita em 2022: abrir Salvador com o Capitão Alden mostrava os
+// números dela, sem aviso. Agora tudo sai do banco por candidato
+// (`obter_detalhe_municipio`):
+//
+//   zonas   toda cidade, todo candidato (votacao_candidato_munzona do TSE)
+//   locais  só cidades-foco, com o bairro de cada local (votacao_secao +
+//           cadastro de locais, scripts/importar-tse-locais.mjs)
+
+type Detalhe = {
+  zonas: { zona: number; votos: number }[];
+  /** null = cidade sem detalhe por local importado. */
+  locais: { zona: number; local: string; bairro: string | null; votos: number }[] | null;
+  tem_detalhe: boolean;
+};
 
 export function DetalheMunicipioEstrategia({
   municipio,
+  municipioNoBanco,
+  candidatoId,
+  ano,
   uf,
   votosMunicipio,
   totalVotosCandidato,
@@ -18,6 +38,10 @@ export function DetalheMunicipioEstrategia({
   onVoltarEstado,
 }: {
   municipio: string;
+  /** O nome como o TSE grava ("SALVADOR"), que é a chave no banco. */
+  municipioNoBanco: string | null;
+  candidatoId: number;
+  ano: number;
   uf: string;
   votosMunicipio: number;
   totalVotosCandidato: number;
@@ -26,19 +50,42 @@ export function DetalheMunicipioEstrategia({
   temLiderancas: boolean;
   onVoltarEstado: () => void;
 }) {
-  const isSalvador = municipio.toLowerCase().trim() === "salvador";
+  const [detalhe, setDetalhe] = useState<{ chave: string; dados: Detalhe | null } | null>(null);
+  const chaveAtual = `${candidatoId}_${municipioNoBanco}`;
+  const carregando = detalhe?.chave !== chaveAtual;
+  const dados = carregando ? null : detalhe?.dados;
+
+  useEffect(() => {
+    if (!municipioNoBanco) return;
+    let vivo = true;
+    const q = new URLSearchParams({ candidatoId: String(candidatoId), municipio: municipioNoBanco });
+    fetch(`/api/eleicao?${q}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: Detalhe | null) => vivo && setDetalhe({ chave: chaveAtual, dados: d }))
+      .catch(() => vivo && setDetalhe({ chave: chaveAtual, dados: null }));
+    return () => {
+      vivo = false;
+    };
+  }, [candidatoId, municipioNoBanco, chaveAtual]);
+
+  const isSalvador = municipioNoBanco === "SALVADOR";
   const pctTotal = totalVotosCandidato > 0 ? (votosMunicipio / totalVotosCandidato) * 100 : 0;
 
-  // Zonas de Salvador se existirem
-  const zonasSalvador = useMemo(() => {
-    if (!isSalvador || !VOTOS_ZONA[municipio]) return [];
-    return Object.entries(VOTOS_ZONA[municipio]).map(([z, dados]) => ({
-      zona: z,
-      total: dados.secoes.reduce((s, x) => s + x.votos, 0),
-      secoes: dados.secoes.length,
-      locais: dados.locais.length,
-    }));
-  }, [isSalvador, municipio]);
+  // Bairro = soma dos locais de votação que ficam nele.
+  const bairros = useMemo(() => {
+    if (!dados?.locais) return null;
+    const soma = new Map<string, number>();
+    for (const l of dados.locais) {
+      if (!l.bairro) continue;
+      soma.set(l.bairro, (soma.get(l.bairro) ?? 0) + l.votos);
+    }
+    return [...soma].map(([nome, votos]) => ({ nome, votos })).sort((a, b) => b.votos - a.votos);
+  }, [dados]);
+
+  const zonas = dados?.zonas ?? [];
+  const maiorZona = zonas[0]?.votos || 1;
+  const locais = dados?.locais?.slice(0, 15) ?? [];
+  const maiorLocal = locais[0]?.votos || 1;
 
   return (
     <div className="space-y-6">
@@ -54,7 +101,7 @@ export function DetalheMunicipioEstrategia({
           </button>
           <div>
             <span className="text-[10.5px] font-bold uppercase tracking-wider text-tema">
-              Camada 3 · Detalhamento Municipal
+              Camada 3 · {nomeCandidato} em {ano}
             </span>
             <h2 className="text-xl font-extrabold text-tinta-900">
               {municipio} ({uf})
@@ -76,7 +123,7 @@ export function DetalheMunicipioEstrategia({
         <Indicador
           rotulo={`Votos em ${municipio}`}
           valor={votosMunicipio.toLocaleString("pt-BR")}
-          contexto={`votos oficiais apurados para ${nomeCandidato}`}
+          contexto={`votos oficiais de ${nomeCandidato} em ${ano}`}
           destaque
         />
         <Indicador
@@ -87,7 +134,7 @@ export function DetalheMunicipioEstrategia({
         <Indicador
           rotulo="Posição no Ranking"
           valor={posicaoRanking ? `${posicaoRanking}º lugar` : "—"}
-          contexto="entre todas as cidades do estado"
+          contexto="entre as cidades onde teve voto"
         />
         <Indicador
           rotulo="Rede de Lideranças"
@@ -96,60 +143,102 @@ export function DetalheMunicipioEstrategia({
         />
       </div>
 
-      {/* ── DETALHAMENTO DE BAIRROS DE SALVADOR OU CIDADE GERAL ──────── */}
-      {isSalvador ? (
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
-            <div className="mb-4">
-              <h3 className="text-base font-bold text-tinta-900">Mapa Territorial de Bairros de Salvador</h3>
-              <p className="text-[12px] text-tinta-500">
-                Malha dos 163 bairros oficiais. Aproxime com o scroll ou botões para inspecionar redutos específicos.
-              </p>
-            </div>
-            <BairrosSalvador />
-          </div>
+      {carregando && (
+        <div className="rounded-2xl border border-tinta-200 bg-white p-6 text-[13px] text-tinta-400 shadow-sm">
+          Carregando zonas e locais de votação…
+        </div>
+      )}
 
-          {zonasSalvador.length > 0 && (
-            <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-tinta-900">Zonas Eleitorais de Salvador</h3>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {zonasSalvador.map((z) => (
-                  <div key={z.zona} className="rounded-xl border border-tinta-100 bg-tinta-50/50 p-3.5">
-                    <span className="text-[11px] font-bold text-tema">Zona {z.zona}</span>
-                    <p className="mt-1 text-lg font-extrabold text-tinta-900">
-                      {z.total.toLocaleString("pt-BR")}{" "}
-                      <span className="text-[11px] font-normal text-tinta-500">votos</span>
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-tinta-400">
-                      {z.secoes} seções eleitorais · {z.locais} locais
-                    </p>
+      {/* ── BAIRROS (SÓ ONDE HÁ MALHA E DETALHE POR LOCAL) ───────────── */}
+      {!carregando && isSalvador && bairros && (
+        <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-tinta-900">Votos por bairro em Salvador</h3>
+            <p className="text-[12px] text-tinta-500">
+              Soma dos locais de votação de cada bairro, pelo cadastro de locais do TSE. Aproxime com o
+              scroll ou os botões.
+            </p>
+          </div>
+          <BairrosSalvador bairros={bairros} ano={ano} />
+        </div>
+      )}
+
+      {!carregando && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* ── ZONAS ELEITORAIS ─────────────────────────────────────── */}
+          <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-tinta-900">
+              <MapPin size={15} className="text-tema" /> Zonas eleitorais
+            </h3>
+            {zonas.length ? (
+              <div className="mt-3 space-y-1.5">
+                {zonas.map((z) => (
+                  <div key={z.zona} className="flex items-center gap-3">
+                    <span className="w-16 shrink-0 text-[11.5px] font-semibold text-tinta-600">Zona {z.zona}</span>
+                    <span className="h-3 flex-1 rounded bg-tinta-100">
+                      <span
+                        className="block h-full rounded bg-tema"
+                        style={{ width: `${Math.max(2, (z.votos / maiorZona) * 100)}%` }}
+                      />
+                    </span>
+                    <span className="tabular w-20 shrink-0 text-right text-[12px] font-bold text-tinta-900">
+                      {z.votos.toLocaleString("pt-BR")}
+                    </span>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-tinta-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tema/10 text-tema">
-              <Building2 size={24} />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-tinta-900">
-                Inteligência Territorial de {municipio}
-              </h3>
-              <p className="mt-1 max-w-xl text-[12.5px] leading-relaxed text-tinta-600">
-                O candidato obteve <b>{votosMunicipio.toLocaleString("pt-BR")} votos</b> nominais em {municipio},
-                representando <b>{pctTotal.toFixed(1)}%</b> de toda a sua votação em {uf}.
-              </p>
-              {!temLiderancas && (
-                <div className="mt-4 rounded-xl bg-amber-50 p-3.5 border border-amber-200 text-amber-900 text-[12px]">
-                  <b>Atenção Estratégica:</b> Este município teve votação expressiva, porém ainda não possui lideranças cadastradas no sistema. Cadastre contatos ou indique lideranças locais para consolidar essa base eleitoral.
-                </div>
-              )}
-            </div>
+            ) : (
+              <p className="mt-3 text-[12.5px] text-tinta-500">Sem voto registrado nesta cidade.</p>
+            )}
           </div>
+
+          {/* ── LOCAIS DE VOTAÇÃO ────────────────────────────────────── */}
+          <div className="rounded-2xl border border-tinta-200 bg-white p-5 shadow-sm">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-tinta-900">
+              <School size={15} className="text-tema" /> Locais de votação mais fortes
+            </h3>
+            {dados?.locais === null || dados?.locais === undefined ? (
+              <div className="mt-3 flex items-start gap-3 rounded-xl bg-tinta-50 p-3.5 text-[12px] text-tinta-600">
+                <Building2 size={18} className="mt-0.5 shrink-0 text-tinta-400" />
+                <span>
+                  {dados?.tem_detalhe
+                    ? "Este candidato não teve voto em nenhum local de votação desta cidade."
+                    : "O detalhe por local de votação ainda não foi importado para esta cidade. Hoje ele existe para Salvador; as zonas ao lado valem para todas."}
+                </span>
+              </div>
+            ) : (
+              <div className="mt-3 space-y-1.5">
+                {locais.map((l) => (
+                  <div key={`${l.zona}_${l.local}`} className="flex items-center gap-3">
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[11.5px] font-semibold text-tinta-700" title={l.local}>
+                        {l.local}
+                      </span>
+                      <span className="block truncate text-[10.5px] text-tinta-400">
+                        {l.bairro ?? "bairro não informado"} · zona {l.zona}
+                      </span>
+                    </span>
+                    <span className="h-2.5 w-24 shrink-0 rounded bg-tinta-100">
+                      <span
+                        className="block h-full rounded bg-tema"
+                        style={{ width: `${Math.max(3, (l.votos / maiorLocal) * 100)}%` }}
+                      />
+                    </span>
+                    <span className="tabular w-14 shrink-0 text-right text-[12px] font-bold text-tinta-900">
+                      {l.votos.toLocaleString("pt-BR")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!temLiderancas && votosMunicipio > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-[12px] text-amber-900">
+          <b>Atenção Estratégica:</b> {nomeCandidato} teve voto em {municipio}, mas a campanha ainda não tem
+          lideranças cadastradas na cidade.
         </div>
       )}
     </div>

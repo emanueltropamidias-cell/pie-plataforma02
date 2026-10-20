@@ -76,6 +76,7 @@ const APELIDOS: Record<string, string> = {
   "CASTELO BRANCO (1A ETAPA)": "Castelo Branco",
   "CASTELO BRANCO (2A ETAPA)": "Castelo Branco",
   "CASTELO BRANCO (3A ETAPA)": "Castelo Branco",
+  "CASTELO BRANCO (4A ETAPA)": "Castelo Branco",
   "CAMPINAS DE BROTAS": "Brotas",
   "BOA VISTA DO LOBATO": "Lobato",
   "ALTO DE COUTOS": "Coutos",
@@ -154,12 +155,15 @@ function vizinhos(malha: MalhaSalvador) {
 }
 
 /** Junta a apuração com o desenho e devolve o que casou e o que sobrou. */
-export function cruzarBairros(malha: MalhaSalvador): MapaBairros {
+export function cruzarBairros(
+  malha: MalhaSalvador,
+  lista: { nome: string; votos: number }[] = bairrosDe("Salvador"),
+): MapaBairros {
   const porChave = new Map(malha.bairros.map((b) => [chaveBairro(b.nome), b]));
   const acumulado = new Map<string, { poly: ParteBairro; votos: number; nomes: string[] }>();
   const foraDoMapa: { nome: string; votos: number }[] = [];
 
-  for (const { nome, votos } of bairrosDe("Salvador")) {
+  for (const { nome, votos } of lista) {
     const alvo = APELIDOS[nome] ?? nome;
     const poly = porChave.get(chaveBairro(alvo));
     if (!poly) {

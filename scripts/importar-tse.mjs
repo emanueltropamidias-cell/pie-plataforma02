@@ -14,12 +14,11 @@
 // ligados pelo mesmo par — o sequencial se repete no 2º turno, então sem o
 // turno os votos das duas rodadas seriam somados.
 
-import { existsSync, mkdirSync, renameSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
-import { spawn, execSync } from "node:child_process";
-import readline from "node:readline";
 import pg from "pg";
 import { escolherBanco } from "./banco.mjs";
+import { garantirArquivo as baixar, streamCsvDoZip } from "./tse-csv.mjs";
 import UFS from "../src/lib/ufs.json" with { type: "json" };
 
 const RAIZ = resolve(dirname(new URL(import.meta.url).pathname), "..");
@@ -67,51 +66,6 @@ function normalizarChave(s) {
     .trim();
 }
 
-// Baixa para `.parte` e só renomeia quando o curl termina bem. Antes, um
-// download interrompido ficava com o nome final e era aceito para sempre
-// como se estivesse completo — foi o que aconteceu com os votos de 2026.
-function garantirArquivo(nomeArquivo, url) {
-  const destino = resolve(CACHE_DIR, nomeArquivo);
-  if (!existsSync(destino)) {
-    const parte = `${destino}.parte`;
-    console.log(`\nBaixando ${nomeArquivo} do TSE CDN...`);
-    execSync(`curl -fL -C - -o "${parte}" "${url}"`, { stdio: "inherit" });
-    execSync(`unzip -tq "${parte}"`, { stdio: "inherit" });
-    renameSync(parte, destino);
-  }
-  return destino;
-}
-
-function streamCsvDoZip(caminhoZip, nomeArquivoCsv, aoReceberLinha) {
-  return new Promise((resolvePromise, rejectPromise) => {
-    const cmd = `unzip -p "${caminhoZip}" "${nomeArquivoCsv}" | iconv -f latin1 -t utf-8`;
-    const filho = spawn("sh", ["-c", cmd]);
-    const rl = readline.createInterface({ input: filho.stdout, crlfDelay: Infinity });
-
-    let cabecalho = null;
-    let totalLido = 0;
-
-    rl.on("line", (linha) => {
-      if (!linha.trim()) return;
-      const partes = linha.split(";").map((p) => p.replace(/^"|"$/g, "").trim());
-      if (!cabecalho) {
-        cabecalho = partes;
-        return;
-      }
-      totalLido++;
-      aoReceberLinha(partes, cabecalho);
-    });
-
-    // Sem isto, arquivo que não existe dentro do zip vira "0 linhas" e a
-    // importação termina com sucesso sem ter gravado nada.
-    filho.on("close", () => {
-      if (!cabecalho) rejectPromise(new Error(`${nomeArquivoCsv} vazio ou ausente em ${caminhoZip}`));
-      else resolvePromise(totalLido);
-    });
-    filho.on("error", (err) => rejectPromise(err));
-  });
-}
-
 const { conexao } = escolherBanco({ raiz: RAIZ });
 const cliente = new pg.Client({ ...conexao, ssl: { rejectUnauthorized: false } });
 await cliente.connect();
@@ -123,8 +77,8 @@ if (!urlsAno) {
   process.exit(1);
 }
 
-const zipCandidatos = garantirArquivo(`consulta_cand_${ano}.zip`, urlsAno.candidatos);
-const zipVotos = garantirArquivo(`votacao_candidato_munzona_${ano}.zip`, urlsAno.votos);
+const zipCandidatos = baixar(CACHE_DIR, `consulta_cand_${ano}.zip`, urlsAno.candidatos);
+const zipVotos = baixar(CACHE_DIR, `votacao_candidato_munzona_${ano}.zip`, urlsAno.votos);
 
 for (const uf of ufsParaProcessar) {
   const candidatosMap = new Map();
@@ -214,6 +168,9 @@ for (const uf of ufsParaProcessar) {
 
   const arquivoVotos = `votacao_candidato_munzona_${ano}_${uf}.csv`;
   const votosAgregados = new Map();
+  // Mesmo arquivo, um nível abaixo: a zona eleitoral. É o que a camada
+  // municipal mostra para qualquer candidato (eleicao_votos_zona).
+  const votosZona = new Map();
 
   await streamCsvDoZip(zipVotos, arquivoVotos, (colunas, h) => {
     const cargo = colunas[h.indexOf("DS_CARGO")];
@@ -222,6 +179,7 @@ for (const uf of ufsParaProcessar) {
     const codigoTse = colunas[h.indexOf("CD_MUNICIPIO")];
     const municipio = colunas[h.indexOf("NM_MUNICIPIO")];
     const sq = colunas[h.indexOf("SQ_CANDIDATO")];
+    const zona = parseInt(colunas[h.indexOf("NR_ZONA")], 10);
     const votosValidos = parseInt(colunas[h.indexOf("QT_VOTOS_NOMINAIS_VALIDOS")], 10) || 0;
 
     if (!cargo || isNaN(numero) || !sq || !codigoTse || votosValidos <= 0) return;
@@ -229,6 +187,13 @@ for (const uf of ufsParaProcessar) {
     const cargoNorm = cargo.toUpperCase();
     const k = `${sq}_${turno}_${codigoTse}`;
     const atual = votosAgregados.get(k);
+
+    if (!isNaN(zona)) {
+      const kz = `${k}_${zona}`;
+      const z = votosZona.get(kz);
+      if (z) z.votos += votosValidos;
+      else votosZona.set(kz, { sq, turno, codigo_tse: codigoTse, municipio, zona, votos: votosValidos });
+    }
 
     if (atual) {
       atual.votos += votosValidos;
@@ -287,6 +252,28 @@ for (const uf of ufsParaProcessar) {
         votosList.slice(i, fim),
       ]);
     }
+    const zonas = { cand: [], cod: [], mun: [], zona: [], votos: [] };
+    for (const z of votosZona.values()) {
+      const candId = idPorSqTurno.get(`${z.sq}_${z.turno}`);
+      if (!candId) continue;
+      zonas.cand.push(candId);
+      zonas.cod.push(z.codigo_tse);
+      zonas.mun.push(z.municipio);
+      zonas.zona.push(z.zona);
+      zonas.votos.push(z.votos);
+    }
+    for (let i = 0; i < zonas.cand.length; i += LOTE_VOTOS) {
+      const fim = Math.min(i + LOTE_VOTOS, zonas.cand.length);
+      await cliente.query(
+        `insert into public.eleicao_votos_zona (candidato_id, codigo_tse, municipio, zona, votos)
+         select * from unnest($1::bigint[], $2::text[], $3::text[], $4::int[], $5::int[])
+         on conflict (candidato_id, codigo_tse, zona) do update set votos = excluded.votos`,
+        [zonas.cand.slice(i, fim), zonas.cod.slice(i, fim), zonas.mun.slice(i, fim),
+          zonas.zona.slice(i, fim), zonas.votos.slice(i, fim)],
+      );
+    }
+    console.log(`${uf} ${ano}: ${zonas.cand.length} linhas de voto por zona gravadas`);
+
     console.log(`${uf} ${ano}: ${candIds.length} linhas de voto gravadas` +
       (semCandidato ? `, ${semCandidato} SEM candidatura correspondente (não gravadas)` : ""));
   } else {

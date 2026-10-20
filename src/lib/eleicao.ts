@@ -94,10 +94,10 @@ export function topMunicipios(n = 15) {
 
 // ── FOTO DE URNA ────────────────────────────────────────────────────────────
 //
-// Um lugar só decide qual foto o candidato mostra. Antes a regra estava
-// escrita duas vezes no painel (card e lista de busca) como
-// `numero === 1022 || nome contém "talita"` — o que dava o rosto da Talita a
-// toda Talita do país e a qualquer 1022 de outro estado.
+// Um lugar só decide qual foto o candidato mostra: a OFICIAL do TSE daquela
+// eleição, para todos — inclusive a candidata da casa. Ela já teve exceção
+// aqui, com uma arte de campanha no lugar da foto de urna; a foto muda de uma
+// eleição para outra, e o painel compara eleições.
 
 type CandidatoComFoto = {
   ano: number;
@@ -113,7 +113,6 @@ export function ehDaCasa(c: { uf: string; numero: number }) {
 }
 
 export function fotoDoCandidato(c: CandidatoComFoto): string | null {
-  if (ehDaCasa(c) && CANDIDATO.fotoUrna) return CANDIDATO.fotoUrna;
   // Já no Storage (scripts/subir-fotos-urna.mjs): endereço direto.
   if (c.foto_url?.includes(".supabase.co/storage/")) return c.foto_url;
   // Fora dele, o proxy tenta o TSE — que recusa acesso direto do navegador.

@@ -39,13 +39,12 @@ const CARGOS = [
     digitos: 4,
     cargo: "DEPUTADA FEDERAL",
     nome: "TALITA OLIVEIRA",
-    partido: "PL",
-    // Do drive, arquivo "talita urna.jpeg", subido por ele em 29/09 já como
-    // retrato individual — o Vision confirmou UM rosto, que é o que resolve a
-    // dúvida de identidade que travou a tarde inteira.
-    //
-    // Recortada para 3x4 com o rosto a 38% do topo, que é a proporção de foto
-    // de documento e a que a urna real usa.
+    // Como está no registro do TSE (2022 e 2026). Estava "PL" — o 10 do
+    // número é o do Republicanos.
+    partido: "REPUBLICANOS",
+    // A foto OFICIAL de urna de 2026, do pacote foto_cand2026_BA_div do TSE
+    // (sq 50002531450) — a mesma que o eleitor viu na urna. A anterior era
+    // uma arte de campanha com a bandeira ao fundo, que a urna nunca mostrou.
     foto: "/talita-urna.jpg",
     temFoto: true,
   },
