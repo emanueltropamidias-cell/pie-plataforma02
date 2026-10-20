@@ -48,7 +48,13 @@ function faixa(v: number) {
   return FORCA.find((f) => v <= f.ate) ?? FORCA[FORCA.length - 1];
 }
 
-export function MapaVotos({ semRede }: { semRede: string[] }) {
+export function MapaVotos({
+  semRede,
+  votosPorMunicipio,
+}: {
+  semRede: string[];
+  votosPorMunicipio?: Record<string, number>;
+}) {
   const [features, setFeatures] = useState<MunFeature[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
@@ -56,6 +62,15 @@ export function MapaVotos({ semRede }: { semRede: string[] }) {
   const [tip, setTip] = useState<{ x: number; y: number; nome: string; votos: number } | null>(null);
 
   const semRedeSet = useMemo(() => new Set(semRede.map(chave)), [semRede]);
+
+  const mapaChave = useMemo(() => {
+    if (!votosPorMunicipio) return null;
+    const m = new Map<string, number>();
+    for (const [cidade, v] of Object.entries(votosPorMunicipio)) {
+      m.set(chave(cidade), v);
+    }
+    return m;
+  }, [votosPorMunicipio]);
 
   useEffect(() => {
     let vivo = true;
@@ -74,7 +89,7 @@ export function MapaVotos({ semRede }: { semRede: string[] }) {
     const ps = features.map((f) => {
       const nome = f.properties?.name ?? "";
       const k = chave(nome);
-      const votos = votosDe(nome);
+      const votos = mapaChave ? (mapaChave.get(k) ?? 0) : votosDe(nome);
       const regiao = REGIAO_DO_MUN[k] ?? "";
       return {
         k,
@@ -86,7 +101,7 @@ export function MapaVotos({ semRede }: { semRede: string[] }) {
       };
     });
     return { paths: ps, path: p };
-  }, [features]);
+  }, [features, mapaChave]);
 
   const detalhe = useMemo(() => {
     if (!sel || !path) return null;

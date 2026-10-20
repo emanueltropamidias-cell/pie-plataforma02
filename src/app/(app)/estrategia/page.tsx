@@ -1,86 +1,132 @@
-import { UserPlus, Shield, Trophy, Target, Compass, Handshake } from "lucide-react";
+import Link from "next/link";
+import { UserPlus, Shield, Target, Handshake } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Central, Faixa, Atalho } from "@/components/ui/central";
+import { lerTerritorio } from "@/lib/painel-territorio";
+import { Cabecalho } from "@/components/ui/pagina";
+import { PainelEstrategiaEleitoral } from "@/components/estrategia/painel-estrategia-eleitoral";
 
-// A central de Estratégia.
+// Central de Estratégia e Inteligência Eleitoral.
 //
-// ── POR QUE ELA EXISTE ──────────────────────────────────────────────────────
-//
-// O PIE cresceu por tipo de tela — Atendimento, Rede, Análise — e em 15/09 o
-// Emanuel pediu a divisão por SETOR: cada coisa onde o trabalho dela acontece.
-// Estratégia é o território e a eleição: onde a Talita teve voto, com quem dobra,
-// a meta de cada cidade, e as lideranças que vão buscar esse voto.
-//
-// E foi pedido explícito que o cadastro de lideranças morasse AQUI, e não na
-// base: liderança é peça da estratégia de território, não um contato a mais.
-// Por isso ele abre a central, e com o formulário já aberto.
-//
-// A página de votos de 2022, que era /estrategia, foi para /estrategia/votos.
+// Une o mapa de calor e dados consolidados do TSE (2022, 2024, 2026)
+// diretamente na tela principal de Estratégia, com atalhos rápidos
+// para Lideranças, Metas e Dobradinhas.
 
 export const dynamic = "force-dynamic";
 
-export default async function CentralEstrategia() {
+export default async function CentralEstrategia({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
-  const { count } = await supabase
+  const territorio = await lerTerritorio(supabase);
+
+  // Contador de lideranças ativas
+  const { count: totalLiderancas } = await supabase
     .from("liderancas")
     .select("id", { count: "exact", head: true })
     .eq("tipo", "lideranca");
 
-  return (
-    <Central
-      sobretitulo="Estratégia"
-      titulo="Central de estratégia"
-      descricao="Território, eleição e as lideranças que vão buscar o voto."
-      numeros={[{ rotulo: "Lideranças", valor: (count ?? 0).toLocaleString("pt-BR"), tom: "bom" }]}
-    >
-      <Faixa titulo="Lideranças" nota="Quem trabalha o voto em cada cidade.">
-        <Atalho
-          destaque
-          href="/crm?nova=1"
-          icone={UserPlus}
-          tom="verde"
-          titulo="Cadastrar liderança"
-          nota="Abre o formulário direto"
-        />
-        <Atalho
-          href="/crm"
-          icone={Shield}
-          tom="verde"
-          titulo="Lideranças"
-          nota="Todas, município a município"
-        />
-        <Atalho
-          href="/ranking"
-          icone={Trophy}
-          tom="ambar"
-          titulo="Placar"
-          nota="Quem mais trouxe gente"
-        />
-      </Faixa>
+  // Candidato pedido na URL ou padrão da casa (Talita 1022)
+  let candQuery = supabase
+    .from("eleicao_candidatos")
+    .select("id")
+    .eq("ano", 2022);
 
-      <Faixa titulo="Território" nota="Onde está o voto e onde falta.">
-        <Atalho
-          href="/estrategia/votos"
-          icone={Compass}
-          tom="azul"
-          titulo="Votos de 2022"
-          nota="Onde a Talita já teve voto, até o bairro"
-        />
-        <Atalho
+  if (params.c) {
+    candQuery = candQuery.eq("id", parseInt(params.c, 10));
+  } else {
+    candQuery = candQuery.eq("numero", 1022);
+  }
+
+  const { data: candRows } = await candQuery.limit(1);
+  const candidatoId = candRows?.[0]?.id || 1627;
+
+  const { data: raioX } = await supabase.rpc("obter_raio_x_candidato", {
+    p_candidato_id: candidatoId,
+  });
+
+  const cidadesComBase = territorio.mapa.map((m) => m.municipio);
+
+  return (
+    <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">
+      <Cabecalho
+        sobretitulo="Estratégia"
+        titulo="Central de Estratégia & Território"
+        descricao="Inteligência eleitoral oficial do TSE. Analise redutos, pesquise qualquer candidato e cruze votos com lideranças."
+      />
+
+      {/* ── ATALHOS RÁPIDOS DA OPERAÇÃO ──────────────────────────────── */}
+      <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <Link
+          href="/crm?nova=1"
+          className="flex items-center gap-3 rounded-xl border border-tema/30 bg-tema/[0.04] p-3 transition hover:bg-tema/[0.08]"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-tema text-white shadow-sm">
+            <UserPlus size={16} />
+          </div>
+          <div className="min-w-0">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-tema">Ação Rápida</span>
+            <span className="block truncate text-[12.5px] font-bold text-tinta-900">Cadastrar Liderança</span>
+          </div>
+        </Link>
+
+        <Link
+          href="/crm"
+          className="flex items-center gap-3 rounded-xl border border-tinta-200 bg-white p-3 transition hover:border-tema"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+            <Shield size={16} />
+          </div>
+          <div className="min-w-0">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-tinta-400">
+              {totalLiderancas ?? 0} Cadastradas
+            </span>
+            <span className="block truncate text-[12.5px] font-bold text-tinta-900">Ver Lideranças</span>
+          </div>
+        </Link>
+
+        <Link
           href="/metas"
-          icone={Target}
-          tom="verde"
-          titulo="Metas por município"
-          nota="Quanto falta para a meta de cada cidade"
-        />
-        <Atalho
+          className="flex items-center gap-3 rounded-xl border border-tinta-200 bg-white p-3 transition hover:border-tema"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+            <Target size={16} />
+          </div>
+          <div className="min-w-0">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-tinta-400">Objetivos</span>
+            <span className="block truncate text-[12.5px] font-bold text-tinta-900">Metas por Cidade</span>
+          </div>
+        </Link>
+
+        <Link
           href="/dobradinha"
-          icone={Handshake}
-          tom="roxo"
-          titulo="Dobradinha"
-          nota="A votação da parceira ao lado da nossa"
-        />
-      </Faixa>
-    </Central>
+          className="flex items-center gap-3 rounded-xl border border-tinta-200 bg-white p-3 transition hover:border-tema"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+            <Handshake size={16} />
+          </div>
+          <div className="min-w-0">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-tinta-400">Parcerias</span>
+            <span className="block truncate text-[12.5px] font-bold text-tinta-900">Dobradinhas</span>
+          </div>
+        </Link>
+      </div>
+
+      {/* ── PAINEL VISUAL DE DADOS ELEITORAIS E MAPA DE CALOR ──────── */}
+      <div className="mt-7">
+        {raioX ? (
+          <PainelEstrategiaEleitoral
+            candidatoInicial={raioX}
+            cidadesComBase={cidadesComBase}
+          />
+        ) : (
+          <div className="rounded-2xl border border-tinta-200 bg-white p-8 text-center text-tinta-500">
+            Carregando dados eleitorais...
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
