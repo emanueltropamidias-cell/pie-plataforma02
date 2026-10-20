@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { buscarCandidatos, destaque, raioX, zonasNaCidade, decodificarId, ANOS_ELEICAO } from "@/lib/eleicao-arquivos";
+import {
+  aleatorio,
+  buscarCandidatos,
+  destaque,
+  listarCandidatos,
+  raioX,
+  zonasNaCidade,
+  decodificarId,
+  ANOS_ELEICAO,
+} from "@/lib/eleicao-arquivos";
 
 // ============================================================================
 // API DE DADOS ELEITORAIS (TSE, BRASIL INTEIRO)
@@ -13,6 +22,8 @@ import { buscarCandidatos, destaque, raioX, zonasNaCidade, decodificarId, ANOS_E
 //   ?candidatoId=<id>[&uf=MG]                     raio-x (uf = mapa do presidente)
 //   ?candidatoId=<id>&municipio=SALVADOR          camada municipal
 //   ?destaque=1&ano=2024&uf=MG[&cargo=…]          o mais votado
+//   ?aleatorio=1&ano=2024&uf=MG[&cargo=…][&partido=…]   um qualquer do estado
+//   ?lista=1&ano=2022&uf=SP[&cargo][&partido][&q][&pagina]   seletor de candidatos
 //
 // O detalhe por LOCAL de votação (bairro) continua no banco, só para as
 // cidades-foco: é pequeno e tem consulta própria.
@@ -49,6 +60,28 @@ export async function GET(request: Request) {
       ? await supabase.rpc("obter_detalhe_municipio", { p_candidato_id: cand.id, p_municipio: municipio })
       : { data: null };
     return NextResponse.json({ zonas, locais: det?.locais ?? null, tem_detalhe: det?.tem_detalhe ?? false });
+  }
+
+  const partidoParam = sp.get("partido")?.trim(); // sem maiúscula: a sigla do TSE é "PC do B"
+  const partido = partidoParam && partidoParam !== "TODOS" ? partidoParam : null;
+
+  if (sp.get("lista") === "1" && uf) {
+    return NextResponse.json(
+      await listarCandidatos({
+        ano,
+        uf,
+        cargo,
+        partido,
+        q: sp.get("q"),
+        pagina: parseInt(sp.get("pagina") ?? "0", 10) || 0,
+      }),
+    );
+  }
+
+  if (sp.get("aleatorio") === "1" && uf) {
+    const idAleatorio = await aleatorio(ano, uf, cargo, partido);
+    if (!idAleatorio) return NextResponse.json({ candidato: null });
+    return NextResponse.json(await raioX(idAleatorio, uf));
   }
 
   if (sp.get("destaque") === "1" && uf) {

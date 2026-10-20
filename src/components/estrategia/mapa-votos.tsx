@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { geoMercator, geoPath, type GeoPermissibleObjects } from "d3-geo";
 import type { Feature, Geometry } from "geojson";
+import APELIDOS_MUNICIPIOS from "@/lib/municipios-apelidos.json";
 import { Search, X } from "lucide-react";
 import { carregarMalha } from "@/components/mapa/mapa-bahia";
 import { REGION_COLORS, REGIONS_DATA } from "@/lib/regioes-ba";
@@ -72,11 +73,16 @@ export function MapaVotos({
   const mapaChave = useMemo(() => {
     if (!votosPorMunicipio) return null;
     const m = new Map<string, number>();
+    // O TSE usa o nome de hoje; a malha, às vezes, o antigo ("Mogi Mirim" x
+    // "Moji Mirim", "Assu" x "Açu"). Sem o apelido a cidade ficava cinza
+    // mesmo com voto. Lista conferida contra as 27 malhas em 20/10/2026.
+    const apelidos = (APELIDOS_MUNICIPIOS as Record<string, Record<string, string>>)[(uf || "BA").toUpperCase()] ?? {};
     for (const [cidade, v] of Object.entries(votosPorMunicipio)) {
-      m.set(chave(cidade), v);
+      const k = chave(cidade);
+      m.set(apelidos[k] ?? k, v);
     }
     return m;
-  }, [votosPorMunicipio]);
+  }, [votosPorMunicipio, uf]);
 
   useEffect(() => {
     let vivo = true;

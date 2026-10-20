@@ -1,0 +1,57 @@
+{
+ "BA": {
+  "camaca": "camacan",
+  "santa terezinha": "santa teresinha"
+ },
+ "CE": {
+  "itapaje": "itapage"
+ },
+ "GO": {
+  "bom jesus": "bom jesus de goias"
+ },
+ "MG": {
+  "brazopolis": "brasopolis"
+ },
+ "MT": {
+  "poxoreu": "poxoreo"
+ },
+ "PA": {
+  "santa izabel do para": "santa isabel do para"
+ },
+ "PB": {
+  "joca claudino": "santarem",
+  "sao vicente do serido": "serido",
+  "tacima": "campo de santana"
+ },
+ "PE": {
+  "belem do sao francisco": "belem de sao francisco",
+  "iguaracy": "iguaraci",
+  "lagoa de itaenga": "lagoa do itaenga"
+ },
+ "PR": {
+  "munhoz de mello": "munhoz de melo"
+ },
+ "RN": {
+  "arez": "ares",
+  "assu": "acu",
+  "boa saude": "januario cicco",
+  "campo grande": "augusto severo",
+  "serra caiada": "presidente juscelino"
+ },
+ "RO": {
+  "alvorada do oeste": "alvorada d oeste",
+  "espigao do oeste": "espigao d oeste"
+ },
+ "SE": {
+  "graccho cardoso": "gracho cardoso"
+ },
+ "SP": {
+  "embu das artes": "embu",
+  "florinea": "florinia",
+  "mogi mirim": "moji mirim"
+ },
+ "TO": {
+  "sao valerio": "sao valerio da natividade",
+  "tabocao": "fortaleza do tabocao"
+ }
+}

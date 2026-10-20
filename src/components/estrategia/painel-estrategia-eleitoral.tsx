@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useTransition } from "react";
-import Image from "next/image";
 import {
   Search,
   Check,
@@ -9,9 +8,6 @@ import {
   Building2,
   Globe2,
   ChevronRight,
-  User,
-  Target,
-  Layers,
   TrendingUp,
   Award,
   Users2,
@@ -22,9 +18,11 @@ import {
 import { MapaBrasil } from "@/components/estrategia/mapa-brasil";
 import { MapaVotos } from "@/components/estrategia/mapa-votos";
 import { DetalheMunicipioEstrategia } from "@/components/estrategia/detalhe-municipio-estrategia";
-import { chave, ehDaCasa, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
+import { chave, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
 import { CANDIDATO } from "@/lib/candidato";
 import UFS from "@/lib/ufs.json";
+import APELIDOS_MUNICIPIOS from "@/lib/municipios-apelidos.json";
+import { FotoUrna, SeletorCandidatos } from "@/components/estrategia/seletor-candidatos";
 
 export interface CandidatoBusca {
   id: number;
@@ -64,40 +62,7 @@ export interface CoberturaEleicao {
   municipios: number;
 }
 
-// 30 Partidos Oficiais Registrados no TSE (Fonte Oficial)
-export const TRINTA_PARTIDOS_OFICIAIS = [
-  { sigla: "TODOS", nome: "Todos os Partidos (30)", cor: "#1d4ed8" },
-  { sigla: "PL", nome: "Partido Liberal", cor: "#1d4ed8" },
-  { sigla: "PT", nome: "Partido dos Trabalhadores", cor: "#dc2626" },
-  { sigla: "UNIÃO", nome: "União Brasil", cor: "#0284c7" },
-  { sigla: "PP", nome: "Progressistas", cor: "#0d9488" },
-  { sigla: "PSD", nome: "Partido Social Democrático", cor: "#ea580c" },
-  { sigla: "REPUBLICANOS", nome: "Republicanos", cor: "#2563eb" },
-  { sigla: "MDB", nome: "Movimento Democrático Brasileiro", cor: "#ca8a04" },
-  { sigla: "PODE", nome: "Podemos", cor: "#059669" },
-  { sigla: "PSB", nome: "Partido Socialista Brasileiro", cor: "#f59e0b" },
-  { sigla: "PDT", nome: "Partido Democrático Trabalhista", cor: "#e11d48" },
-  { sigla: "PSDB", nome: "Partido da Social Democracia Brasileira", cor: "#3b82f6" },
-  { sigla: "PSOL", nome: "Partido Socialismo e Liberdade", cor: "#b91c1c" },
-  { sigla: "AVANTE", nome: "Avante", cor: "#0ea5e9" },
-  { sigla: "SOLIDARIEDADE", nome: "Solidariedade", cor: "#f97316" },
-  { sigla: "NOVO", nome: "Partido Novo", cor: "#ff6600" },
-  { sigla: "PRD", nome: "Partido Renovação Democrática", cor: "#4f46e5" },
-  { sigla: "PC do B", nome: "Partido Comunista do Brasil", cor: "#be123c" },
-  { sigla: "PV", nome: "Partido Verde", cor: "#16a34a" },
-  { sigla: "CIDADANIA", nome: "Cidadania", cor: "#ec4899" },
-  { sigla: "REDE", nome: "Rede Sustentabilidade", cor: "#14b8a6" },
-  { sigla: "PRTB", nome: "Partido Renovador Trabalhista Brasileiro", cor: "#15803d" },
-  { sigla: "DC", nome: "Democracia Cristã", cor: "#1e40af" },
-  { sigla: "AGIR", nome: "Agir", cor: "#6366f1" },
-  { sigla: "PMB", nome: "Partido da Mulher Brasileira", cor: "#9333ea" },
-  { sigla: "MOBILIZA", nome: "Mobilização Nacional", cor: "#84cc16" },
-  { sigla: "PCB", nome: "Partido Comunista Brasileiro", cor: "#991b1b" },
-  { sigla: "PSTU", nome: "Partido Socialista dos Trabalhadores Unificado", cor: "#b91c1c" },
-  { sigla: "PCO", nome: "Partido da Causa Operária", cor: "#991b1b" },
-  { sigla: "UP", nome: "Unidade Popular", cor: "#059669" },
-  { sigla: "PMN", nome: "Partido da Mobilização Nacional", cor: "#c026d3" },
-];
+
 
 const ESTADOS_BR = [{ uf: "BR", nome: "Brasil (Visão Nacional)" }, ...UFS];
 const ANOS = [2026, 2024, 2022];
@@ -118,6 +83,12 @@ export function PainelEstrategiaEleitoral({
   const [cargoFiltro, setCargoFiltro] = useState<string>("TODOS");
   const [ufFiltro, setUfFiltro] = useState<string>(raioX.candidato.uf || "BA");
   const [partidoFiltro, setPartidoFiltro] = useState<string>("TODOS");
+  // Cargos e partidos que EXISTEM no estado e eleição abertos, vindos do
+  // seletor de candidatos. Antes eram 30 partidos escritos à mão.
+  const [opcoes, setOpcoes] = useState<{ cargos: { valor: string; n: number }[]; partidos: { valor: string; n: number }[] }>({
+    cargos: [],
+    partidos: [],
+  });
 
   // Camadas de Navegação
   const [camada, setCamada] = useState<"brasil" | "estado" | "municipio">("estado");
@@ -128,7 +99,6 @@ export function PainelEstrategiaEleitoral({
   const [sugestoesBrutas, setSugestoes] = useState<CandidatoBusca[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
-  const [fotoErro, setFotoErro] = useState(false);
   const [, startTransition] = useTransition();
 
   const sugestoes = busca.trim().length >= 2 ? sugestoesBrutas : [];
@@ -140,7 +110,8 @@ export function PainelEstrategiaEleitoral({
     semCobertura ? UFS.map((u) => u.uf) : cobertura.filter((c) => c.ano === a).map((c) => c.uf);
   const ufsDoAno = ufsDeAno(anoFiltro);
 
-  // Opções de cargos conforme ano
+  // Cargos: os que existem no estado/eleição (do seletor); enquanto ele não
+  // responde, a lista padrão do tipo de eleição.
   const opcoesCargos =
     anoFiltro % 4 === 0
       ? [
@@ -156,6 +127,13 @@ export function PainelEstrategiaEleitoral({
           { valor: "GOVERNADOR", rotulo: "Governador" },
           { valor: "PRESIDENTE", rotulo: "Presidente" },
         ];
+  const rotuloCargo = (c: string) => c.charAt(0) + c.slice(1).toLowerCase();
+  const cargosDaTela = opcoes.cargos.length
+    ? [
+        { valor: "TODOS", rotulo: "Todos os cargos" },
+        ...opcoes.cargos.map((c) => ({ valor: c.valor, rotulo: `${rotuloCargo(c.valor)} (${c.n})` })),
+      ]
+    : opcoesCargos;
 
   // Busca inteligente via API
   useEffect(() => {
@@ -192,7 +170,6 @@ export function PainelEstrategiaEleitoral({
   async function selecionarCandidato(cand: CandidatoBusca) {
     setMenuAberto(false);
     setBusca("");
-    setFotoErro(false);
     try {
       const res = await fetch(`/api/eleicao?candidatoId=${cand.id}`);
       abrirRaioX(await res.json());
@@ -203,7 +180,6 @@ export function PainelEstrategiaEleitoral({
 
   function abrirRaioX(data: RaioXCandidato | null, camadaDestino?: "brasil" | "estado", ufMapa?: string) {
     if (!data?.candidato) return;
-    setFotoErro(false);
     startTransition(() => {
       setRaioX(data);
       setAnoFiltro(data.candidato.ano);
@@ -215,56 +191,45 @@ export function PainelEstrategiaEleitoral({
     });
   }
 
-  // Trocar de eleição ou de cargo sempre muda o card para alguém DAQUELA
-  // eleição: a candidatura da casa, se ela concorreu (e ao cargo pedido), e
-  // senão o mais votado. Sem isso o card ficava parado — em 2024 seguia
-  // mostrando a Talita, que não foi candidata.
-  async function trocarEleicao(novoAno: number, novoCargo: string) {
-    setAnoFiltro(novoAno);
-    setCargoFiltro(novoCargo);
+  // Um candidato qualquer do estado aberto, na eleição (e cargo/partido) do
+  // filtro. É para onde o card vai ao trocar de estado, de ano ou de cargo —
+  // antes ele ficava parado e a Talita seguia na tela de 2024, onde ela não
+  // concorreu, ou na de Minas.
+  async function sortearCandidato(o: { ano: number; uf: string; cargo: string; partido?: string }) {
+    const d = new URLSearchParams({ aleatorio: "1", ano: String(o.ano), uf: o.uf });
+    if (o.cargo !== "TODOS") d.set("cargo", o.cargo);
+    if (o.partido && o.partido !== "TODOS") d.set("partido", o.partido);
     try {
-      const q = new URLSearchParams({ ano: String(novoAno), uf: CANDIDATO.uf, q: CANDIDATO.numeroUrna, exato: "1" });
-      const achados = (await (await fetch(`/api/eleicao?${q}`)).json()).candidatos as CandidatoBusca[] | undefined;
-      const daCasa = achados?.find(
-        (c) => c.ano === novoAno && ehDaCasa(c) && (novoCargo === "TODOS" || c.cargo === novoCargo),
-      );
-      if (daCasa && (ufFiltro === CANDIDATO.uf || ufFiltro === "BR")) return await selecionarCandidato(daCasa);
-
-      const uf = ufFiltro !== "BR" && ufsDeAno(novoAno).includes(ufFiltro) ? ufFiltro : CANDIDATO.uf;
-      const d = new URLSearchParams({ destaque: "1", ano: String(novoAno), uf });
-      if (novoCargo !== "TODOS") d.set("cargo", novoCargo);
-      abrirRaioX(await (await fetch(`/api/eleicao?${d}`)).json());
+      const r = await (await fetch(`/api/eleicao?${d}`)).json();
+      if (r?.candidato) return abrirRaioX(r, o.uf === "BR" ? "brasil" : "estado", o.uf === "BR" ? undefined : o.uf);
+      // O cargo pedido não existe ali (ex.: governador em 2024): qualquer um.
+      if (o.cargo !== "TODOS" || o.partido) return sortearCandidato({ ano: o.ano, uf: o.uf, cargo: "TODOS" });
     } catch (err) {
-      console.error("Erro ao trocar de eleição:", err);
+      console.error("Erro ao sortear candidato:", err);
     }
   }
 
-  // Abrir um estado (clique no mapa do Brasil ou seletor) mostra aquele
-  // estado de verdade: o presidente com os votos dele lá; os demais cargos,
-  // o mais votado daquele estado no mesmo cargo. Antes só trocava a malha e
-  // deixava os votos do candidato da Bahia — Minas aparecia vazia.
-  async function transitarParaEstado(uf: string) {
+  function trocarEleicao(novoAno: number, novoCargo: string) {
+    setAnoFiltro(novoAno);
+    setCargoFiltro(novoCargo);
+    const uf = ufsDeAno(novoAno).includes(ufFiltro) || ufFiltro === "BR" ? ufFiltro : CANDIDATO.uf;
+    return sortearCandidato({ ano: novoAno, uf, cargo: novoCargo, partido: partidoFiltro });
+  }
+
+  function trocarPartido(partido: string) {
+    setPartidoFiltro(partido);
+    if (partido !== "TODOS" && raioX.candidato.partido_sigla !== partido)
+      sortearCandidato({ ano: anoFiltro, uf: ufFiltro, cargo: cargoFiltro, partido });
+  }
+
+  function transitarParaEstado(uf: string) {
     setMunicipioSelecionado(null);
-    if (uf === "BR") {
-      setCamada("brasil");
-      return;
-    }
     setUfFiltro(uf);
-    setCamada("estado");
-    try {
-      const c = raioX.candidato;
-      if (c.uf === "BR" || c.cargo === "PRESIDENTE") {
-        const q = new URLSearchParams({ candidatoId: String(c.id), uf });
-        return abrirRaioX(await (await fetch(`/api/eleicao?${q}`)).json(), "estado", uf);
-      }
-      if (c.uf === uf) return;
-      const d = new URLSearchParams({ destaque: "1", ano: String(anoFiltro), uf });
-      const cargo = cargoFiltro !== "TODOS" ? cargoFiltro : c.cargo;
-      if (cargo) d.set("cargo", cargo);
-      abrirRaioX(await (await fetch(`/api/eleicao?${d}`)).json(), "estado");
-    } catch (err) {
-      console.error("Erro ao abrir o estado:", err);
-    }
+    setCamada(uf === "BR" ? "brasil" : "estado");
+    setPartidoFiltro("TODOS");
+    // Cargo municipal/estadual que não existe no "BR" (só presidente) cai em todos.
+    const cargo = uf === "BR" ? "TODOS" : cargoFiltro === "PRESIDENTE" ? "TODOS" : cargoFiltro;
+    return sortearCandidato({ ano: anoFiltro, uf, cargo });
   }
 
   function transitarParaMunicipio(mun: string) {
@@ -272,10 +237,16 @@ export function PainelEstrategiaEleitoral({
     setCamada("municipio");
   }
 
+  const APELIDOS_UF =
+    (APELIDOS_MUNICIPIOS as Record<string, Record<string, string>>)[ufFiltro] ?? {};
   // O mapa manda o nome como está na malha ("Salvador"); os votos vêm com o
   // nome do TSE ("SALVADOR"). Comparar literal abria a cidade com zero votos.
   const municipioNoBanco = municipioSelecionado
-    ? (Object.keys(raioX.votos_por_municipio).find((m) => chave(m) === chave(municipioSelecionado)) ??
+    ? (Object.keys(raioX.votos_por_municipio).find((m) => {
+        const k = chave(m);
+        const alvo = chave(municipioSelecionado);
+        return k === alvo || APELIDOS_UF[k] === alvo; // malha com nome antigo
+      }) ??
       municipioSelecionado.toUpperCase())
     : null;
   const posicaoNoRanking = municipioNoBanco
@@ -298,7 +269,6 @@ export function PainelEstrategiaEleitoral({
     .sort((a, b) => b.votos - a.votos);
 
   const votosSemRede = lacunas.reduce((s, l) => s + l.votos, 0);
-  const fotoSrc = fotoErro ? null : fotoDoCandidato(raioX.candidato);
 
   return (
     <div className="space-y-5">
@@ -308,23 +278,9 @@ export function PainelEstrategiaEleitoral({
           
           {/* Identidade Sóbria do Candidato */}
           <div className="flex items-center gap-3.5">
-            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100 shadow-sm">
-              {fotoSrc ? (
-                <Image
-                  src={fotoSrc}
-                  alt={raioX.candidato.nome_urna}
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                  unoptimized
-                  onError={() => setFotoErro(true)}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center font-bold text-slate-400">
-                  <User size={22} />
-                </div>
-              )}
-            </div>
+            <span className="rounded-full border-2 border-slate-200 shadow-sm">
+              <FotoUrna key={raioX.candidato.id} src={fotoDoCandidato(raioX.candidato)} nome={raioX.candidato.nome_urna} tamanho={56} />
+            </span>
 
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -383,7 +339,7 @@ export function PainelEstrategiaEleitoral({
                 }`}
               >
                 <MapPin size={13} />
-                {ufFiltro === "BR" ? "Bahia" : ufFiltro}
+                {ufFiltro === "BR" ? "Estado" : ufFiltro}
               </button>
 
               {municipioSelecionado && (
@@ -418,7 +374,6 @@ export function PainelEstrategiaEleitoral({
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  {ano === 2026 && <Sparkles size={11} />}
                   {ano}
                 </button>
               ))}
@@ -439,29 +394,31 @@ export function PainelEstrategiaEleitoral({
 
             {/* Seletor de Cargo: trocar abre o mais votado do cargo */}
             <select
-              value={opcoesCargos.some((o) => o.valor === cargoFiltro) ? cargoFiltro : "TODOS"}
+              value={cargosDaTela.some((o) => o.valor === cargoFiltro) ? cargoFiltro : "TODOS"}
               onChange={(e) => trocarEleicao(anoFiltro, e.target.value)}
               className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
             >
-              {opcoesCargos.map((o) => (
+              {cargosDaTela.map((o) => (
                 <option key={o.valor} value={o.valor}>
                   {o.rotulo}
                 </option>
               ))}
             </select>
 
-            {/* Seletor Oficial dos 30 Partidos Registrados no TSE */}
+            {/* Partidos que concorreram neste estado e eleição (do TSE) */}
             <select
               value={partidoFiltro}
-              onChange={(e) => setPartidoFiltro(e.target.value)}
+              onChange={(e) => trocarPartido(e.target.value)}
               className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
             >
-              <option value="TODOS">Todos os Partidos (30)</option>
-              {TRINTA_PARTIDOS_OFICIAIS.filter((p) => p.sigla !== "TODOS").map((p) => (
-                <option key={p.sigla} value={p.sigla}>
-                  {p.sigla} — {p.nome}
-                </option>
-              ))}
+              <option value="TODOS">Todos os partidos ({opcoes.partidos.length})</option>
+              {[...opcoes.partidos]
+                .sort((a, b) => a.valor.localeCompare(b.valor, "pt-BR"))
+                .map((p) => (
+                  <option key={p.valor} value={p.valor}>
+                    {p.valor} ({p.n})
+                  </option>
+                ))}
             </select>
 
             {/* Campo de Busca Spotlight de Candidatos */}
@@ -489,22 +446,7 @@ export function PainelEstrategiaEleitoral({
                       onClick={() => selecionarCandidato(c)}
                       className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-slate-50"
                     >
-                      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
-                        {fotoDoCandidato(c) ? (
-                          <Image
-                            src={fotoDoCandidato(c)!}
-                            alt={c.nome_urna}
-                            fill
-                            sizes="32px"
-                            className="object-cover"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-slate-400">
-                            {c.nome_urna.slice(0, 2)}
-                          </div>
-                        )}
-                      </div>
+                      <FotoUrna src={fotoDoCandidato(c)} nome={c.nome_urna} tamanho={32} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-slate-900 text-[12.5px]">
@@ -529,21 +471,27 @@ export function PainelEstrategiaEleitoral({
           </div>
         </div>
 
-        {/* Rodapé contextual discreto se 2026 estiver selecionado */}
-        {anoFiltro === 2026 && (
-          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11.5px] text-slate-500">
-            <span className="flex items-center gap-1.5 font-medium">
-              <Target size={13} className="text-blue-600" />
-              <span>Modo Planejamento: <b>Eleição Geral 2026</b> · Metas de Votação por Polo</span>
-            </span>
-            {partidoFiltro !== "TODOS" && (
-              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">
-                Filtro partidário: {partidoFiltro}
-              </span>
-            )}
+        {partidoFiltro !== "TODOS" && (
+          <div className="mt-3 flex items-center justify-end border-t border-slate-100 pt-2.5 text-[11.5px]">
+            <button
+              onClick={() => setPartidoFiltro("TODOS")}
+              className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700 hover:bg-slate-200"
+            >
+              Filtro partidário: {partidoFiltro} ✕
+            </button>
           </div>
         )}
       </header>
+
+      <SeletorCandidatos
+        ano={anoFiltro}
+        uf={ufFiltro}
+        cargo={cargoFiltro}
+        partido={partidoFiltro}
+        idAtual={raioX.candidato.id}
+        onEscolher={selecionarCandidato}
+        onOpcoes={setOpcoes}
+      />
 
       {/* ── 2. VISÃO PRINCIPAL: SPLIT-SCREEN (MAPA + INTELIGÊNCIA) ──── */}
       {camada === "brasil" ? (
@@ -708,7 +656,7 @@ export function PainelEstrategiaEleitoral({
                 Votos sem Liderança Cadastrada
               </div>
               <p className="mt-1 text-[11.5px] text-slate-600 leading-relaxed">
-                Você teve <b>{votosSemRede.toLocaleString("pt-BR")} votos</b> em {lacunas.length} cidades onde ainda não possui bases formalizadas no CRM.
+                {raioX.candidato.nome_urna} teve <b>{votosSemRede.toLocaleString("pt-BR")} votos</b> em {lacunas.length} cidades onde a campanha ainda não tem liderança cadastrada.
               </p>
               
               <div className="mt-3 flex flex-wrap gap-1.5">

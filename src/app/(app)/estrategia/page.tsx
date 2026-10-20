@@ -33,11 +33,15 @@ export default async function CentralEstrategia({
   // Candidato pedido na URL ou a candidatura da casa — a mais recente com
   // aquele número no estado. Os votos vêm dos arquivos do TSE no Storage
   // (src/lib/eleicao-arquivos.ts), que cobrem o Brasil inteiro.
+  // Link antigo (`?c=1627`, código do banco) não acha ninguém nos arquivos:
+  // cai na candidatura da casa em vez de abrir a tela vazia.
   const pedido = params.c ? Number(params.c) : NaN;
-  const candidatoId = Number.isFinite(pedido)
-    ? pedido
-    : await candidaturaDaCasa(CANDIDATO.uf, parseInt(CANDIDATO.numeroUrna, 10));
-  const raioX = candidatoId ? await raioXDoArquivo(candidatoId) : null;
+  const daCasa = () => candidaturaDaCasa(CANDIDATO.uf, parseInt(CANDIDATO.numeroUrna, 10));
+  let raioX = Number.isFinite(pedido) ? await raioXDoArquivo(pedido) : null;
+  if (!raioX) {
+    const id = await daCasa();
+    raioX = id ? await raioXDoArquivo(id) : null;
+  }
 
   const cidadesComBase = territorio.mapa.map((m) => m.municipio);
 
