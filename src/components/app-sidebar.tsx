@@ -198,17 +198,17 @@ function Conteudo({
             <Image
               src={MARCA.branca}
               alt="ManuFlow"
-              width={130}
-              height={34}
-              className="logo-escuro h-7 w-auto opacity-95"
+              width={140}
+              height={36}
+              className="logo-escuro h-8 w-auto opacity-95"
               priority
             />
             <Image
               src={MARCA.cor}
               alt="ManuFlow"
-              width={130}
-              height={34}
-              className="logo-claro h-7 w-auto"
+              width={140}
+              height={36}
+              className="logo-claro h-8 w-auto"
               priority
             />
           </>
@@ -368,16 +368,16 @@ export function AppSidebar({
         <Image
           src={MARCA.branca}
           alt="ManuFlow"
-          width={110}
-          height={28}
-          className="logo-escuro h-6 w-auto opacity-95"
+          width={120}
+          height={32}
+          className="logo-escuro h-7 w-auto opacity-95"
         />
         <Image
           src={MARCA.cor}
           alt="ManuFlow"
-          width={110}
-          height={28}
-          className="logo-claro h-6 w-auto"
+          width={120}
+          height={32}
+          className="logo-claro h-7 w-auto"
         />
         <button
           onClick={() => setAberto(true)}

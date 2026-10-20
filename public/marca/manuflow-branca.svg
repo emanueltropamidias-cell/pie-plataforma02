@@ -1,20 +1,10 @@
-<svg width="400" height="90" viewBox="0 0 400 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Símbolo ManuFlow -->
-  <g transform="translate(10, 10)">
-    <!-- Fundo suave do ícone -->
-    <rect width="70" height="70" rx="14" fill="#0b1329" />
-    <!-- Asa Esquerda do M em ciano neon -->
-    <path d="M 14 54 L 14 26 L 27 40 L 27 54 Z" fill="#00E5FF" />
-    <!-- Asa Direita do M em azul royal -->
-    <path d="M 56 54 L 56 26 L 43 40 L 43 54 Z" fill="#2563EB" />
-    <!-- Centro do M / Vértice de Fluxo -->
-    <polygon points="35,16 45,30 35,41 25,30" fill="#60A5FA" />
-    <!-- Ponto de brilho -->
-    <circle cx="35" cy="30" r="3.5" fill="#FFFFFF" />
+<svg width='280' height='70' viewBox='0 0 280 70' fill='none' xmlns='http://www.w3.org/2000/svg'>
+  <g transform='translate(5, 5)'>
+    <rect width='60' height='60' rx='14' fill='#0B132B' stroke='rgba(255,255,255,0.15)' stroke-width='1.5'/>
+    <path d='M14 46 L14 22 L25 34 L25 46 Z' fill='#00E5FF'/>
+    <path d='M46 46 L46 22 L35 34 L35 46 Z' fill='#2563EB'/>
+    <polygon points='30,15 39,26 30,36 21,26' fill='#38BDF8'/>
+    <circle cx='30' cy='26' r='3' fill='#FFFFFF'/>
   </g>
-
-  <!-- Tipografia ManuFlow (Versão Branca para fundos escuros) -->
-  <text x="96" y="55" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="38" font-weight="800" fill="#FFFFFF" letter-spacing="-0.03em">Manu<tspan fill="#38BDF8" font-weight="900">Flow</tspan></text>
-  <circle cx="270" cy="38" r="4" fill="#00E5FF" />
-  <text x="98" y="74" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#94A3B8" letter-spacing="0.22em">INTELLIGENCE &amp; FLOW</text>
+  <text x='78' y='47' font-family='system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' font-size='35' font-weight='800' fill='#FFFFFF' letter-spacing='-0.03em'>Manu<tspan fill='#38BDF8' font-weight='900'>Flow</tspan></text>
 </svg>
