@@ -113,14 +113,12 @@ export function ehDaCasa(c: { uf: string; numero: number }) {
 }
 
 export function fotoDoCandidato(c: CandidatoComFoto): string | null {
-  // Já no Storage (scripts/subir-fotos-urna.mjs): endereço direto.
-  if (c.foto_url?.includes(".supabase.co/storage/")) return c.foto_url;
-  // Fora dele, o proxy tenta o TSE — que recusa acesso direto do navegador.
-  if (c.sq_candidato) {
-    const q = new URLSearchParams({ ano: String(c.ano), sq: c.sq_candidato, uf: c.uf });
-    return `/api/eleicao/foto?${q}`;
-  }
-  return null;
+  // A API já devolve o endereço certo: o Storage (Bahia) ou a foto direto do
+  // TSE (src/lib/eleicao-arquivos.ts). Esta função mandava tudo que não fosse
+  // Storage para /api/eleicao/foto — que roda no servidor, e o TSE bloqueia
+  // servidor sempre. Por isso o card principal mostrava o boneco cinza enquanto
+  // a lista, que usava o endereço direto, mostrava a foto.
+  return c.foto_url ?? null;
 }
 
 const CARGOS_MUNICIPAIS = new Set(["PREFEITO", "VICE-PREFEITO", "VEREADOR"]);
