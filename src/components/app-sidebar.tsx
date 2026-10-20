@@ -242,19 +242,19 @@ function Conteudo({
       {/* Quem está usando, no alto. Em ferramenta compartilhada, saber com qual
           conta se está evita registrar demanda em nome de outra pessoa. */}
       <div
-        className={`mt-5 flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md transition-all ${
-          recolhido ? "justify-center p-2" : "px-3 py-2.5"
+        className={`mt-5 flex items-center gap-2.5 rounded-lg border border-barra-traco bg-barra-hover ${
+          recolhido ? "justify-center px-0 py-2.5" : "px-3 py-2.5"
         }`}
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-[11.5px] font-bold text-white shadow-md shadow-blue-500/20">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-tema text-[11.5px] font-bold text-white">
           {iniciais(nome)}
         </span>
         {!recolhido && (
           <span className="min-w-0">
-            <span className="block truncate text-[12.5px] font-semibold text-white">
+            <span className="block truncate text-[12.5px] font-semibold text-barra-texto">
               {nome}
             </span>
-            <span className="block truncate text-[10.5px] text-zinc-400">
+            <span className="block truncate text-[10.5px] text-barra-fraca">
               {CARGO[papel ?? ""] ?? "Equipe"}
             </span>
           </span>
@@ -297,29 +297,20 @@ function Conteudo({
                     setIndo(item.href);
                     onNav?.();
                   }}
-                  className={`group relative flex items-center transition-all duration-200 ${
-                    recolhido
-                      ? "h-11 w-11 justify-center rounded-2xl mx-auto"
-                      : "gap-3 rounded-xl px-3 py-2.5 text-[13px]"
+                  className={`flex items-center gap-2.5 rounded-lg py-2 text-[13px] transition-colors ${
+                    recolhido ? "justify-center px-0" : "px-2.5"
                   } ${
                     ativo || indoPara
-                      ? recolhido
-                        ? "bg-gradient-to-tr from-blue-600/30 to-indigo-600/20 border border-blue-500/40 text-blue-400 shadow-lg shadow-blue-500/15"
-                        : "bg-white/[0.08] border border-white/10 text-white font-semibold shadow-sm"
-                      : "border border-transparent text-zinc-400 hover:text-white hover:bg-white/[0.05]"
+                      ? "bg-barra-ativo font-semibold text-barra-texto"
+                      : "font-medium text-barra-suave hover:bg-barra-hover hover:text-barra-texto"
                   }`}
                 >
                   <Icone
-                    size={17}
-                    className="shrink-0 transition-transform group-hover:scale-110"
+                    size={16}
+                    className="shrink-0"
                     strokeWidth={ativo || indoPara ? 2.4 : 1.9}
                   />
                   {!recolhido && <span className="truncate">{item.label}</span>}
-                  {recolhido && (
-                    <span className="pointer-events-none absolute left-14 z-50 whitespace-nowrap rounded-lg border border-white/10 bg-slate-900/95 px-2.5 py-1 text-xs font-semibold text-white shadow-xl backdrop-blur-md opacity-0 transition-opacity group-hover:opacity-100">
-                      {item.label}
-                    </span>
-                  )}
                 </Link>
               );
             })}
@@ -375,18 +366,18 @@ export function AppSidebar({
   return (
     <>
       {/* Barra superior (só no celular) */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-white/10 bg-[#090b11]/90 backdrop-blur-2xl px-4 md:hidden">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-barra-traco bg-barra px-4 md:hidden">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 text-[12px] font-black text-white shadow-sm shadow-blue-500/20">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-tema text-[12px] font-black text-white shadow-sm shadow-black/20">
             M
           </div>
-          <span className="text-sm font-bold tracking-tight text-white font-sans">
-            manu<span className="text-blue-400 font-extrabold">flow</span>
+          <span className="text-sm font-bold tracking-tight text-barra-texto font-sans">
+            manu<span className="text-tema font-extrabold">flow</span>
           </span>
         </div>
         <button
           onClick={() => setAberto(true)}
-          className="text-zinc-300 hover:text-white"
+          className="text-barra-texto"
           aria-label="Abrir menu"
         >
           <Menu size={24} />
@@ -397,13 +388,13 @@ export function AppSidebar({
       {aberto && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setAberto(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-white/10 bg-[#090b11]/95 px-4 py-5 text-white backdrop-blur-2xl">
+          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col bg-barra px-4 py-5 text-barra-texto">
             <button
               onClick={() => setAberto(false)}
-              className="mb-2 self-end text-zinc-400 hover:text-white"
+              className="mb-2 self-end text-barra-suave hover:text-barra-texto"
               aria-label="Fechar menu"
             >
               <X size={22} />
@@ -422,7 +413,7 @@ export function AppSidebar({
 
       {/* Barra fixa (computador) */}
       <aside
-        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-white/10 bg-[#090b11]/85 backdrop-blur-2xl px-3 py-5 text-zinc-200 transition-all duration-300 md:flex shadow-[0_0_50px_rgba(0,0,0,0.5)] ${
+        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-barra-traco bg-barra px-4 py-5 text-barra-texto transition-[width] duration-200 md:flex ${
           recolhido ? "w-[76px]" : "w-64"
         }`}
       >
