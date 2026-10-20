@@ -1,0 +1,71 @@
+# Evolution API — o transporte do WhatsApp, no VPS da campanha.
+#
+# Três contêineres: a Evolution, o Postgres dela e o Redis. O Caddy na frente
+# resolve o HTTPS sozinho, com certificado renovado automaticamente.
+#
+# ATENÇÃO À PORTA. A Evolution NÃO publica porta para a internet: só o Caddy
+# publica. Quem alcança a API dela manda mensagem pelo número da campanha, e uma
+# porta 8080 aberta é um convite — o `expose` abaixo deixa o contêiner
+# alcançável só pelos vizinhos da mesma rede Docker.
+
+services:
+  evolution:
+    # Fixe a versão. `latest` troca sozinho numa madrugada e derruba a operação
+    # sem ninguém ter mexido em nada — e no caso da Evolution é pior: a `latest`
+    # do repositório aponta hoje para uma RELEASE CANDIDATE (2.4.0-rc1).
+    #
+    # O repositório mudou de dono: era `atendai/evolution-api`, hoje é
+    # `evoapicloud/evolution-api`. O endereço antigo ainda lista as versões e
+    # RECUSA o download — falha só na hora de instalar.
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    expose:
+      - "8080"
+    env_file: .env
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks: [interna]
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: evolution
+    volumes:
+      - evolution_pg:/var/lib/postgresql/data
+    networks: [interna]
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - evolution_redis:/data
+    networks: [interna]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [interna]
+
+volumes:
+  evolution_instances:
+  evolution_pg:
+  evolution_redis:
+  caddy_data:
+  caddy_config:
+
+networks:
+  interna:

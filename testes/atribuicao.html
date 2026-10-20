@@ -1,0 +1,163 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>teste</title>
+<pre id="out"></pre>
+<script>
+/* Cópia fiel de src/lib/atribuicao.ts, sem os tipos. Se divergir, o teste
+   deixa de valer — por isso os corpos foram copiados, não reescritos. */
+
+function elegiveis(cargas) { return cargas.filter(c => c.disponivel && c.abertas < c.capacidade); }
+function ocupacao(c) { return c.abertas / c.capacidade; }
+function melhor(candidatos) {
+  if (!candidatos.length) return null;
+  return [...candidatos].sort((a, b) =>
+    ocupacao(a) - ocupacao(b) || a.esperando - b.esperando || a.nome.localeCompare(b.nome, "pt-BR"))[0];
+}
+function escolherAtendente(cargas, opcoes = {}) {
+  const livres = elegiveis(cargas);
+  if (!livres.length) return null;
+  const anterior = opcoes.anterior ? livres.find(c => c.id === opcoes.anterior) : undefined;
+  if (anterior) return { atendenteId: anterior.id, nome: anterior.nome, regra: "continuidade" };
+  const demandas = opcoes.demandas ?? [];
+  if (demandas.length) {
+    const especialistas = livres.filter(c => c.demandas.length > 0 && c.demandas.some(d => demandas.includes(d)));
+    const alvo = melhor(especialistas);
+    if (alvo) return { atendenteId: alvo.id, nome: alvo.nome, regra: "especialista" };
+  }
+  const generalistas = livres.filter(c => c.demandas.length === 0);
+  const alvo = melhor(generalistas) ?? melhor(livres);
+  return alvo ? { atendenteId: alvo.id, nome: alvo.nome, regra: "menor-carga" } : null;
+}
+function redistribuir(conversas, cargas) {
+  const estado = cargas.map(c => ({ ...c }));
+  return conversas.map(conversa => {
+    const para = escolherAtendente(estado, { demandas: conversa.demandas });
+    if (para) {
+      const alvo = estado.find(c => c.id === para.atendenteId);
+      if (alvo) { alvo.abertas += 1; alvo.esperando += 1; }
+    }
+    return { id: conversa.id, para };
+  });
+}
+function equilibrio(cargas) {
+  const ativos = cargas.filter(c => c.disponivel);
+  const n = ativos.length;
+  if (n < 2) return 1;
+  const v = ativos.map(ocupacao).sort((a, b) => a - b);
+  const soma = v.reduce((s, x) => s + x, 0);
+  if (soma === 0) return 1;
+  let acumulado = 0;
+  for (let i = 0; i < n; i++) acumulado += (2 * (i + 1) - n - 1) * v[i];
+  const gini = acumulado / (n * soma);
+  return Math.max(0, Math.min(1, 1 - gini));
+}
+
+// ── testes ─────────────────────────────────────────────────────────────────
+const L = [];
+let falhas = 0;
+function ok(nome, cond, detalhe = "") {
+  if (!cond) falhas++;
+  L.push((cond ? "  ok   " : "  FALHA") + "  " + nome + (detalhe ? "   → " + detalhe : ""));
+}
+const at = (id, nome, o = {}) => ({
+  id, nome, disponivel: o.disponivel ?? true, capacidade: o.capacidade ?? 20,
+  demandas: o.demandas ?? [], abertas: o.abertas ?? 0, esperando: o.esperando ?? 0,
+});
+
+L.push("CONTINUIDADE");
+{
+  const c = [at("a", "Ana", { abertas: 15 }), at("b", "Bia", { abertas: 0 })];
+  const r = escolherAtendente(c, { anterior: "a" });
+  ok("volta para quem já atendeu, mesmo com mais fila", r.atendenteId === "a" && r.regra === "continuidade", r.nome);
+}
+{
+  const c = [at("a", "Ana", { abertas: 20, capacidade: 20 }), at("b", "Bia")];
+  const r = escolherAtendente(c, { anterior: "a" });
+  ok("cede quando a anterior está no teto", r.atendenteId === "b", r.nome + "/" + r.regra);
+}
+{
+  const c = [at("a", "Ana", { disponivel: false }), at("b", "Bia")];
+  const r = escolherAtendente(c, { anterior: "a" });
+  ok("cede quando a anterior saiu do ar", r.atendenteId === "b", r.nome);
+}
+
+L.push("");
+L.push("ESPECIALISTA");
+{
+  const c = [at("g", "Gal"), at("j", "Ju", { demandas: ["juridico"], abertas: 10 })];
+  const r = escolherAtendente(c, { demandas: ["juridico"] });
+  ok("demanda casada vai para quem atende aquilo", r.atendenteId === "j" && r.regra === "especialista", r.nome);
+}
+{
+  const c = [at("g", "Gal", { abertas: 10 }), at("j", "Ju", { demandas: ["juridico"] })];
+  const r = escolherAtendente(c, { demandas: ["saude"] });
+  ok("demanda sem especialista cai na generalista", r.atendenteId === "g" && r.regra === "menor-carga", r.nome);
+}
+{
+  const c = [at("j", "Ju", { demandas: ["juridico"] })];
+  const r = escolherAtendente(c, { demandas: ["saude"] });
+  ok("só há especialista: ela atende, melhor que ninguém", r && r.atendenteId === "j", r && r.nome);
+}
+{
+  const c = [at("g", "Gal", { abertas: 19, capacidade: 20 }), at("j", "Ju", { demandas: ["juridico"] })];
+  const r = escolherAtendente(c, {});
+  ok("sem demanda, generalista tem preferência sobre especialista", r.atendenteId === "g", r.nome);
+}
+
+L.push("");
+L.push("MENOR CARGA");
+{
+  const c = [at("a", "Ana", { abertas: 10, capacidade: 40 }), at("b", "Bia", { abertas: 8, capacidade: 10 })];
+  const r = escolherAtendente(c, {});
+  ok("compara proporção, não contagem", r.atendenteId === "a", r.nome + " (25% vs 80%)");
+}
+{
+  const c = [at("a", "Ana", { abertas: 5, esperando: 5 }), at("b", "Bia", { abertas: 5, esperando: 0 })];
+  const r = escolherAtendente(c, {});
+  ok("empate na ocupação: quem deve menos resposta recebe", r.atendenteId === "b", r.nome);
+}
+{
+  const c = [at("z", "Zuma", { abertas: 3 }), at("a", "Ana", { abertas: 3 })];
+  const r1 = escolherAtendente(c, {});
+  const r2 = escolherAtendente([...c].reverse(), {});
+  ok("empate total é estável, não depende da ordem do banco", r1.atendenteId === r2.atendenteId, r1.nome);
+}
+{
+  ok("ninguém disponível devolve null", escolherAtendente([at("a", "Ana", { disponivel: false })], {}) === null);
+  ok("todo mundo no teto devolve null", escolherAtendente([at("a", "Ana", { abertas: 20, capacidade: 20 })], {}) === null);
+  ok("lista vazia devolve null", escolherAtendente([], {}) === null);
+}
+
+L.push("");
+L.push("REDISTRIBUIÇÃO (quem saiu do ar)");
+{
+  const c = [at("a", "Ana"), at("b", "Bia"), at("c", "Cida")];
+  const conversas = Array.from({ length: 9 }, (_, i) => ({ id: i }));
+  const r = redistribuir(conversas, c);
+  const conta = {};
+  r.forEach(x => { const k = x.para.atendenteId; conta[k] = (conta[k] ?? 0) + 1; });
+  const vals = Object.values(conta);
+  ok("9 conversas se espalham por 3 atendentes", Object.keys(conta).length === 3, JSON.stringify(conta));
+  ok("espalha parelho, não empilha na primeira", Math.max(...vals) - Math.min(...vals) <= 1, JSON.stringify(conta));
+}
+{
+  const r = redistribuir([{ id: 1 }, { id: 2 }], [at("a", "Ana", { disponivel: false })]);
+  ok("sem ninguém, volta null e a conversa fica visível na fila", r.every(x => x.para === null));
+}
+
+L.push("");
+L.push("EQUILÍBRIO");
+{
+  const iguais = [at("a", "Ana", { abertas: 5 }), at("b", "Bia", { abertas: 5 }), at("c", "Cida", { abertas: 5 })];
+  ok("filas iguais dão 1", equilibrio(iguais) === 1, equilibrio(iguais).toFixed(3));
+  const torto = [at("a", "Ana", { abertas: 15 }), at("b", "Bia", { abertas: 0 }), at("c", "Cida", { abertas: 0 })];
+  ok("uma pessoa carregando tudo cai bem abaixo", equilibrio(torto) < 0.4, equilibrio(torto).toFixed(3));
+  ok("ninguém com fila dá 1", equilibrio([at("a", "Ana"), at("b", "Bia")]) === 1);
+  ok("uma pessoa só dá 1", equilibrio([at("a", "Ana", { abertas: 9 })]) === 1);
+}
+
+L.push("");
+L.push(falhas === 0 ? "TODOS OS " + (L.filter(x => x.includes("ok   ") || x.includes("FALHA")).length) + " TESTES PASSARAM"
+                    : falhas + " FALHA(S)");
+document.getElementById("out").textContent = L.join("\n");
+</script>

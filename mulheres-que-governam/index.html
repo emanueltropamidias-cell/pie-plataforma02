@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mulheres que Governam · Um Florescer</title>
+  <meta name="description" content="Faça parte do movimento. Preencha os dados e entre na comunidade de mulheres que governam a si mesmas, seus territórios e seus projetos por toda a Bahia.">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Mulheres que Governam">
+  <meta property="og:title" content="Mulheres que Governam · Um Florescer">
+  <meta property="og:description" content="Faça parte do movimento. Entre na comunidade e governe a si mesma, o seu entorno e os seus projetos.">
+  <meta property="og:url" content="https://mulheresquegovernam.site/">
+  <meta property="og:image" content="https://mulheresquegovernam.site/og-image.jpg">
+  <meta property="og:locale" content="pt_BR">
+  <meta name="theme-color" content="#3a0520">
+  <link rel="canonical" href="https://mulheresquegovernam.site/">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="favicon-180.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="topbar">
+  <div class="topbar__inner">
+    <a href="/" class="topbar__logo" aria-label="Mulheres que Governam">
+      <img src="logo-mqg-branco-h.png" alt="Mulheres que Governam" height="64">
+    </a>
+    <nav class="topbar__nav" aria-label="Navegação">
+      <a href="movimento.html">O movimento</a>
+      <a href="#comunidade" class="topbar__ig">Entrar na comunidade</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO + FORM (o modelo) ============ -->
+<section class="hero">
+  <div class="hero__grid">
+
+    <!-- Card da marca / figura -->
+    <div class="brandcard">
+      <div class="brandcard__media" role="img" aria-label="Talita Oliveira, idealizadora do movimento"></div>
+      <div class="brandcard__body">
+        <img class="brandcard__logo" src="logo-mqg-branco.png" alt="Mulheres que Governam" width="360">
+        <p class="brandcard__tag">Um Florescer · Bahia</p>
+        <p class="brandcard__lead">
+          A mulher que ousa governar a si mesma, o seu entorno e os seus projetos.
+          Um movimento por toda a Bahia.
+        </p>
+      </div>
+    </div>
+
+    <!-- Card do formulário -->
+    <div class="formcard" id="cadastro">
+      <h1 class="formcard__title">Faça parte do movimento</h1>
+      <p class="formcard__sub">Preencha os dados, leva menos de 1 minuto. Ao enviar, você fala com a nossa equipe pelo WhatsApp.</p>
+
+      <form id="form" novalidate>
+        <fieldset class="tipo">
+          <legend>Quero participar como</legend>
+          <div class="tipo__grid">
+            <label class="tipo__opt">
+              <input type="radio" name="tipo" value="Embaixadora" required>
+              <span><b>Embaixadora</b><small>Liderança espiritual no seu município</small></span>
+            </label>
+            <label class="tipo__opt">
+              <input type="radio" name="tipo" value="Empreendedora">
+              <span><b>Empreendedora</b><small>Mulher de negócios que quer multiplicar</small></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="field">
+          <label for="nome">Nome completo</label>
+          <input id="nome" name="nome" type="text" autocomplete="name" required placeholder="Seu nome">
+        </div>
+
+        <div class="field">
+          <label for="whatsapp">WhatsApp</label>
+          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" inputmode="numeric"
+                 required placeholder="(71) 99999-9999" maxlength="16">
+        </div>
+
+        <div class="field">
+          <label for="municipio">Município (Bahia)</label>
+          <input id="municipio" name="municipio" type="text" list="cidades" autocomplete="address-level2"
+                 required placeholder="Sua cidade">
+          <datalist id="cidades">
+            <option>Salvador</option><option>Feira de Santana</option><option>Vitória da Conquista</option>
+            <option>Camaçari</option><option>Itabuna</option><option>Juazeiro</option><option>Lauro de Freitas</option>
+            <option>Ilhéus</option><option>Jequié</option><option>Teixeira de Freitas</option><option>Barreiras</option>
+            <option>Alagoinhas</option><option>Porto Seguro</option><option>Simões Filho</option><option>Paulo Afonso</option>
+            <option>Eunápolis</option><option>Santo Antônio de Jesus</option><option>Valença</option><option>Candeias</option>
+            <option>Guanambi</option><option>Jacobina</option><option>Serrinha</option><option>Senhor do Bonfim</option>
+            <option>Dias d'Ávila</option><option>Luís Eduardo Magalhães</option>
+          </datalist>
+        </div>
+
+        <div class="field">
+          <label for="mensagem">Por que você quer governar? <span class="opt">(opcional)</span></label>
+          <textarea id="mensagem" name="mensagem" rows="3" placeholder="Conte em uma frase o que te move."></textarea>
+        </div>
+
+        <label class="consent">
+          <input type="checkbox" id="lgpd" name="lgpd" value="true" required>
+          <span>Li e concordo com o <a href="#privacidade">Aviso de Privacidade</a> e autorizo o contato pelo WhatsApp.</span>
+        </label>
+
+        <button type="submit" id="enviar" class="btn btn--rosa" disabled>
+          Falar no WhatsApp
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.7 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-1-.3-1.6-.6-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.8s.7-2 .9-2.2c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.5.1.3.7 1.1 1.5 1.8 1 .9 1.8 1.1 2 1.2.3.1.4.1.6-.1l.7-.8c.2-.2.3-.2.6-.1l1.8.9c.3.1.4.2.5.3.1.2.1.7-.1 1.2Z"/></svg>
+        </button>
+
+        <div class="sucesso" id="sucesso" hidden>
+          <span class="sucesso__flor">🌸</span>
+          <b>Abrindo o WhatsApp…</b>
+          <p>Se não abrir, <a id="linkZap" href="#" target="_blank" rel="noopener">toque aqui</a> para falar com a equipe.</p>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ MOMENTOS (o movimento na rua) ============ -->
+<section class="momentos" id="momentos">
+  <div class="momentos__inner">
+
+    <div class="momentos__cab">
+      <span class="eyebrow">O movimento na rua</span>
+      <h2>Uma rosa, um QR code, e uma história que começa.</h2>
+      <p>A flor não é lembrancinha: é a desculpa para parar, olhar nos olhos e convidar.
+         No balcão do comércio, no calçadão, na sala de reunião — onde a mulher já está.</p>
+    </div>
+
+    <!-- As descrições contam a CENA e não dizem quem é quem: nome errado em
+         texto publicado é erro sobre pessoa real, e a foto vale pelo gesto. -->
+    <ul class="momentos__grade">
+      <li class="momentos__item" style="--foco:center 40%">
+        <img src="mov-acai.jpg" width="666" height="1000" loading="lazy" decoding="async"
+             alt="Duas mulheres abraçadas atrás do balcão de uma loja de açaí. A mais jovem, de camisa amarela, segura a rosa com o cartão do convite.">
+      </li>
+      <li class="momentos__item" style="--foco:center 38%">
+        <img src="mov-calcadao.jpg" width="562" height="1000" loading="lazy" decoding="async"
+             alt="Entrega da rosa a uma mulher na Avenida Oceânica, em Salvador, à noite.">
+      </li>
+      <li class="momentos__item" style="--foco:center 34%">
+        <img src="mov-abraco.jpg" width="562" height="1000" loading="lazy" decoding="async"
+             alt="Abraço demorado entre as duas mulheres logo depois da entrega da rosa, no calçadão.">
+      </li>
+      <li class="momentos__item" style="--foco:center 42%">
+        <img src="mov-tres.jpg" width="536" height="1000" loading="lazy" decoding="async"
+             alt="Três mulheres lado a lado em uma sala de reunião; duas delas seguram a rosa com o cartão do QR code.">
+      </li>
+      <li class="momentos__item" style="--foco:center 42%">
+        <img src="mov-escritorio.jpg" width="562" height="1000" loading="lazy" decoding="async"
+             alt="Duas mulheres lado a lado em uma sala de reunião; uma delas segura a rosa e o cartão com o QR code.">
+      </li>
+    </ul>
+
+    <p class="momentos__dica">Deslize para o lado para ver todas →</p>
+
+  </div>
+</section>
+
+<!-- ============ COMUNIDADE (grupo WhatsApp) ============ -->
+<section class="comunidade" id="comunidade">
+  <div class="comunidade__inner">
+    <div class="comunidade__txt">
+      <span class="eyebrow">A comunidade · gratuita e online</span>
+      <h2>Entre na comunidade e comece a florescer.</h2>
+      <p>Receba em primeira mão o curso <b>Princípio de Débora</b>, seja acolhida em uma célula e
+         faça parte do time que vai mudar de vez a Bahia, governando a si mesma, o seu entorno e os seus projetos.</p>
+      <p class="comunidade__saibamais"><a href="movimento.html">Conheça o movimento por inteiro →</a></p>
+    </div>
+    <a class="btn btn--claro btn--lg" id="btnGrupo" href="#cadastro">Entrar na comunidade</a>
+  </div>
+</section>
+
+<!-- ============ PRIVACIDADE (LGPD) ============ -->
+<section class="privacidade" id="privacidade">
+  <div class="privacidade__inner">
+    <details>
+      <summary>Aviso de Privacidade (LGPD)</summary>
+      <div class="privacidade__body">
+        <p>O movimento <b>Mulheres que Governam</b> coleta os dados informados neste formulário
+           (nome, WhatsApp, município, área/mensagem) com a finalidade exclusiva de convidar você
+           para a comunidade e manter contato sobre o movimento.</p>
+        <p>Seus dados não são vendidos nem compartilhados com terceiros para fins de publicidade.
+           Você pode solicitar a correção ou a exclusão dos seus dados a qualquer momento pelo mesmo
+           canal de WhatsApp. Tratamos tudo com respeito e sigilo, conforme a Lei nº 13.709/2018 (LGPD).</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ RODAPÉ ============ -->
+<footer class="rodape">
+  <div class="rodape__inner">
+    <img src="logo-mqg-branco-h.png" alt="Mulheres que Governam" height="48">
+    <nav class="rodape__nav" aria-label="Redes sociais">
+      <a href="https://www.instagram.com/mulheresquegovernamofc_/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.5.4 1.1.4 2.2.1 1.3.1 1.6.1 4.8s0 3.5-.1 4.8c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.5.2-1.1.4-2.2.4-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.5-.4-1.1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.5.1-4.8c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.5-.2 1.1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2Zm0 1.8c-3.1 0-3.5 0-4.7.1-.9 0-1.4.2-1.7.3-.4.2-.7.4-1 .7-.3.3-.5.6-.7 1-.1.3-.3.8-.3 1.7-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c0 .9.2 1.4.3 1.7.2.4.4.7.7 1 .3.3.6.5 1 .7.3.1.8.3 1.7.3 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c.9 0 1.4-.2 1.7-.3.4-.2.7-.4 1-.7.3-.3.5-.6.7-1 .1-.3.3-.8.3-1.7.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c0-.9-.2-1.4-.3-1.7-.2-.4-.4-.7-.7-1-.3-.3-.6-.5-1-.7-.3-.1-.8-.3-1.7-.3-1.2-.1-1.6-.1-4.7-.1Zm0 3.1a4.9 4.9 0 1 1 0 9.8 4.9 4.9 0 0 1 0-9.8Zm0 8.1a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Zm6.3-8.3a1.15 1.15 0 1 1-2.3 0 1.15 1.15 0 0 1 2.3 0Z"/></svg>
+      </a>
+      <a href="https://wa.me/557192330000" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.7 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-1-.3-1.6-.6-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.8s.7-2 .9-2.2c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.5.1.3.7 1.1 1.5 1.8 1 .9 1.8 1.1 2 1.2.3.1.4.1.6-.1l.7-.8c.2-.2.3-.2.6-.1l1.8.9c.3.1.4.2.5.3.1.2.1.7-.1 1.2Z"/></svg>
+      </a>
+    </nav>
+    <nav class="rodape__links" aria-label="Páginas">
+      <a href="index.html">Início</a>
+      <a href="movimento.html">O movimento</a>
+      <a href="#cadastro">Fazer parte</a>
+    </nav>
+    <p class="rodape__assin"><b>Mulheres que Governam</b> · Um movimento de mulheres pela Bahia · Idealizado por Talita Oliveira</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    // Permite `import "./telefone.ts"` com a extensão.
+    //
+    // Os scripts de `scripts/*.mjs` importam arquivos de `src/lib/` DIRETO, no
+    // Node puro — e o Node exige a extensão e não conhece o atalho `@/`, que é
+    // do bundler do Next. Sem isto, qualquer import dentro desses arquivos
+    // compartilhados derruba o script, e só se descobre rodando o script.
+    //
+    // Seguro porque `noEmit` está ligado: o TypeScript não gera nada, só
+    // confere. Quem compila é o Next.
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}

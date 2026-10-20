@@ -1,0 +1,335 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #101114;
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: var(--tema);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: #71727a;
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #e6e6e9;
+  --input: #d2d2d7;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  /* 7px. Canto de 10px em cartão pequeno lê como aplicativo de celular; o
+     canto mais fechado é o que separa painel de trabalho de cartão de rede
+     social. */
+  --radius: 0.4375rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* ---------------------------------------------------------------------------
+   Identidade Talita Oliveira
+   As cores da marca deixam de ser valor solto espalhado pelo código e passam a
+   ter nome. Trocar a marca vira trocar cinco linhas, não caçar hexadecimal.
+   --------------------------------------------------------------------------- */
+:root {
+  --marca-azul: #0525f7; /* a cor do logo */
+  --marca-grafite: #161719; /* a barra lateral */
+  --marca-limao: #4ab608; /* verde vivo (manual novo), usar pouco */
+  --marca-rosa: #e71a75;
+  --marca-ambar: #ffb700;
+
+  /* Neutros de grafite.
+     Eram puxados para o marinho — cinza com azul dentro. Isso somado a uma
+     barra lateral azul e a um azul de destaque deixava a tela inteira azul, e
+     cor que está em tudo deixa de significar qualquer coisa. Agora o neutro é
+     neutro de verdade, e o azul da marca fica guardado para o que importa. */
+  --tinta-50: #fafafa;
+  --tinta-100: #f2f2f3;
+  --tinta-200: #e6e6e9;
+  --tinta-300: #d2d2d7;
+  --tinta-400: #9b9ca4;
+  --tinta-500: #71727a;
+  --tinta-600: #52535c;
+  --tinta-700: #3c3d45;
+  --tinta-800: #26272c;
+  --tinta-900: #101114;
+}
+
+@theme inline {
+  --color-marca: var(--marca-azul);
+  --color-grafite: var(--marca-grafite);
+  --color-limao: var(--marca-limao);
+  --color-rosa: var(--marca-rosa);
+  --color-ambar: var(--marca-ambar);
+  --color-tinta-50: var(--tinta-50);
+  --color-tinta-100: var(--tinta-100);
+  --color-tinta-200: var(--tinta-200);
+  --color-tinta-300: var(--tinta-300);
+  --color-tinta-400: var(--tinta-400);
+  --color-tinta-500: var(--tinta-500);
+  --color-tinta-600: var(--tinta-600);
+  --color-tinta-700: var(--tinta-700);
+  --color-tinta-800: var(--tinta-800);
+  --color-tinta-900: var(--tinta-900);
+}
+
+/* ---------------------------------------------------------------------------
+   Tema escolhido por quem usa
+   A cor de destaque e o fundo da barra lateral são preferência, não decisão de
+   projeto: quem passa o dia na tela é quem sabe o que cansa a vista. Ficam em
+   variáveis para trocar sem recarregar nada.
+   --------------------------------------------------------------------------- */
+:root {
+  /* O AZUL DO LOGO, E NÃO UM AZUL DE MODELO.
+     #4c8df6 era um azul de template — o mesmo de qualquer painel pronto. O da
+     marca é este, e ele é forte o bastante para aparecer pouco: fica no que se
+     clica e no que está selecionado, em mais nada. */
+  --tema: #0525f7;
+
+  /* BARRA DE GRAFITE.
+     A barra era o tema puxado para o escuro, ou seja, uma placa azul de 260px
+     encostada em toda tela. Ela competia com o conteúdo o dia inteiro e ainda
+     obrigava o resto da paleta a ser azul para combinar. Grafite neutro não
+     compete com nada: ele emoldura. */
+  --barra-fundo: #161719;
+  --barra-realce: #ffffff;
+  --barra-texto: #f4f4f5;
+  --barra-suave: rgba(244, 244, 245, 0.55);
+  --barra-fraca: rgba(244, 244, 245, 0.32);
+  --barra-ativo: rgba(255, 255, 255, 0.07);
+  --barra-hover: rgba(255, 255, 255, 0.04);
+  --barra-traco: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-barra="escuro"] {
+  --barra-fundo: #000000;
+  --barra-realce: var(--tema);
+  --barra-suave: rgba(255, 255, 255, 0.56);
+  --barra-fraca: rgba(255, 255, 255, 0.34);
+  --barra-ativo: rgba(255, 255, 255, 0.08);
+  --barra-hover: rgba(255, 255, 255, 0.04);
+  --barra-traco: rgba(255, 255, 255, 0.09);
+}
+
+:root[data-barra="claro"] {
+  --barra-fundo: #fafafa;
+  --barra-texto: #101114;
+  --barra-suave: #52535c;
+  --barra-fraca: #9b9ca4;
+  --barra-ativo: #eaeaec;
+  --barra-hover: #f2f2f3;
+  --barra-traco: #e6e6e9;
+  --barra-realce: var(--tema);
+}
+
+/* O logo branco some no fundo claro e o azul some no escuro. */
+.logo-claro {
+  display: none;
+}
+:root[data-barra="claro"] .logo-escuro {
+  display: none;
+}
+:root[data-barra="claro"] .logo-claro {
+  display: block;
+}
+
+@theme inline {
+  --color-tema: var(--tema);
+  --color-barra: var(--barra-fundo);
+  --color-barra-texto: var(--barra-texto);
+  --color-barra-suave: var(--barra-suave);
+  --color-barra-fraca: var(--barra-fraca);
+  --color-barra-ativo: var(--barra-ativo);
+  --color-barra-hover: var(--barra-hover);
+  --color-barra-traco: var(--barra-traco);
+  --color-barra-realce: var(--barra-realce);
+}
+
+@layer base {
+  /* Número em coluna só alinha com dígito de largura fixa. Vale para a
+     plataforma inteira: é tudo contagem. */
+  .tabular,
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Título longo quebrando com uma palavra sozinha na última linha é a
+     diferença entre parecer diagramado e parecer despejado. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  /* ─────────────────────────────────────────────────────────────────────────
+     O ZOOM QUE FAZ A TELA "MEXER" NO CELULAR
+
+     O iPhone dá zoom sozinho quando a pessoa toca num campo com fonte menor
+     que 16px. A página pula, sai do lugar, e ela precisa fechar o teclado e
+     reposicionar — a cada campo, o dia inteiro.
+
+     Não é preferência do sistema nem coisa que se desligue: é regra do
+     navegador. A única saída é o campo ter 16px NA HORA DO TOQUE.
+
+     Vale para a plataforma toda, e não só para a caixa de entrada: quem
+     atende pelo celular também cadastra, filtra e configura. `!important`
+     porque precisa vencer as classes de tamanho de cada componente — é o
+     raro caso em que ele é a ferramenta certa, e não preguiça.
+     ───────────────────────────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Rolagem elástica no fim da lista faz a página inteira balançar no iPhone,
+     e num painel de trabalho isso parece defeito. */
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Rede de segurança contra rolagem lateral. `clip` em vez de `hidden`
+       porque `hidden` cria um contexto de rolagem e mata os cabeçalhos que
+       grudam no topo. Isto não substitui consertar o elemento que vazou —
+       serve para que um descuido novo não vire a tela andando de lado no
+       celular de quem está na rua. */
+    overflow-x: clip;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Fonte de cartaz (/1022)
+
+   Era `font-[family-name:var(--font-cartaz)]`, propriedade arbitrária do
+   Tailwind. A classe saía no HTML e a REGRA não era gerada no CSS — conferido
+   no arquivo servido em 29/09: nem `family-name:var(--font-cartaz)`, nem a
+   própria variável.
+
+   O efeito não foi "a fonte ficou padrão", foi pior: o texto herdava a
+   entrelinha de 0.86 e o espaçamento negativo, que só fazem sentido numa
+   condensada. Numa fonte normal aquilo vira letra colada e linha sobreposta —
+   foi o que ele viu e chamou de desalinhado.
+
+   Classe explícita não depende de o Tailwind adivinhar nada.
+   --------------------------------------------------------------------------- */
+.cartaz {
+  font-family: var(--font-cartaz), "Arial Narrow", Impact, sans-serif;
+  font-weight: 400;
+}
+
+/* O pulso da chamada do grupo (/1022). Escala pequena de propósito: barra
+   fixa que cresce muito cobre conteúdo e assusta. */
+@keyframes pulsa {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[pulsa_1\.1s_ease-in-out_infinite\] { animation: none; }
+}

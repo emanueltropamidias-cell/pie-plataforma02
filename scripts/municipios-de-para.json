@@ -1,0 +1,141 @@
+{
+  "_leia": [
+    "De-para das grafias da Planilha de Atendimentos para o nome oficial em municipios_ba.",
+    "O mapa da Bahia soma por NOME EXATO. Uma grafia solta nao erra o total do painel:",
+    "ela some do mapa em silencio, e o municipio aparece mais vazio do que e.",
+    "",
+    "Tres destinos possiveis:",
+    "  <nome oficial>  -> entra no mapa naquele municipio",
+    "  \"\"              -> sem municipio (marcador de nao informado, ou regiao sem cidade)",
+    "  \"__fora_ba\"     -> pessoa de outro estado; fica cadastrada, mas fora do mapa da Bahia",
+    "",
+    "Distrito e bairro vao para a cidade a que pertencem — que e onde a pessoa vota."
+  ],
+
+  "_nao_informado": {
+    "X": ""
+  },
+
+  "_sufixo_ou_barra": {
+    "Itabuna Ba": "Itabuna",
+    "Brumado Bahia": "Brumado",
+    "Coração De Maria/Ba": "Coração de Maria",
+    "Itapetinga / Jussari": "Itapetinga",
+    "Rio De Contas / Chapada Diamantina": "Rio de Contas",
+    "Feira De Santana / Cidade Nova": "Feira de Santana",
+    "Maracas, Lagedo De Tabocal": "Maracás",
+    "Monte Santo, Cansanção,Euclides": "Monte Santo",
+    "Salvador/Valença": "Salvador",
+    "Salvador, Paripe": "Salvador",
+    "Salvador, Caminho De Areia": "Salvador",
+    "Salvador / Brasília": "Salvador",
+    "Eunápolis / Gama Do Juca": "Eunápolis",
+    "Eunápolis / Gama Do Juca (?)": "Eunápolis",
+    "Formosa Do Rio Preto / Jardim Imperial": "Formosa do Rio Preto",
+    "Jaguaquara / Palmeira": "Jaguaquara",
+    "Jaguarari / Pilar": "Jaguarari",
+    "Planalto/ Sabino Neto": "Planalto",
+    "Sento Sé / Tombador": "Sento Sé",
+    "Valença / Bolivia": "Valença",
+    "Wagner / Alto Da Estrela": "Wagner",
+    "Serra Dourada/Barreiras": "Serra Dourada",
+    "Lapão/Irecê": "Lapão",
+    "Mansidão / Santa Rita": "Mansidão"
+  },
+
+  "_parenteses": {
+    "Barra Da Estiva (Chapada Diamantina)": "Barra da Estiva",
+    "Itambé (Vitória Da Conquista)": "Itambé",
+    "Caetité (Caldeirão)": "Caetité",
+    "Salvador (Federação)": "Salvador"
+  },
+
+  "_erro_de_digitacao": {
+    "Senhor Do Bomfim": "Senhor do Bonfim",
+    "Cotejipe": "Cotegipe",
+    "Urandir": "Urandi",
+    "Butirama": "Buritirama",
+    "Cordeiro": "Cordeiros",
+    "Itabebi": "Itapebi",
+    "Lajedo Tabocal": "Lajedo do Tabocal"
+  },
+
+  "_distrito_ou_bairro": {
+    "Tartaruga Distrito De Milagres": "Milagres",
+    "Zona Rural De Conquista/Juazeiro": "Vitória da Conquista",
+    "Ilha De Maré": "Salvador",
+    "Itapua": "Salvador",
+    "Morro De São Paulo": "Cairu",
+    "Posto Da Mata": "Nova Viçosa",
+    "Itabata": "Mucuri",
+    "Barra Do Rio Grande": "Barra"
+  },
+
+  "_outro_estado": {
+    "São Paulo": "__fora_ba",
+    "Betim": "__fora_ba",
+    "Montavana - Mg": "__fora_ba",
+    "Marabá - Pa": "__fora_ba",
+    "Aracaju": "__fora_ba",
+    "Recife": "__fora_ba",
+    "Tianguá": "__fora_ba"
+  },
+
+  "_regiao_sem_cidade": {
+    "Chapada Diamantina": "",
+    "Bahia": "",
+    "Norte Da Bahia": "",
+    "Sudoeste E Oeste Baiano": "",
+    "Pernambuco,Apoio Familiar Bahia": ""
+  },
+
+  "_ja_estava_na_base": {
+    "_por_que": "Estas grafias nao vieram da planilha: ja estavam gravadas em liderancas, e por isso ja somem do mapa hoje. Entraram aqui porque a pergunta certa nao e 'como conserto a planilha' e sim 'onde mais isso existe'. Sao 45 pessoas.",
+
+    "..": "",
+    ",,": "",
+    "!!": "",
+    "++": "",
+    "Padro": "",
+    "Lisinu": "",
+    "sebastiao de souza": "",
+    "chapada": "",
+    "CHAPADA DIAMANTINA": "",
+    "chapada diamantina": "",
+
+    "so savado": "Salvador",
+    "Remansso Bahia": "Remanso",
+    "Boa vista Tumpi": "Boa Vista do Tupim",
+    "Campo alegre": "Campo Alegre de Lourdes",
+
+    "Itabatan": "Mucuri",
+    "Mata nova viçosa": "Nova Viçosa",
+    "Calda de jorro": "Tucano",
+    "Itamira apora bahia": "Aporá",
+
+    "sao paulo": "__fora_ba",
+    "Guarujá": "__fora_ba",
+    "Muriaé/MG": "__fora_ba",
+    "RIO GRANDE DO NORTE": "__fora_ba",
+    "VOLTA REDONDA": "__fora_ba",
+    "Apoiadora de outro estado. CEARÁ": "__fora_ba",
+    "Sobral/CE": "__fora_ba",
+    "POÇO VERDE": "__fora_ba",
+    "medicilândia": "__fora_ba",
+    "Cururupu/MA": "__fora_ba",
+    "MARABA": "__fora_ba"
+  },
+
+  "_ambiguo_fica_sem_municipio": {
+    "_por_que": "Uma pessoa cada. Chutar poe gente no mapa da cidade errada, e o mapa e o que a coordenacao usa para decidir para onde manda equipe. Sem municipio, a pessoa continua cadastrada e o mapa continua honesto.",
+    "Ibitirama": "",
+    "Tancredo Neves": "",
+    "Arraial": "",
+    "Cristóvão": "",
+    "Guanabara": "",
+    "Atalaia": "",
+    "Bento Simoes": "",
+    "Brotas Do Rio (?)": "",
+    "São Sebastião (?)": ""
+  }
+}

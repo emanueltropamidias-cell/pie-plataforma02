@@ -1,0 +1,92 @@
+[
+ {
+  "meta": 17160,
+  "municipio": "Salvador",
+  "votos_base": 5720,
+  "mesorregiao": "RMS"
+ },
+ {
+  "meta": 4425,
+  "municipio": "Feira de Santana",
+  "votos_base": 1475,
+  "mesorregiao": "Norte/Oeste"
+ },
+ {
+  "meta": 4134,
+  "municipio": "Vitória da Conquista",
+  "votos_base": 1378,
+  "mesorregiao": "Centro-Sul"
+ },
+ {
+  "meta": 3558,
+  "municipio": "Ilhéus",
+  "votos_base": 1186,
+  "mesorregiao": "Sul"
+ },
+ {
+  "meta": 3207,
+  "municipio": "Jequié",
+  "votos_base": 1069,
+  "mesorregiao": "Centro-Sul"
+ },
+ {
+  "meta": 2298,
+  "municipio": "Juazeiro",
+  "votos_base": 766,
+  "mesorregiao": "Norte/Oeste"
+ },
+ {
+  "meta": 2019,
+  "municipio": "Camaçari",
+  "votos_base": 673,
+  "mesorregiao": "RMS"
+ },
+ {
+  "meta": 1836,
+  "municipio": "Luís Eduardo Magalhães",
+  "votos_base": 612,
+  "mesorregiao": "Norte/Oeste"
+ },
+ {
+  "meta": 1512,
+  "municipio": "Lauro de Freitas",
+  "votos_base": 504,
+  "mesorregiao": "RMS"
+ },
+ {
+  "meta": 1419,
+  "municipio": "Porto Seguro",
+  "votos_base": 473,
+  "mesorregiao": "Sul"
+ },
+ {
+  "meta": 1395,
+  "municipio": "Itabuna",
+  "votos_base": 465,
+  "mesorregiao": "Sul"
+ },
+ {
+  "meta": 1383,
+  "municipio": "Teixeira de Freitas",
+  "votos_base": 461,
+  "mesorregiao": "Sul"
+ },
+ {
+  "meta": 1245,
+  "municipio": "Alagoinhas",
+  "votos_base": 415,
+  "mesorregiao": "Norte/Oeste"
+ },
+ {
+  "meta": 1239,
+  "municipio": "Poções",
+  "votos_base": 413,
+  "mesorregiao": "Centro-Sul"
+ },
+ {
+  "meta": 1134,
+  "municipio": "Santo Antônio de Jesus",
+  "votos_base": 378,
+  "mesorregiao": "RMS"
+ }
+]

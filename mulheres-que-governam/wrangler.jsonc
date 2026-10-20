@@ -1,0 +1,39 @@
+{
+  // ── COMO O MULHERES QUE GOVERNAM É PUBLICADO ─────────────────────────────
+  //
+  // O site NÃO está no Cloudflare Pages, apesar de parecer. Ele é um Worker
+  // que só serve arquivos estáticos — foi assim que nasceu, pelo botão de
+  // upload do painel.
+  //
+  // Descobrir isso custou tempo: a conta tem ZERO projetos no Pages, e o site
+  // respondia normalmente. Está escrito aqui para ninguém procurar no lugar
+  // errado de novo.
+  //
+  // ── O NOME NÃO PODE MUDAR ────────────────────────────────────────────────
+  //
+  // `green-feather-b5ea` é o nome sorteado pelo Cloudflare quando o Worker foi
+  // criado. É feio e é o que o domínio aponta: publicar com outro nome cria um
+  // Worker NOVO e deixa o site no ar com a versão velha, sem erro nenhum.
+  "name": "green-feather-b5ea",
+
+  // A mesma data que já estava no Worker. Mudar isso muda o comportamento do
+  // runtime, e não há motivo para mexer num site de arquivos parados.
+  "compatibility_date": "2026-07-07",
+
+  // Estava ligado. Declarar explicitamente porque o wrangler DESLIGA quando o
+  // campo falta — e aí o endereço .workers.dev, que serve de teste, morre.
+  "workers_dev": true,
+
+  // ── AS ROTAS NÃO ESTÃO AQUI, E É DE PROPÓSITO ────────────────────────────
+  //
+  // `mulheresquegovernam.site` e a outra rota foram ligadas pelo painel, como
+  // Custom Domain. Declarar rotas aqui faria o wrangler TOMAR CONTA delas — e
+  // um erro de digitação tiraria o site do ar.
+  //
+  // Sem o campo, ele publica o código e não encosta nas rotas.
+
+  // Só arquivos: não existe código neste Worker, e por isso não há `main`.
+  "assets": {
+    "directory": "./"
+  }
+}

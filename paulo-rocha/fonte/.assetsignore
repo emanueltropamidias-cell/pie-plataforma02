@@ -1,0 +1,9 @@
+# O que NÃO vai para o ar.
+#
+# `logo-paulo-rocha.png` é o ARQUIVO DE ORIGEM em alta, guardado para gerar
+# favicon e recortes. A página serve `selo.jpg`, que é a versão leve. Subir o
+# original seria 1 MB que ninguém baixa de propósito — e tudo que sobe numa
+# pasta de site fica público.
+logo-paulo-rocha.png
+.assetsignore
+wrangler.jsonc

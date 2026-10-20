@@ -1,0 +1,15 @@
+# O que NÃO vai para o ar.
+#
+# O wrangler publica a pasta inteira. Sem esta lista, as cópias de segurança e
+# os originais das logos iriam junto — e ficariam acessíveis a quem digitasse
+# o endereço, porque tudo que sobe numa pasta de site é público.
+#
+# `.antes` são as versões anteriores das artes e do CSS, guardadas para
+# desfazer. `logos-novas` são os arquivos crus que o Emanuel mandou, antes de
+# virarem as artes finais.
+
+*.antes
+logos-novas/
+.assetsignore
+wrangler.jsonc
+fotos/

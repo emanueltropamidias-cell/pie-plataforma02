@@ -1,0 +1,8 @@
+# Troque pelo domínio de verdade antes de subir.
+#
+# O Caddy pede e renova o certificado sozinho — não há passo de Let's Encrypt
+# para lembrar. Em troca, exige que o domínio JÁ aponte para o IP do VPS quando
+# o contêiner sobe: sem isso a validação falha e ele fica tentando em silêncio.
+evo.SEUDOMINIO.com.br {
+    reverse_proxy evolution:8080
+}

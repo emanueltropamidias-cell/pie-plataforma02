@@ -1,0 +1,104 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>teste — cadastro automático pela mensagem</title>
+<pre id="out"></pre>
+<script>
+/* Cópia das funções de leitura de src/lib/cadastro-automatico.ts, sem os tipos
+   e sem as partes que falam com o banco. Ao mexer no original, atualize aqui.
+
+   Estas funções vieram do webhook da Meta, que NUNCA rodou — zero linhas com
+   created_via='whatsapp' no banco. Ou seja: nunca foram exercitadas de verdade
+   contra mensagem nenhuma. É o motivo deste arquivo existir. */
+
+function soDigitos(v) { return (v || "").replace(/\D/g, ""); }
+function chave(s) {
+  return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, " ").trim();
+}
+function formatarBR(waId) {
+  let d = soDigitos(waId);
+  if (d.startsWith("55")) d = d.slice(2);
+  if (d.length === 10 && "6789".includes(d[2])) d = d.slice(0, 2) + "9" + d.slice(2);
+  if (d.length === 11) return "(" + d.slice(0,2) + ") " + d.slice(2,7) + "-" + d.slice(7);
+  if (d.length === 10) return "(" + d.slice(0,2) + ") " + d.slice(2,6) + "-" + d.slice(6);
+  return d;
+}
+function nomeIndicado(texto) {
+  const m = texto.match(/indica[çc][ãa]o\s+de\s+([^.!?\n💙]+)/i);
+  return m ? m[1].trim().slice(0, 80) : null;
+}
+const MUNICIPIOS = ["Salvador","Barra","Barra do Choça","Feira de Santana","Una","Ipirá",
+  "Vitória da Conquista","Camaçari","Bom Jesus da Lapa","Santa Maria da Vitória","Itabuna"];
+const POR_CHAVE = new Map(MUNICIPIOS.map(n => [chave(n), n]));
+function acharMunicipio(texto) {
+  const t = chave(texto);
+  if (!t) return null;
+  let achado = null;
+  for (const [k, nome] of POR_CHAVE) {
+    if (k.length < 4) continue;
+    if (!t.includes(k)) continue;
+    if (!achado || nome.length > achado.length) achado = nome;
+  }
+  return achado;
+}
+function acharBairro(texto) {
+  const m = texto.match(/bairro\s*(?:é|eh|:|-)?\s*([A-Za-zÀ-ÿ0-9'\s.]{3,40})/i);
+  if (!m) return null;
+  const bruto = m[1].split(/[,.\n;]/)[0].trim();
+  if (!bruto) return null;
+  return bruto.toLowerCase().split(/\s+/)
+    .map(p => ["de","da","do","das","dos","e"].includes(p) ? p : p.charAt(0).toUpperCase() + p.slice(1))
+    .join(" ").slice(0, 60);
+}
+
+// ── testes ─────────────────────────────────────────────────────────────────
+const L = []; let falhas = 0;
+function ok(n, c, d = "") { if (!c) falhas++; L.push((c ? "  ok   " : "  FALHA") + "  " + n + (d ? "   → " + d : "")); }
+
+L.push("TELEFONE (como o WhatsApp entrega → como a base guarda)");
+ok("celular com 55 vira (DDD) 9xxxx-xxxx", formatarBR("5571992330000") === "(71) 99233-0000", formatarBR("5571992330000"));
+ok("sem o nono dígito, ele é inserido", formatarBR("557192330000") === "(71) 99233-0000", formatarBR("557192330000"));
+ok("fixo de 10 dígitos não ganha nono", formatarBR("557132330000") === "(71) 3233-0000", formatarBR("557132330000"));
+ok("já sem o 55 funciona igual", formatarBR("71992330000") === "(71) 99233-0000", formatarBR("71992330000"));
+
+L.push("");
+L.push("QUEM INDICOU (a frase que o QR monta)");
+ok("a mensagem oficial do QR", nomeIndicado("Oii Talita! Vim pela indicação de Maria Souza. 💙") === "Maria Souza", JSON.stringify(nomeIndicado("Oii Talita! Vim pela indicação de Maria Souza. 💙")));
+ok("sem cedilha e sem til", nomeIndicado("vim pela indicacao de Jose da Silva.") === "Jose da Silva");
+ok("sem ponto final, com quebra de linha", nomeIndicado("indicação de Ana Paula\nmoro em Salvador") === "Ana Paula");
+ok("sem indicação devolve null", nomeIndicado("Oi, quero ajudar na campanha") === null);
+{
+  const longo = nomeIndicado("indicação de " + "A".repeat(200));
+  ok("nome absurdo é cortado em 80", longo.length === 80, longo.length + " caracteres");
+}
+
+L.push("");
+L.push("MUNICÍPIO (o caso que já mordeu antes)");
+ok("nome comprido ganha do curto", acharMunicipio("sou de Barra do Choça") === "Barra do Choça", acharMunicipio("sou de Barra do Choça"));
+ok("Barra sozinha ainda é reconhecida", acharMunicipio("moro na Barra") === "Barra");
+ok("sem acento casa igual", acharMunicipio("sou de vitoria da conquista") === "Vitória da Conquista");
+ok("maiúsculas casam igual", acharMunicipio("FEIRA DE SANTANA") === "Feira de Santana");
+ok("nome curto demais não casa solto", acharMunicipio("uma coisa assim") === null, "'Una' dentro de 'uma' não conta");
+ok("texto sem município devolve null", acharMunicipio("bom dia, tudo bem?") === null);
+
+L.push("");
+L.push("BAIRRO");
+ok("frase corrida", acharBairro("sou do bairro Tomba") === "Tomba", acharBairro("sou do bairro Tomba"));
+ok("com dois pontos", acharBairro("bairro: Cajazeiras") === "Cajazeiras");
+ok("preposição fica minúscula", acharBairro("bairro Alto do Cabrito") === "Alto do Cabrito", acharBairro("bairro Alto do Cabrito"));
+ok("corta na vírgula", acharBairro("bairro Pituba, perto do shopping") === "Pituba", acharBairro("bairro Pituba, perto do shopping"));
+ok("sem bairro devolve null", acharBairro("moro em Salvador") === null);
+
+L.push("");
+L.push("A MENSAGEM COMPLETA, COMO ELA CHEGA");
+{
+  const t = "Oii Talita! Vim pela indicação de Maria Souza. 💙 Sou de Barra do Choça, bairro Centro.";
+  ok("extrai indicação", nomeIndicado(t) === "Maria Souza");
+  ok("extrai município", acharMunicipio(t) === "Barra do Choça");
+  ok("extrai bairro", acharBairro(t) === "Centro");
+}
+
+L.push("");
+L.push(falhas === 0 ? "TODOS OS " + L.filter(x => x.includes("ok   ") || x.includes("FALHA")).length + " TESTES PASSARAM" : falhas + " FALHA(S)");
+document.getElementById("out").textContent = L.join("\n");
+</script>

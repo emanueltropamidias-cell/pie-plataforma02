@@ -1,0 +1,40 @@
+# Publicação na Netlify. O site é estático: não há build, é só servir a pasta.
+
+[build]
+  publish = "."
+  command = ""
+
+# ── CABEÇALHOS ──────────────────────────────────────────────────────────────
+#
+# A Meta abre o site para conferir a identidade da campanha. Cabeçalho de
+# segurança não é enfeite: é o que impede o site de ser embutido dentro de
+# outra página se passando por ela.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Imagem e estilo podem ficar em cache; a página não, para correção de texto
+# aparecer na hora.
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Sem www: um endereço só. Dois endereços servindo o mesmo site confundem a
+# verificação da Meta e dividem o que o Google entende do domínio.
+[[redirects]]
+  from = "https://www.pauloviniciuscamposrocha.com/*"
+  to = "https://pauloviniciuscamposrocha.com/:splat"
+  status = 301
+  force = true

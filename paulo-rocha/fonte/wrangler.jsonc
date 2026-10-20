@@ -1,0 +1,9 @@
+{
+  // Site estático servido por um Worker, igual ao Mulheres que Governam.
+  // O domínio pauloviniciuscamposrocha.com só passa a responder depois que a
+  // zona estiver no Cloudflare — até lá ele atende pelo endereço .workers.dev.
+  "name": "paulo-rocha-22762",
+  "compatibility_date": "2026-09-15",
+  "assets": { "directory": "." },
+  "workers_dev": true
+}

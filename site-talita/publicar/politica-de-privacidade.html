@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade | Talita Oliveira 1022</title>
+<meta name="description" content="Como o site de Talita Oliveira trata os dados de quem entra em contato.">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="logo-1022-branca.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#4ab608;            /* o verde da marca, amostrado das artes */
+  --verde-fundo:#2a7100;      /* o mesmo verde escurecido, para texto sobre branco */
+  --verde-noite:#063d05;      /* as seções escuras — verde, não azul */
+  --verde-nevoa:#eef7e6;      /* lavagem clarinha, para blocos de respiro */
+  --ambar:#ffb700;
+  --tinta:#16211a; --tinta-2:#4a5a4f; --tinta-3:#7d8c82;
+  --linha:#e4eae2; --papel:#fff; --papel-2:#f7faf5;
+  --fonte:'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  --raio:20px; --larg:1180px;
+}
+*,*::before,*::after{box-sizing:border-box}
+/* O atributo hidden e regra fraca do navegador; qualquer display na classe
+   vence e o elemento aparece assim mesmo. Foi o que aconteceu com o botao
+   "Baixar de novo", que nascia visivel e desabilitado. */
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;font-family:var(--fonte);color:var(--tinta);background:var(--papel);
+  -webkit-font-smoothing:antialiased;line-height:1.65;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3{line-height:1.1;margin:0;letter-spacing:-.025em;font-weight:800}
+p{margin:0 0 1em}
+.env{width:100%;max-width:var(--larg);margin:0 auto;padding:0 22px}
+.secao{padding:72px 0}
+@media(min-width:900px){.secao{padding:110px 0}}
+.olho{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--verde-fundo);margin:0 0 14px}
+.secao--escura .olho,.secao--verde .olho{color:var(--ambar)}
+h2.tit{font-size:clamp(28px,5.6vw,46px);margin:0 0 22px}
+.sub{font-size:clamp(15.5px,2.2vw,18px);color:var(--tinta-2);max-width:62ch}
+.secao--escura{background:var(--verde-noite);color:#fff}
+.secao--escura .sub{color:rgba(255,255,255,.80)}
+.secao--clara{background:var(--papel-2)}
+.secao--nevoa{background:var(--verde-nevoa)}
+.secao--verde{background:var(--verde);color:var(--tinta)}
+.secao--verde .sub{color:rgba(22,33,26,.82)}
+
+/* SVG em linha sem largura declarada vira 300x150 px, que é o padrão do
+   navegador — um desses dentro de um botão estoura a página no celular. */
+svg{flex-shrink:0}
+.bt svg{width:19px;height:19px}
+.abrir svg{width:26px;height:26px}
+
+/* ── botões ───────────────────────────────────────────────────────────────── */
+.bt{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:15px 26px;
+  border-radius:999px;font-weight:700;font-size:15px;text-decoration:none;
+  border:2px solid transparent;cursor:pointer;min-height:50px;
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.bt:hover{transform:translateY(-2px)}
+.bt--verde{background:var(--verde);color:var(--tinta);box-shadow:0 10px 26px rgba(74,182,8,.30)}
+.bt--ambar{background:var(--ambar);color:var(--tinta);box-shadow:0 10px 26px rgba(255,183,0,.32)}
+.bt--escuro{background:var(--verde-noite);color:#fff}
+.bt--linha{border-color:var(--linha);color:var(--tinta);background:#fff}
+.bt--linha-clara{border-color:rgba(255,255,255,.55);color:#fff}
+.bt--linha-clara:hover{background:rgba(255,255,255,.12)}
+
+/* ── barra ────────────────────────────────────────────────────────────────── */
+.barra{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--linha)}
+.barra__int{display:flex;align-items:center;justify-content:space-between;gap:16px;height:72px}
+.barra__marca{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.barra__marca img{height:30px;width:auto}
+.barra__num{background:var(--verde);color:var(--tinta);font-weight:800;font-size:13.5px;
+  padding:4px 10px;border-radius:8px}
+.menu{display:none}
+.menu a{text-decoration:none;color:var(--tinta-2);font-size:12.5px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.menu a:hover,.menu a:focus-visible{color:var(--verde-fundo)}
+@media(min-width:1000px){
+  .menu{display:flex;align-items:center;gap:26px}
+  .abrir{display:none}
+}
+.abrir{background:none;border:0;padding:10px;cursor:pointer;color:var(--tinta);line-height:0}
+.gaveta{position:fixed;inset:72px 0 0;background:#fff;padding:26px 22px 40px;
+  display:none;flex-direction:column;gap:2px;overflow-y:auto;z-index:49}
+.gaveta[data-aberta]{display:flex}
+.gaveta a{color:var(--tinta);text-decoration:none;font-size:18px;font-weight:700;padding:16px 0;
+  border-bottom:1px solid var(--linha)}
+.gaveta .bt{margin-top:22px}
+
+/* ── topo: foto sangrando, como no primeiro protótipo ─────────────────────── */
+/* O véu é VERDE-NOITE, não azul-marinho. A composição é a mesma que agradou —
+   foto do Planalto ocupando a tela, texto à esquerda, número em âmbar —, mas na
+   cor da campanha, que é a que o resto do site passou a usar. */
+.topo{position:relative;background:var(--verde-noite);color:#fff;overflow:hidden}
+.topo__fundo{position:absolute;inset:0;background-size:cover;background-position:74% center}
+.topo__veu{position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(6,40,5,.60) 0%,rgba(6,40,5,.86) 58%,rgba(6,40,5,.96) 100%)}
+@media(min-width:900px){
+  .topo__veu{background:linear-gradient(100deg,rgba(6,40,5,.95) 0%,rgba(6,40,5,.86) 44%,rgba(6,40,5,.22) 100%)}
+}
+.topo__int{position:relative;z-index:1;padding:60px 0 68px}
+@media(min-width:900px){.topo__int{padding:104px 0 112px}}
+.topo__texto{max-width:58ch}
+@media(min-width:900px){.topo__texto{max-width:56%}}
+.topo h1{font-size:clamp(38px,8.4vw,66px);margin:0 0 4px}
+.topo__lema{font-size:clamp(21px,4.4vw,33px);font-weight:800;line-height:1.15;margin:16px 0 20px;
+  max-width:17ch;color:#fff}
+.topo__lema span{color:var(--ambar);display:block}
+.topo__cargo{font-size:15.5px;color:rgba(255,255,255,.86);font-weight:600;margin:0 0 24px}
+.topo__num{display:inline-flex;flex-direction:column;align-items:center;background:var(--ambar);
+  color:var(--tinta);border-radius:20px;padding:12px 30px 15px;margin:0 0 28px;
+  box-shadow:0 16px 44px rgba(255,183,0,.26)}
+.topo__num b{font-size:clamp(50px,12vw,74px);line-height:.94;font-weight:800;letter-spacing:-.04em}
+.topo__num small{font-size:10.5px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+  opacity:.85}
+.topo__bts{display:flex;flex-wrap:wrap;gap:12px}
+
+/* ── pergunta: era azul chapado e agressivo; virou branco com fio verde ───── */
+.pergunta h2{font-size:clamp(26px,5.4vw,44px);max-width:20ch;margin:0 0 24px;
+  border-left:6px solid var(--verde);padding-left:22px}
+.pergunta p{max-width:60ch;color:var(--tinta-2);font-size:clamp(15.5px,2.2vw,18px)}
+
+/* ── grades ───────────────────────────────────────────────────────────────── */
+.grade{display:grid;gap:18px}
+.grade--2{grid-template-columns:1fr}
+.grade--3{grid-template-columns:1fr}
+.grade--4{grid-template-columns:repeat(2,1fr)}
+@media(min-width:680px){.grade--3{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){
+  .grade--2{grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}
+  .grade--3{grid-template-columns:repeat(3,1fr)}
+  .grade--4{grid-template-columns:repeat(3,1fr)}
+}
+.cartao{background:#fff;border:1px solid var(--linha);border-radius:var(--raio);
+  padding:28px 24px;height:100%}
+.secao--clara .cartao,.secao--nevoa .cartao{background:#fff}
+.secao--escura .cartao{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+.cartao h3{font-size:18.5px;margin:0 0 10px}
+.cartao p{font-size:14.5px;color:var(--tinta-2);margin:0}
+.secao--escura .cartao p{color:rgba(255,255,255,.78)}
+
+/* números */
+.num{background:#fff;border:1px solid var(--linha);border-radius:var(--raio);
+  padding:26px 20px;text-align:center}
+.num b{display:block;font-size:clamp(27px,4.6vw,40px);font-weight:800;color:var(--verde-fundo);
+  line-height:1.02;letter-spacing:-.03em;margin-bottom:10px}
+.num span{font-size:13.5px;color:var(--tinta-2);line-height:1.5;display:block}
+.num--largo{grid-column:1/-1}
+@media(min-width:900px){.num--largo{grid-column:span 2}}
+.num--largo b{font-size:clamp(19px,2.6vw,25px);letter-spacing:-.01em}
+
+/* bandeiras */
+.band{position:relative;overflow:hidden}
+.band__n{position:absolute;top:18px;right:22px;font-size:36px;font-weight:800;
+  color:var(--verde-nevoa);line-height:1}
+.band__ic{width:46px;height:46px;border-radius:14px;background:var(--verde-nevoa);
+  display:grid;place-items:center;color:var(--verde-fundo);margin-bottom:18px}
+.band__ic svg{width:23px;height:23px}
+
+/* foto com texto */
+.foto{border-radius:var(--raio);overflow:hidden;background:var(--papel-2)}
+.foto img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}
+.foto--alta img{aspect-ratio:3/4}
+.citacao{border-left:5px solid var(--ambar);padding:8px 0 8px 22px;margin:30px 0 0;
+  font-size:clamp(20px,3.4vw,27px);font-weight:800;line-height:1.24}
+
+/* ── galeria ──────────────────────────────────────────────────────────────── */
+.filtros{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 26px}
+.filtro{background:#fff;border:1px solid var(--linha);color:var(--tinta-2);
+  border-radius:999px;padding:10px 18px;font:700 12.5px var(--fonte);cursor:pointer;min-height:42px}
+.filtro[aria-pressed="true"]{background:var(--verde);border-color:var(--verde);color:var(--tinta)}
+.galeria{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.galeria{grid-template-columns:repeat(4,1fr);gap:16px}}
+.galeria figure{margin:0;border-radius:14px;overflow:hidden;background:var(--papel-2)}
+/* Retrato 4/5 com o recorte puxado para cima: em foto de gente o rosto fica no
+   terço superior, e o corte centrado decepava a cabeça. */
+.galeria img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:center 22%;
+  transition:transform .35s ease}
+.galeria figure:hover img{transform:scale(1.05)}
+
+/* ── moldura ──────────────────────────────────────────────────────────────── */
+.mold{display:grid;gap:26px}
+@media(min-width:900px){.mold{grid-template-columns:.9fr 1.1fr;gap:48px;align-items:center}}
+.mold__palco{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+  border-radius:var(--raio);padding:18px;display:grid;place-items:center;min-height:320px}
+.mold__tela{width:100%;max-width:300px;aspect-ratio:9/16;border-radius:12px;
+  background:rgba(0,0,0,.22);display:block}
+.mold__passos{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:12px;counter-reset:p}
+.mold__passos li{counter-increment:p;display:flex;gap:13px;align-items:flex-start;
+  font-size:15px;color:rgba(255,255,255,.88)}
+.mold__passos li::before{content:counter(p);flex-shrink:0;width:27px;height:27px;border-radius:50%;
+  background:var(--ambar);color:var(--tinta);font-weight:800;font-size:13px;display:grid;
+  place-items:center;margin-top:1px}
+.mold__bts{display:flex;flex-wrap:wrap;gap:12px}
+.mold__arq{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* ── vazio, formulário, contato ───────────────────────────────────────────── */
+.vazio{border:1px dashed var(--linha);border-radius:var(--raio);padding:44px 24px;text-align:center;
+  color:var(--tinta-3);font-size:14.5px}
+.form{display:grid;gap:15px}
+@media(min-width:700px){.form{grid-template-columns:1fr 1fr}.form .full{grid-column:1/-1}}
+.campo label{display:block;font-size:12.5px;font-weight:700;margin-bottom:7px;color:var(--tinta-2)}
+.campo input,.campo select{width:100%;min-height:50px;padding:13px 15px;border:1px solid var(--linha);
+  border-radius:12px;font:400 15px var(--fonte);background:#fff;color:var(--tinta)}
+.campo input:focus,.campo select:focus{outline:2px solid var(--verde);outline-offset:1px}
+.aceite{display:flex;gap:11px;align-items:flex-start;font-size:13px;color:var(--tinta-2)}
+.aceite input{width:20px;height:20px;margin-top:2px;flex-shrink:0}
+.contato{display:grid;gap:20px}
+@media(min-width:800px){.contato{grid-template-columns:repeat(2,1fr)}}
+.contato dt{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ambar);margin-bottom:5px}
+.contato dd{margin:0 0 20px;font-size:15.5px;color:#fff;word-break:break-word}
+.falta{background:rgba(255,183,0,.18);border:1px dashed var(--ambar);color:var(--ambar);
+  padding:2px 9px;border-radius:7px;font-size:12.5px;font-weight:700}
+
+.zap{position:fixed;right:16px;bottom:16px;z-index:60;width:58px;height:58px;border-radius:50%;
+  background:#25D366;display:grid;place-items:center;box-shadow:0 12px 30px rgba(0,0,0,.24);
+  text-decoration:none}
+.zap svg{width:30px;height:30px;color:#fff}
+
+/* ── rodapé ───────────────────────────────────────────────────────────────── */
+.rodape{background:var(--verde-noite);color:#fff;padding:60px 0 0}
+.rodape__grade{display:grid;gap:34px}
+@media(min-width:800px){.rodape__grade{grid-template-columns:1.2fr 1fr 1fr}}
+.rodape h4{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ambar);
+  margin:0 0 15px;font-weight:800}
+.rodape ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.rodape a{color:rgba(255,255,255,.82);text-decoration:none;font-size:14px}
+.rodape a:hover{color:#fff}
+.rodape__num{display:inline-block;background:var(--verde);color:var(--tinta);font-weight:800;
+  font-size:32px;padding:5px 18px;border-radius:14px;margin-top:12px;letter-spacing:-.03em}
+.redes{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.redes a{width:44px;height:44px;border-radius:13px;border:1px solid rgba(255,255,255,.22);
+  display:grid;place-items:center;color:#fff}
+.redes a:hover{background:rgba(255,255,255,.10)}
+.redes svg{width:19px;height:19px}
+
+/* Exigência do TSE e da Meta. Texto puro, sem JavaScript, servido no HTML — o
+   rastreador da Meta não executa script nem lê imagem. */
+.legal{margin-top:52px;border-top:1px solid rgba(255,255,255,.14);padding:28px 0 34px;
+  text-align:center;font-size:13px;line-height:1.7;color:rgba(255,255,255,.55)}
+.legal b{display:block;font-weight:600;color:rgba(255,255,255,.78);margin-bottom:10px}
+.legal p{margin:0 0 4px}
+
+.pular{position:absolute;left:-9999px;background:var(--ambar);color:var(--tinta);
+  padding:12px 18px;border-radius:8px;font-weight:700;z-index:100}
+.pular:focus{left:16px;top:12px}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+
+.doc{max-width:760px;margin:0 auto;padding:40px 20px 60px}
+.doc h2{font-size:22px;margin:34px 0 12px}
+.doc p,.doc li{color:var(--tinta-2);font-size:15.5px}
+</style></head>
+<body>
+<header class="barra"><div class="env barra__int">
+  <a class="barra__marca" href="index.html"><img src="logo-branca.png"
+    alt="Talita Oliveira" width="120" height="26"><span class="barra__num">1022</span></a>
+</div></header>
+<main class="doc">
+  <h1 style="font-size:30px;margin-bottom:8px">Política de Privacidade</h1>
+  <p>Última atualização: agosto de 2026.</p>
+
+  <h2>Quem trata os seus dados</h2>
+  <p>Os dados informados neste site são tratados sob responsabilidade de
+     <b>ELEIÇÃO 2026 TALITA SANTOS DE OLIVEIRA PEIXOTO DEPUTADO FEDERAL</b>, CNPJ 68.237.041/0001-30, com endereço em Alameda Salvador, 1057, Caminho das Árvores, Salvador, BA.
+     Contato: deputada@talitaoliveiraoficial.com.</p>
+
+  <h2>O que este site coleta</h2>
+  <p>Este site é estático e <b>não guarda os seus dados</b>. O formulário da seção “Participe” não envia
+     nada para um servidor: ele monta uma mensagem com o que você escreveu e abre o WhatsApp da campanha,
+     para que você mesmo decida enviá-la. Enquanto você não enviar, nada sai do seu aparelho.</p>
+  <p>A partir do momento em que você envia a mensagem, os dados dela passam a ser tratados pela equipe
+     da campanha para responder ao seu contato e organizar a participação — nome, telefone, cidade,
+     bairro, e-mail e a forma de participação escolhida.</p>
+
+  <h2>Para que usamos</h2>
+  <ul>
+    <li>Responder ao seu contato;</li>
+    <li>Organizar a participação de voluntários e apoiadores;</li>
+    <li>Enviar informações sobre a campanha, quando você pedir.</li>
+  </ul>
+  <p>Não vendemos, alugamos nem cedemos os seus dados a terceiros.</p>
+
+  <h2>Seus direitos</h2>
+  <p>A Lei Geral de Proteção de Dados garante que você peça, a qualquer momento, a confirmação do
+     tratamento, o acesso, a correção ou a exclusão dos seus dados. Basta escrever para
+     deputada@talitaoliveiraoficial.com.</p>
+
+  <h2 id="cookies">Cookies</h2>
+  <p>Este site não usa cookies de rastreamento próprios. Ele carrega a fonte Poppins do Google Fonts,
+     que é um serviço externo e pode registrar o seu endereço IP para entregar o arquivo da fonte.
+     Caso a campanha passe a usar ferramentas de medição, esta política será atualizada antes.</p>
+
+  <h2 id="termos">Termos de uso</h2>
+  <p>O conteúdo deste site é de responsabilidade de ELEIÇÃO 2026 TALITA SANTOS DE OLIVEIRA PEIXOTO DEPUTADO FEDERAL e tem finalidade de
+     divulgação da candidatura. Textos e imagens não podem ser usados para fins comerciais ou para
+     alterar o sentido do que foi publicado.</p>
+
+  <p style="margin-top:36px"><a class="bt bt--azul" href="index.html">Voltar ao site</a></p>
+</main>
+<footer class="rodape"><div class="env"><div class="legal">
+  <b>ELEIÇÃO 2026 TALITA SANTOS DE OLIVEIRA PEIXOTO DEPUTADO FEDERAL</b>
+  <p>CNPJ: 68.237.041/0001-30</p>
+  <p>Alameda Salvador, 1057, Caminho das Árvores, Salvador, BA</p>
+  <p style="margin-bottom:12px">deputada@talitaoliveiraoficial.com</p>
+  <p>Conteúdo de responsabilidade de ELEIÇÃO 2026 TALITA SANTOS DE OLIVEIRA PEIXOTO DEPUTADO FEDERAL.</p>
+</div></div></footer>
+</body></html>

@@ -1,0 +1,377 @@
+/* =========================================================
+   Mulheres que Governam — captura (modelo "landing")
+   ========================================================= */
+:root{
+  --rosa:#df397a; --rosa-esc:#c22f66;
+  /* Os tons escuros do rosa, no lugar do vinho. O topo, o herói e o rodapé
+     continuam sendo bloco colorido com logo branca por cima — que é o único
+     jeito de a logo do Drive, que é branca pura, funcionar. */
+  --rosa-fundo:#a8265440; --rosa-1:#c22f66; --rosa-2:#a82654; --rosa-3:#8d1f46;
+  /* O ouro virou branco: sobre o rosa ele brigava, e a marca é rosa e branca. */
+  /* Era o ouro. A marca é rosa e branca, então o destaque sobre o rosa é o
+     branco. O nome muda junto: nome que mente custa mais que nome feio. */
+  --claro:#ffffff; --claro-suave:rgba(255,255,255,.86);
+  --tinta:#241019; --tinta-suave:#6f5c65;
+  --luz:#ffffff; --creme:#fdf3f7; --linha:#f0dde5;
+  --sans:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  --raio:16px; --raio-lg:22px;
+  --shadow:0 30px 70px -35px rgba(141,31,70,.45);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{font-family:var(--sans);color:var(--tinta);background:var(--luz);line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit}
+
+/* ---------- HEADER ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(141,31,70,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar__inner{max-width:1160px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.topbar__logo img{height:34px;width:auto}
+.topbar__nav{display:flex;align-items:center;gap:22px}
+.topbar__nav a{color:rgba(255,255,255,.82);text-decoration:none;font-size:14.5px;font-weight:500}
+.topbar__nav a:hover{color:#fff}
+.topbar__ig{background:var(--rosa);color:#fff!important;padding:9px 18px;border-radius:100px;font-weight:700}
+.topbar__ig:hover{background:var(--rosa-esc)}
+
+/* ---------- BOTÕES ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:var(--sans);font-weight:700;font-size:16px;border:none;border-radius:100px;padding:16px 26px;cursor:pointer;text-decoration:none;transition:transform .16s ease,box-shadow .16s ease,background .16s ease,opacity .16s}
+.btn--rosa{background:var(--rosa);color:#fff}
+.btn--rosa:hover:not(:disabled){background:var(--rosa-esc);transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(223,57,122,.55)}
+.btn--rosa:disabled{opacity:.45;cursor:not-allowed}
+.btn--claro{background:#fff;color:var(--rosa-2)}
+.btn--claro:hover{background:var(--claro-suave);transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(223,57,122,.45)}
+.btn--lg{padding:18px 34px;font-size:17px}
+
+/* ---------- HERO ---------- */
+.hero{background:linear-gradient(165deg,var(--rosa-3),var(--rosa-2) 60%,var(--rosa-1));padding:44px 22px 64px}
+.hero__grid{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:stretch}
+
+/* card marca / figura */
+.brandcard{border-radius:var(--raio-lg);overflow:hidden;background:linear-gradient(160deg,var(--rosa-2),var(--rosa-3));border:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;min-height:520px}
+.brandcard__media{position:relative;flex:1 1 auto;min-height:300px;
+  /* Foto de abertura (Talita). Se o arquivo abertura.jpg ainda não estiver na pasta,
+     os degradês abaixo aparecem no lugar (sem ícone de imagem quebrada). */
+  background-image:url('abertura.jpg'),
+    radial-gradient(120% 90% at 70% 0,rgba(223,57,122,.35),transparent 60%),
+    linear-gradient(160deg,var(--rosa-2),var(--rosa-3));
+  background-size:cover,cover,cover;
+  background-position:50% 18%,center,center;
+  background-repeat:no-repeat;
+  display:flex;align-items:center;justify-content:center;
+}
+.brandcard__ph{color:rgba(255,255,255,.55);font-size:13px;letter-spacing:.5px;border:1px dashed rgba(255,255,255,.35);padding:10px 16px;border-radius:100px}
+.brandcard__body{padding:26px 28px 30px;background:linear-gradient(0deg,var(--rosa-3),transparent);margin-top:-40px;position:relative}
+.brandcard__logo{width:360px;max-width:72%;height:auto;margin-bottom:18px}
+/* 210px -> 300px: a logo lia pequena dentro do cartão. O `max-width` em
+   porcentagem é o que impede ela de encostar nas bordas no celular —
+   largura fixa em pixel é o jeito de a arte estourar a tela estreita. */
+.brandcard__tag{color:var(--claro);font-weight:600;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.brandcard__lead{color:rgba(255,255,255,.8);font-size:16px;max-width:440px}
+.brandcard__stats{list-style:none;display:flex;gap:26px;margin-top:22px;border-top:1px solid rgba(255,255,255,.12);padding-top:18px}
+.brandcard__stats strong{display:block;color:var(--rosa);font-size:26px;line-height:1}
+.brandcard__stats span{color:rgba(255,255,255,.6);font-size:12px;letter-spacing:.5px;text-transform:uppercase}
+
+/* card formulário */
+.formcard{background:var(--luz);border-radius:var(--raio-lg);padding:32px 30px;box-shadow:var(--shadow)}
+.formcard__title{font-size:26px;font-weight:700;letter-spacing:-.01em}
+.formcard__sub{color:var(--tinta-suave);font-size:15px;margin:6px 0 22px}
+
+.tipo{border:none;margin-bottom:18px}
+.tipo legend{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tinta-suave);margin-bottom:10px}
+.tipo__grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tipo__opt{position:relative;cursor:pointer}
+.tipo__opt input{position:absolute;opacity:0;pointer-events:none}
+.tipo__opt span{display:block;border:1.5px solid var(--linha);border-radius:12px;padding:13px 14px;transition:border-color .15s,background .15s}
+.tipo__opt b{display:block;font-size:14.5px}
+.tipo__opt small{display:block;color:var(--tinta-suave);font-size:11.5px;line-height:1.35;margin-top:2px}
+.tipo__opt input:checked+span{border-color:var(--rosa);background:rgba(223,57,122,.07)}
+.tipo__opt input:focus-visible+span{outline:2px solid var(--claro);outline-offset:2px}
+
+.field{margin-bottom:15px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--tinta);margin-bottom:6px}
+.field .opt{color:var(--tinta-suave);font-weight:400}
+.field input,.field textarea{width:100%;font-family:var(--sans);font-size:15px;color:var(--tinta);background:var(--creme);border:1.5px solid var(--linha);border-radius:11px;padding:13px 14px;outline:none;transition:border-color .15s,background .15s}
+.field textarea{resize:vertical;min-height:70px}
+.field input::placeholder,.field textarea::placeholder{color:#b8a9af}
+.field input:focus,.field textarea:focus{border-color:var(--rosa);background:#fff}
+.field input.erro{border-color:#e2464f;background:#fff5f5}
+
+.consent{display:flex;gap:10px;align-items:flex-start;margin:6px 0 20px;font-size:13px;color:var(--tinta-suave);line-height:1.5}
+.consent input{margin-top:3px;width:17px;height:17px;accent-color:var(--rosa);flex:none}
+.consent a{color:var(--rosa-esc);text-decoration:underline}
+.btn--rosa[type=submit]{width:100%}
+
+.sucesso{margin-top:16px;text-align:center;background:rgba(223,57,122,.08);border:1px solid rgba(223,57,122,.3);border-radius:12px;padding:16px}
+.sucesso__flor{font-size:26px}
+.sucesso b{display:block;margin:4px 0}
+.sucesso p{font-size:13px;color:var(--tinta-suave)}
+.sucesso a{color:var(--rosa-esc)}
+
+/* ---------- COMUNIDADE ---------- */
+.comunidade{background:var(--creme)}
+.comunidade__inner{max-width:1160px;margin:0 auto;padding:56px 22px;display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--rosa-esc);margin-bottom:12px}
+.comunidade__txt{max-width:620px}
+.comunidade__txt h2{font-size:clamp(24px,3.2vw,34px);font-weight:700;letter-spacing:-.01em;line-height:1.12}
+.comunidade__txt p{color:var(--tinta-suave);margin-top:12px;font-size:16px}
+.comunidade__txt b{color:var(--tinta)}
+.comunidade__saibamais{margin-top:14px}
+.comunidade__saibamais a{color:var(--rosa-esc);font-weight:600;text-decoration:none;border-bottom:1.5px solid rgba(223,57,122,.35);padding-bottom:1px;transition:border-color .15s}
+.comunidade__saibamais a:hover{border-color:var(--rosa)}
+
+/* ---------- PRIVACIDADE ---------- */
+.privacidade{background:var(--creme);padding:0 22px 56px}
+.privacidade__inner{max-width:1160px;margin:0 auto}
+.privacidade details{background:#fff;border:1px solid var(--linha);border-radius:12px;padding:4px 20px}
+.privacidade summary{cursor:pointer;font-weight:600;padding:14px 0;font-size:14px}
+.privacidade__body{padding:0 0 16px;color:var(--tinta-suave);font-size:14px}
+.privacidade__body p{margin-bottom:10px}
+
+/* ---------- RODAPÉ ---------- */
+.rodape{background:var(--rosa-3);padding:34px 22px}
+.rodape__inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.rodape__inner img{height:30px;width:auto}
+.rodape__nav{display:flex;gap:12px}
+.rodape__nav a{color:#fff;opacity:.85;transition:opacity .15s,transform .15s}
+.rodape__nav a:hover{opacity:1;transform:translateY(-2px)}
+.rodape__links{width:100%;display:flex;gap:14px 24px;flex-wrap:wrap;justify-content:center;font-size:14.5px}
+.rodape__links a{color:rgba(255,255,255,.78);text-decoration:none;font-weight:500;transition:color .15s}
+.rodape__links a:hover{color:#fff}
+.rodape__assin{color:rgba(255,255,255,.55);font-size:13px;width:100%;text-align:center;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;margin-top:6px}
+.rodape__assin b{color:rgba(255,255,255,.85)}
+
+/* =========================================================
+   GRAFISMO FLORAL (tulipa da marca — tom sobre tom, sutil)
+   ========================================================= */
+.hero,.comunidade,.doc-hero,.doc-cta,.brandcard__media{position:relative;overflow:hidden}
+.hero::before,.comunidade::after,.doc-hero::after,.doc-cta::before,.brandcard__media::after{
+  content:"";position:absolute;background-repeat:no-repeat;background-position:center;background-size:contain;pointer-events:none;z-index:0}
+/* hero: tulipa branca gigante, bem apagada, atrás dos cards */
+.hero::before{left:-70px;bottom:-90px;width:340px;height:340px;background-image:url('simbolo-mqg-branco.png');opacity:.06}
+.hero__grid{position:relative;z-index:1}
+/* card da marca: tulipa branca no canto */
+.brandcard__media::after{right:-26px;bottom:-26px;width:180px;height:180px;background-image:url('simbolo-mqg-branco.png');opacity:.14}
+/* comunidade (fundo claro): tulipa rosa suave */
+.comunidade::after{right:-50px;top:-40px;width:280px;height:280px;background-image:url('simbolo-mqg-rosa.png');opacity:.07}
+.comunidade__inner{position:relative;z-index:1}
+/* institucional hero: tulipa branca */
+.doc-hero::after{right:-60px;bottom:-70px;width:300px;height:300px;background-image:url('simbolo-mqg-branco.png');opacity:.07}
+.doc-hero .doc-wrap{position:relative;z-index:1}
+/* CTA final: par de tulipas ouro nas laterais */
+.doc-cta::before{left:-40px;top:-30px;width:220px;height:220px;background-image:url('simbolo-mqg-branco.png');opacity:.08}
+.doc-cta .doc-wrap{position:relative;z-index:1}
+
+/* =========================================================
+   PÁGINA /movimento (institucional)
+   ========================================================= */
+.doc h1,.doc h2{letter-spacing:-.015em;line-height:1.1}
+.doc-wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+.eyebrow--claro{color:var(--claro)}
+.claro{color:#fff}
+
+.doc-hero{background:linear-gradient(165deg,var(--rosa-3),var(--rosa-2) 60%,var(--rosa-1));color:#fff;padding:84px 0 64px}
+.doc-hero h1{font-size:clamp(34px,6vw,58px);margin:6px 0 0}
+.doc-lead{font-size:clamp(16px,2vw,19px);color:rgba(255,255,255,.8);max-width:680px;margin-top:18px}
+.doc-lead--dark{color:var(--tinta-suave)}
+.doc-stats{display:flex;flex-wrap:wrap;gap:30px;margin-top:34px;border-top:1px solid rgba(255,255,255,.14);padding-top:24px}
+.doc-stats strong{display:block;color:var(--rosa);font-size:30px;line-height:1}
+.doc-stats span{color:rgba(255,255,255,.6);font-size:12px;letter-spacing:.6px;text-transform:uppercase}
+
+.doc-sec{padding:72px 0;background:#fff}
+.doc-sec h2{font-size:clamp(26px,3.6vw,40px);color:var(--tinta)}
+.doc-sec--creme{background:var(--creme)}
+.doc-sec--rosa{background:linear-gradient(180deg,var(--rosa-1),var(--rosa-3));color:#fff}
+.doc-sec--rosa h2{color:#fff}
+.doc-sec--rosa .doc-lead{color:rgba(255,255,255,.8)}
+
+.niveis,.pilares,.papeis,.pauta{display:grid;gap:18px;margin-top:34px}
+.niveis{grid-template-columns:repeat(3,1fr)}
+.pilares{grid-template-columns:repeat(3,1fr)}
+.pauta{grid-template-columns:repeat(3,1fr)}
+.papeis{grid-template-columns:repeat(2,1fr)}
+
+.nivel{padding:28px 24px;border:1px solid var(--linha);border-radius:var(--raio);background:#fff}
+.nivel__n{font-size:34px;font-weight:700;color:var(--claro);line-height:1}
+.nivel h3{font-size:19px;margin:10px 0 6px}
+.nivel p{color:var(--tinta-suave);font-size:15px}
+
+.pilar{padding:26px 24px;border-radius:var(--raio);background:#fff;border:1px solid var(--linha);border-left:4px solid var(--rosa)}
+.pilar b{font-size:17px}
+.pilar p{color:var(--tinta-suave);font-size:15px;margin-top:6px}
+
+.papel{padding:32px 28px;border-radius:var(--raio);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column}
+.papel__num{font-size:clamp(40px,6vw,58px);font-weight:700;color:var(--rosa);line-height:1}
+.papel__num--ouro{color:var(--claro)}
+.papel b{display:block;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85);margin:12px 0 12px}
+.papel p{color:rgba(255,255,255,.72);font-size:15px;margin-bottom:22px}
+.papel .btn{align-self:flex-start;margin-top:auto}
+.btn--sm{padding:12px 22px;font-size:14px}
+
+.jornada{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:34px;counter-reset:none}
+.jornada li{padding:26px 22px;border-radius:var(--raio);background:var(--creme);border:1px solid var(--linha)}
+.jornada span{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:var(--rosa);color:#fff;font-weight:700;margin-bottom:14px}
+.jornada b{font-size:16px}
+.jornada p{color:var(--tinta-suave);font-size:14px;margin-top:4px}
+
+.frase{font-style:italic;font-size:clamp(20px,2.6vw,26px);color:var(--rosa-1);border-left:4px solid var(--claro);padding-left:20px;margin:22px 0 8px}
+.pauta div{padding:24px 22px;border-radius:var(--raio);background:#fff;border:1px solid var(--linha)}
+.pauta b{font-size:16px}
+.pauta p{color:var(--tinta-suave);font-size:14.5px;margin-top:6px}
+
+.doc-cta{background:linear-gradient(165deg,var(--rosa-3),var(--rosa-2));color:#fff;text-align:center;padding:80px 22px}
+.doc-cta__flor{margin:0 auto 18px;opacity:.9}
+.doc-cta h2{font-size:clamp(28px,4vw,42px)}
+.doc-cta p{color:rgba(255,255,255,.78);max-width:520px;margin:12px auto 28px;font-size:17px}
+
+@media (max-width:820px){
+  .niveis,.pilares,.pauta,.papeis{grid-template-columns:1fr}
+  .jornada{grid-template-columns:1fr 1fr}
+}
+@media (max-width:520px){ .jornada{grid-template-columns:1fr} }
+
+/* ---------- RESPONSIVO ---------- */
+@media (max-width:900px){
+  .hero__grid{grid-template-columns:1fr}
+  .brandcard{min-height:0}
+  .brandcard__media{min-height:360px}
+}
+@media (max-width:560px){
+  /* Tela estreita: a logo grande do cartão empurraria o texto para baixo da
+     dobra. 300px é para desktop; aqui ela acompanha a largura disponível. */
+  .brandcard__logo{width:250px}
+  /* No celular o formulário/CTA já está logo abaixo: escondemos o botão rosa
+     do topo e deixamos visível o link de navegação ("O movimento" / "Início"),
+     senão a página institucional fica inacessível no telefone. */
+  .topbar__ig{display:none}
+  .topbar__nav a:not(.topbar__ig){font-size:15px;color:#fff}
+  .topbar__inner{padding:12px 16px}
+  .hero{padding:24px 16px 44px}
+  .formcard{padding:24px 20px}
+  .tipo__grid{grid-template-columns:1fr}
+  .brandcard__stats{gap:18px}
+  .comunidade__inner{padding:44px 18px}
+  .btn--lg{width:100%}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+
+/* =========================================================
+   TEXTO CORRIDO da página /movimento
+   ========================================================= */
+/* Coluna estreita: linha longa demais faz o olho perder onde voltar. ~62
+   caracteres é o que se lê sem esforço, e num texto em primeira pessoa a
+   leitura é o produto. */
+.doc-wrap--estreito{max-width:660px}
+.doc-texto{font-size:18px;line-height:1.75;color:#3a3036}
+.doc-texto p{margin:0 0 22px}
+.doc-texto p:last-child{margin-bottom:0}
+/* A frase que vira o texto do "por que existe" ganha peso e ar em volta —
+   é o ponto em que o depoimento vira convite. */
+.doc-texto__forte{font-size:23px;line-height:1.4;font-weight:700;color:var(--rosa);
+  margin:34px 0 26px!important}
+/* A assinatura fecha o texto: centralizada, para o olho saber que acabou. */
+.doc-texto__assin{margin-top:34px!important;padding-top:26px;
+  border-top:1px solid rgba(0,0,0,.08);
+  font-size:21px;line-height:1.45;font-weight:700;color:var(--rosa-2)}
+@media (max-width:560px){
+  .doc-texto{font-size:17px}
+  .doc-texto__forte{font-size:20px}
+}
+
+/* =========================================================
+   MOMENTOS — o movimento na rua
+   =========================================================
+
+   ── O ERRO DA PRIMEIRA VERSÃO ──────────────────────────────────────────────
+
+   Eu pus `aspect-ratio` na FOTO e deixei o atributo `height="1000"` no HTML.
+   Esse atributo não é só informação para o navegador reservar espaço: ele vira
+   altura de verdade, com prioridade sobre a minha proporção. Resultado: tiras
+   de 276 px de largura por 1000 de altura, e o Emanuel viu uma foto ocupando a
+   tela inteira do computador.
+
+   A correção é mover a proporção para o LADRILHO e mandar a foto preencher:
+   assim o atributo do HTML não tem o que disputar.
+
+   ── POR QUE A GRADE MUDOU DE FORMA ─────────────────────────────────────────
+
+   Retrato inteiro em fileira de quatro estica a página e empurra o convite
+   para longe. O ladrilho 4:5 corta um pouco e devolve uma página que se lê de
+   relance — e a galeria vai crescer, então ela tem de aguentar oito fotos sem
+   virar rolagem infinita.
+
+   `--foco` diz onde está o rosto em cada foto, porque cortar pelo meio
+   decapita quem foi fotografado de corpo inteiro. É por foto, no HTML, porque
+   é informação da foto e não do desenho. */
+.momentos{background:var(--luz);padding:64px 22px}
+.momentos__inner{max-width:1160px;margin:0 auto}
+.momentos__cab{max-width:660px;margin-bottom:34px}
+.momentos__cab h2{font-size:clamp(24px,3.2vw,34px);font-weight:700;letter-spacing:-.01em;line-height:1.14;margin-bottom:12px}
+.momentos__cab p{color:var(--tinta-suave);font-size:16.5px}
+
+/* `auto-fill` no lugar de um número fixo de colunas: a grade calcula quantas
+   cabem na largura que tem. Com quatro colunas fixas e cinco fotos, a quinta
+   ficava sozinha na segunda linha — e a galeria vai crescer, então o número
+   certo hoje é o número errado amanhã. */
+.momentos__grade{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.momentos__item{position:relative;aspect-ratio:4/5;border-radius:var(--raio-lg);overflow:hidden;background:var(--creme);box-shadow:0 18px 40px -28px rgba(141,31,70,.5)}
+/* `height:100%` é o que derruba o atributo `height` do HTML. Sem esta linha o
+   ladrilho volta a esticar. */
+.momentos__item img{width:100%;height:100%;object-fit:cover;object-position:var(--foco,center 38%);transition:transform .6s ease}
+.momentos__item:hover img{transform:scale(1.05)}
+
+/* ---- telas médias: três e depois duas colunas ---- */
+@media (max-width:1000px){
+  .momentos{padding:54px 20px}
+  .momentos__grade{gap:14px}
+}
+
+/* ---------- A FOTO DE ABERTURA EM TELA ESTREITA ----------------------------
+   No computador a foto não sofre corte lateral nenhum: ela encaixa na largura
+   do cartão e sobra só na altura. Por isso `50%` sempre esteve certo lá.
+
+   Abaixo de ~584px o cartão fica mais estreito que a foto deitada, e aí o
+   navegador corta os DOIS lados igualmente. Só que a Talita não está no meio
+   da foto — o rosto dela está a 45% da largura, com fundo cinza sobrando à
+   direita. Corte igual dos dois lados encosta ela na esquerda.
+
+   35% desloca a janela para a esquerda e devolve o rosto ao centro. O valor
+   ideal varia de 31% a 38% conforme a largura do aparelho; 35% é o meio, e o
+   erro nas pontas dá uns 12px — invisível.
+
+   Medido, não chutado: `recortar.py` no scratchpad recorta a foto exatamente
+   como o navegador recorta, e as duas versões foram comparadas lado a lado. */
+@media (max-width:600px){
+  .brandcard__media{background-position:35% 18%,center,center}
+}
+
+/* Escondida por padrão; a media query do celular a mostra. Esta regra tem de
+   vir ANTES, senão ela é a última e vence sempre. */
+.momentos__dica{display:none;margin:10px 18px 0;font-size:13.5px;color:var(--tinta-suave)}
+
+/* ---- celular: fileira que desliza ----------------------------------------
+   Em duas colunas num aparelho de 360 px cada foto fica com 160 px de largura,
+   e rosto de gente em 160 px não comunica nada. Aqui elas voltam a ser grandes
+   e a página continua curta: passa-se o dedo.
+
+   `scroll-snap` para cada foto parar inteira, nunca no meio. E a última ganha
+   margem à direita para não colar na borda. */
+@media (max-width:560px){
+  .momentos{padding:44px 0 48px}
+  .momentos__cab{padding:0 18px}
+  .momentos__grade{
+    grid-template-columns:none;
+    display:flex;gap:12px;
+    overflow-x:auto;scroll-snap-type:x mandatory;
+    padding:4px 18px 14px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .momentos__grade::-webkit-scrollbar{display:none}
+  .momentos__item{flex:0 0 72vw;scroll-snap-align:center;aspect-ratio:3/4}
+  .momentos__dica{display:block}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .momentos__item:hover img{transform:none}
+  .momentos__grade{scroll-behavior:auto}
+}
