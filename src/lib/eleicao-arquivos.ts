@@ -62,7 +62,11 @@ function fotoNoTse(ano: number, sq: string, ue: string | undefined) {
   return id && ue ? `https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/${id}/${sq}/${ue}` : null;
 }
 
-export type Manifesto = { ano: number; ufs: Record<string, { candidaturas: number; municipios: number }> };
+export type Manifesto = {
+  ano: number;
+  gerado_em?: string;
+  ufs: Record<string, { candidaturas: number; municipios: number }>;
+};
 
 const ESCALA = 1e13;
 
@@ -81,9 +85,9 @@ export function decodificarId(id: number) {
 const memoria = new Map<string, { em: number; valor: Promise<unknown> }>();
 const VALIDADE = 60 * 60 * 1000;
 
-function baixar<T>(caminho: string): Promise<T | null> {
+function baixar<T>(caminho: string, validade = VALIDADE): Promise<T | null> {
   const guardado = memoria.get(caminho);
-  if (guardado && Date.now() - guardado.em < VALIDADE) return guardado.valor as Promise<T | null>;
+  if (guardado && Date.now() - guardado.em < validade) return guardado.valor as Promise<T | null>;
   const valor = fetch(`${BASE}/${caminho}`, { cache: "no-store" }).then((r) =>
     r.ok ? (r.json() as Promise<T>) : null,
   );
@@ -93,8 +97,30 @@ function baixar<T>(caminho: string): Promise<T | null> {
   return valor;
 }
 
-export const lerManifesto = (ano: number) => baixar<Manifesto>(`eleicao/${ano}/manifesto.json`);
-const lerIndice = (ano: number, uf: string) => baixar<LinhaIndice[]>(`eleicao/${ano}/indice/${uf}.json`);
+// ── VERSÃO NA URL ───────────────────────────────────────────────────────────
+//
+// A CDN do Storage guarda cada arquivo por até 1 h. Em 20/10/2026 os índices
+// foram regerados (com o código da cidade, que a foto de urna precisa) e a
+// CDN seguiu entregando a versão antiga: candidatos de 2024 apareceram sem
+// foto até a cópia expirar. Agora todo arquivo é pedido com a data de geração
+// do manifesto (`?v=`), e o manifesto com uma marca de 5 minutos — dado novo
+// chega em no máximo 5 minutos, nunca preso numa cópia velha.
+const marcaDe5Min = () => Math.floor(Date.now() / 300_000);
+
+export function lerManifesto(ano: number) {
+  return baixar<Manifesto>(`eleicao/${ano}/manifesto.json?m=${marcaDe5Min()}`, 300_000);
+}
+
+async function versao(ano: number) {
+  const m = await lerManifesto(ano);
+  return m?.gerado_em ? encodeURIComponent(m.gerado_em) : "0";
+}
+
+async function lerDoAno<T>(ano: number, caminho: string) {
+  return baixar<T>(`eleicao/${ano}/${caminho}?v=${await versao(ano)}`);
+}
+
+const lerIndice = (ano: number, uf: string) => lerDoAno<LinhaIndice[]>(ano, `indice/${uf}.json`);
 
 /** Quais estados têm foto de urna no Storage, por ano. */
 async function ufsComFoto(ano: number): Promise<Set<string>> {
@@ -250,12 +276,12 @@ type ArquivoCidade = { municipio: string; candidatos: Record<string, { v: number
 
 /** Votos do candidato: { UF: { município: votos } } e as zonas. */
 async function votosDe(ano: number, uf: string, l: LinhaIndice): Promise<ArquivoCandidato | null> {
-  if (!MUNICIPAIS.has(l[2])) return baixar<ArquivoCandidato>(`eleicao/${ano}/c/${l[0]}.json`);
+  if (!MUNICIPAIS.has(l[2])) return lerDoAno<ArquivoCandidato>(ano, `c/${l[0]}.json`);
   // Eleição municipal: o candidato está dentro do arquivo da cidade dele.
-  const cidadeDe = await baixar<Record<string, string>>(`eleicao/${ano}/cidade-de/${uf}.json`);
+  const cidadeDe = await lerDoAno<Record<string, string>>(ano, `cidade-de/${uf}.json`);
   const cod = cidadeDe?.[l[0]];
   if (!cod) return { votos: {}, zonas: {} };
-  const cidade = await baixar<ArquivoCidade>(`eleicao/${ano}/m/${uf}/${cod}.json`);
+  const cidade = await lerDoAno<ArquivoCidade>(ano, `m/${uf}/${cod}.json`);
   const dele = cidade?.candidatos[l[0]];
   if (!cidade || !dele) return { votos: {}, zonas: {} };
   return { votos: { [uf]: { [cidade.municipio]: dele.v } }, zonas: { [uf]: { [cidade.municipio]: dele.z } } };

@@ -20,7 +20,12 @@ type Lista = {
 
 /** Foto de urna com reserva: falhou, mostra as iniciais — nunca imagem quebrada. */
 export function FotoUrna({ src, nome, tamanho }: { src: string | null; nome: string; tamanho: number }) {
-  const [falhou, setFalhou] = useState<string | null>(null);
+  // Uma segunda tentativa antes de desistir: a foto vem do TSE, e um tropeço
+  // de rede não pode virar "candidato sem foto".
+  const [tentativa, setTentativa] = useState<{ src: string | null; n: number }>({ src, n: 0 });
+  const n = tentativa.src === src ? tentativa.n : 0;
+  const falhou = n >= 2 ? src : null;
+  const atual = src && n === 1 ? `${src}${src.includes("?") ? "&" : "?"}r=1` : src;
   const iniciais = nome
     .split(" ")
     .filter(Boolean)
@@ -35,12 +40,14 @@ export function FotoUrna({ src, nome, tamanho }: { src: string | null; nome: str
       {src && falhou !== src ? (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
-          src={src}
+          src={atual!}
           alt={nome}
           loading="lazy"
           referrerPolicy="origin"
           className="h-full w-full object-cover object-top"
-          onError={() => setFalhou(src)}
+          onError={() =>
+            setTimeout(() => setTentativa({ src, n: n + 1 }), n === 0 ? 800 : 0)
+          }
         />
       ) : (
         iniciais
