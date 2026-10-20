@@ -1,4 +1,4 @@
-import { UserPlus, Shield, Trophy, Target, Compass, Handshake } from "lucide-react";
+import { UserPlus, Shield, Trophy, Target, Compass, Handshake, BarChart3 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Central, Faixa, Atalho } from "@/components/ui/central";
 
@@ -58,14 +58,25 @@ export default async function CentralEstrategia() {
         />
       </Faixa>
 
-      <Faixa titulo="Território" nota="Onde está o voto e onde falta.">
+      <Faixa titulo="Inteligência Eleitoral (TSE)" nota="Dados históricos e projeções das eleições.">
+        <Atalho
+          destaque
+          href="/estrategia/tse"
+          icone={BarChart3}
+          tom="azul"
+          titulo="Painel TSE (2022 • 2024 • 2026)"
+          nota="Votos por cargo, municípios e projeção de corte eleitoral"
+        />
         <Atalho
           href="/estrategia/votos"
           icone={Compass}
           tom="azul"
           titulo="Votos de 2022"
-          nota="Onde a Talita já teve voto, até o bairro"
+          nota="Onde a campanha já teve voto, até o bairro"
         />
+      </Faixa>
+
+      <Faixa titulo="Território" nota="Onde está o voto e onde falta.">
         <Atalho
           href="/metas"
           icone={Target}
