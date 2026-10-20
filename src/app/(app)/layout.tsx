@@ -131,23 +131,14 @@ export default async function AppLayout({
   // fora.
   if (noSubdominio) {
     return (
-      <main className="relative h-dvh overflow-y-auto bg-[#080b12] text-zinc-100">
-        <div className="pointer-events-none fixed -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[130px]" />
-        <div className="pointer-events-none fixed -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/8 blur-[140px]" />
-        <div className="relative z-10">{children}</div>
-      </main>
+      <main className="h-dvh overflow-y-auto bg-tinta-50">{children}</main>
     );
   }
 
   return (
-    <div className="relative flex h-dvh bg-[#080b12] text-zinc-100 overflow-hidden">
-      {/* Ambient atmospheric light spots inspired by Image 1 & 3 */}
-      <div className="pointer-events-none fixed -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-cyan-500/12 blur-[140px]" />
-      <div className="pointer-events-none fixed -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/8 blur-[160px]" />
-      <div className="pointer-events-none fixed top-1/3 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-blue-600/6 blur-[180px]" />
-
+    <div className="flex h-dvh bg-tinta-50">
       <AppSidebar userEmail={user.email} papel={perfil?.role ?? undefined} />
-      <main className="relative z-10 h-dvh min-w-0 flex-1 overflow-y-auto pt-14 md:pt-0">
+      <main className="h-dvh min-w-0 flex-1 overflow-y-auto pt-14 md:pt-0">
         {children}
       </main>
     </div>

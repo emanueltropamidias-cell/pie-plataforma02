@@ -52,30 +52,29 @@ function Exportar({
   // ocupa o cartão inteiro, e o dos números fica à direita, estreito.
   return (
     <div
-      className={`flex items-center rounded-lg border bg-[#0f1422]/75 backdrop-blur-xl transition-all duration-150 ${
-        destaque
-          ? "border-cyan-500/40 shadow-[0_0_20px_rgba(0,240,255,0.1)] hover:border-cyan-400"
-          : "border-white/[0.08] hover:border-white/20 hover:bg-[#121829]/80"
+      className={`flex items-center rounded-lg border bg-white transition-colors hover:border-tema ${
+        destaque ? "border-tema" : "border-tinta-200"
       }`}
     >
       <a href={href} download className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-cyan-500/15 text-cyan-400">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#eceafe] text-[#0525f7]">
           <Download size={17} />
         </span>
         <span className="min-w-0">
-          <span className="block text-[13.5px] font-semibold text-white">
-            {titulo} <span className="tabular font-normal text-zinc-400">· {n(quantidade)}</span>
+          <span className="block text-[13.5px] font-semibold text-tinta-900">
+            {titulo} <span className="tabular font-normal text-tinta-500">· {n(quantidade)}</span>
           </span>
-          <span className="block truncate text-[12px] text-zinc-400">{nota}</span>
+          <span className="block truncate text-[12px] text-tinta-500">{nota}</span>
         </span>
       </a>
 
-      {/* Só a contagem e o telefone com DDI, sem repetir ninguém. */}
+      {/* Só a contagem e o telefone com DDI, sem repetir ninguém. Para subir
+          público na Meta ou carregar disparador — ver src/lib/base-tipos.ts. */}
       <a
         href={`${href}${href.includes("?") ? "&" : "?"}formato=numeros`}
         download
         title="Só os números: uma coluna com a contagem e outra com DDI + DDD + telefone, sem repetidos"
-        className="shrink-0 self-stretch border-l border-white/[0.08] px-3.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400 hover:bg-white/[0.06] hover:text-cyan-400 flex items-center transition-colors"
+        className="shrink-0 self-stretch border-l border-tinta-200 px-3 text-[11px] font-semibold uppercase tracking-wide text-tinta-500 hover:bg-tinta-50 hover:text-tema flex items-center"
       >
         só nº
       </a>

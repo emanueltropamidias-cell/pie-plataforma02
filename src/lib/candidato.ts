@@ -70,18 +70,18 @@ function podeDesligar(valor: string | undefined, padrao: string): string {
   return valor === undefined ? padrao : valor.trim();
 }
 
-const NOME = process.env.NEXT_PUBLIC_CANDIDATO_NOME?.trim() || "Manuflow";
+const NOME = process.env.NEXT_PUBLIC_CANDIDATO_NOME?.trim() || "Talita Oliveira";
 
 export const CANDIDATO = {
-  /** Como o candidato ou sistema assina. Ex.: "Manuflow". */
+  /** Como o candidato assina. Ex.: "Talita Oliveira". */
   nome: NOME,
 
-  /** Só o primeiro nome. Ex.: "Manuflow". */
+  /** Só o primeiro nome, que é como o eleitor chama. Ex.: "Talita". */
   primeiroNome:
     process.env.NEXT_PUBLIC_CANDIDATO_PRIMEIRO_NOME?.trim() || NOME.split(" ")[0],
 
-  /** O cargo ou subtítulo institucional. */
-  cargo: process.env.NEXT_PUBLIC_CANDIDATO_CARGO?.trim() || "Inteligência & Gestão Política",
+  /** O cargo disputado, como aparece no material. */
+  cargo: process.env.NEXT_PUBLIC_CANDIDATO_CARGO?.trim() || "Deputada Federal",
 
   /** Estado. Todos os candidatos da coligação são da Bahia. */
   uf: process.env.NEXT_PUBLIC_CANDIDATO_UF?.trim() || "BA",
@@ -117,7 +117,7 @@ export const CANDIDATO = {
    * `capa.jpg`. Nome de arquivo com o nome da pessoa obriga a editar código
    * para trocar a arte; nome genérico faz trocar virar substituir o arquivo.
    */
-  marca: process.env.NEXT_PUBLIC_CANDIDATO_MARCA?.trim() || "manuflow",
+  marca: process.env.NEXT_PUBLIC_CANDIDATO_MARCA?.trim() || "talita",
 
   /** O site público, sem barra no fim. É a base dos links de QR. */
   site: (

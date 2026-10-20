@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Briefcase,
@@ -18,8 +19,8 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { SeletorTema } from "@/components/seletor-tema";
+import { MARCA } from "@/lib/candidato";
 import { moduloAtivo, moduloDoCaminho } from "@/lib/modulos";
-import { LogoManuFlow } from "@/components/brand/logo-manuflow";
 
 // Cada item tem ícone porque menu se varre, não se lê: o símbolo é reconhecido
 // antes da palavra, e é ele que sustenta o menu recolhido.
@@ -64,34 +65,19 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
         href: "/atendimento",
         label: "Atendimento",
         icone: MessageSquare,
-        abrange: [
-          "/trafego",
-          "/atendimento/caixa",
-          "/atendimento/cadastro",
-          "/atendimento/painel",
-          "/atendimento/metricas",
-          "/atendimento/supervisao",
-          "/atendimento/etiquetas",
-          "/atendimento/numeros",
-          "/atendimento/fluxo",
-          "/atendimento/conexao",
-          "/atendimento/kits",
-          "/atendimento/mensagens",
-          "/atendimento/audios",
-          "/atendimento/departamentos",
-        ],
+        abrange: ["/trafego"],
       },
       {
         href: "/base",
         label: "Base",
         icone: UsersRound,
-        abrange: ["/rede", "/leads", "/mapa", "/municipios", "/base/agenda", "/base/externas"],
+        abrange: ["/rede", "/leads", "/mapa", "/municipios"],
       },
       {
         href: "/estrategia",
         label: "Estratégia",
         icone: Compass,
-        abrange: ["/crm", "/ranking", "/metas", "/dobradinha", "/estrategia/votos"],
+        abrange: ["/crm", "/ranking", "/metas", "/dobradinha"],
       },
       {
         href: "/gabinete",
@@ -203,38 +189,62 @@ function Conteudo({
       <div
         className={`flex items-center gap-2 ${recolhido ? "justify-center" : "justify-between"}`}
       >
-        <Link href="/dashboard" className="transition-transform duration-200 hover:scale-[1.02]">
-          {recolhido ? (
-            <LogoManuFlow iconOnly size="md" />
-          ) : (
-            <LogoManuFlow size="md" />
-          )}
-        </Link>
+        {recolhido ? (
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-tema text-[13px] font-extrabold text-white">
+            MF
+          </span>
+        ) : (
+          <>
+            <Image
+              src={MARCA.branca}
+              alt="ManuFlow"
+              width={130}
+              height={34}
+              className="logo-escuro h-7 w-auto opacity-95"
+              priority
+            />
+            <Image
+              src={MARCA.cor}
+              alt="ManuFlow"
+              width={130}
+              height={34}
+              className="logo-claro h-7 w-auto"
+              priority
+            />
+          </>
+        )}
         {onRecolher && (
           <button
             type="button"
             onClick={onRecolher}
             aria-label={recolhido ? "Expandir menu" : "Recolher menu"}
-            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/5 bg-white/[0.04] text-zinc-400 transition-all hover:border-white/15 hover:bg-white/10 hover:text-white md:flex"
+            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md text-barra-fraca transition-colors hover:bg-barra-hover hover:text-barra-texto md:flex"
           >
             <ChevronLeft
-              size={15}
-              className={`transition-transform duration-200 ${recolhido ? "rotate-180" : ""}`}
+              size={16}
+              className={`transition-transform ${recolhido ? "rotate-180" : ""}`}
             />
           </button>
         )}
       </div>
 
-      {/* Usuário logado */}
+      {/* Era uma assinatura em Playfair itálico, a única serifada da plataforma
+          inteira e a única razão para carregar aquela fonte. Vira uma linha de
+          apoio: diz a mesma coisa e não pede holofote na barra de trabalho. */}
+      {!recolhido && (
+        <p className="mt-2 text-[11px] tracking-[0.01em] text-barra-fraca">
+          Plataforma de Inteligência
+        </p>
+      )}
+
+      {/* Quem está usando, no alto. Em ferramenta compartilhada, saber com qual
+          conta se está evita registrar demanda em nome de outra pessoa. */}
       <div
-        className={`mt-4 flex items-center gap-2.5 rounded-lg border border-barra-traco bg-barra-hover backdrop-blur-md ${
-          recolhido ? "justify-center px-0 py-2" : "px-3 py-2"
+        className={`mt-5 flex items-center gap-2.5 rounded-lg border border-barra-traco bg-barra-hover ${
+          recolhido ? "justify-center px-0 py-2.5" : "px-3 py-2.5"
         }`}
       >
-        <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[11.5px] font-bold text-white shadow-sm"
-          style={{ backgroundColor: "var(--tema)" }}
-        >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-tema text-[11.5px] font-bold text-white">
           {iniciais(nome)}
         </span>
         {!recolhido && (
@@ -242,14 +252,14 @@ function Conteudo({
             <span className="block truncate text-[12.5px] font-semibold text-barra-texto">
               {nome}
             </span>
-            <span className="block truncate text-[10.5px] text-barra-suave">
+            <span className="block truncate text-[10.5px] text-barra-fraca">
               {CARGO[papel ?? ""] ?? "Equipe"}
             </span>
           </span>
         )}
       </div>
 
-      <nav className="mt-4 flex flex-1 flex-col gap-4 overflow-y-auto pr-0.5">
+      <nav className="mt-5 flex flex-1 flex-col gap-5 overflow-y-auto">
         {visiveis.map((grupo) => (
           <div key={grupo.titulo} className="flex flex-col gap-0.5">
             {!recolhido && (
@@ -272,7 +282,12 @@ function Conteudo({
                   key={item.href}
                   href={item.href}
                   title={recolhido ? item.label : undefined}
+                  // Busca a página inteira antes do clique, não só o esqueleto.
+                  // O padrão do Next traz apenas o esqueleto em tela que depende
+                  // de sessão — que é justamente o branco que aparecia antes.
                   prefetch={item.pesado ? undefined : true}
+                  // E de novo ao passar o mouse: aí o conteúdo já chegou quando
+                  // o dedo desce, e a tela troca sem espera.
                   onMouseEnter={() => router.prefetch(item.href)}
                   onFocus={() => router.prefetch(item.href)}
                   onTouchStart={() => router.prefetch(item.href)}
@@ -280,27 +295,17 @@ function Conteudo({
                     setIndo(item.href);
                     onNav?.();
                   }}
-                  style={
-                    ativo || indoPara
-                      ? {
-                          backgroundColor: "var(--tema)",
-                          boxShadow: "0 0 16px color-mix(in srgb, var(--tema) 35%, transparent)",
-                        }
-                      : undefined
-                  }
-                  className={`group relative flex items-center gap-3 rounded-lg py-2 text-[13px] transition-all duration-150 ${
-                    recolhido ? "justify-center px-0" : "px-3"
+                  className={`flex items-center gap-2.5 rounded-lg py-2 text-[13px] transition-colors ${
+                    recolhido ? "justify-center px-0" : "px-2.5"
                   } ${
                     ativo || indoPara
-                      ? "text-white font-semibold border border-white/20"
+                      ? "bg-barra-ativo font-semibold text-barra-texto"
                       : "font-medium text-barra-suave hover:bg-barra-hover hover:text-barra-texto"
                   }`}
                 >
                   <Icone
                     size={16}
-                    className={`shrink-0 transition-transform duration-150 group-hover:scale-105 ${
-                      ativo || indoPara ? "text-white" : "text-barra-suave group-hover:text-barra-texto"
-                    }`}
+                    className="shrink-0"
                     strokeWidth={ativo || indoPara ? 2.4 : 1.9}
                   />
                   {!recolhido && <span className="truncate">{item.label}</span>}
@@ -311,11 +316,11 @@ function Conteudo({
         ))}
       </nav>
 
-      <div className="mt-4 border-t border-white/[0.08] pt-3">
+      <div className="mt-4 border-t border-barra-traco pt-3">
         <SeletorTema recolhido={recolhido} />
         <div className="mt-2">
           {!recolhido && userEmail && (
-            <p className="mb-1.5 truncate px-2 text-[10.5px] text-zinc-400">
+            <p className="mb-1.5 truncate px-2 text-[10.5px] text-barra-fraca">
               {userEmail}
             </p>
           )}
@@ -359,11 +364,24 @@ export function AppSidebar({
   return (
     <>
       {/* Barra superior (só no celular) */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-barra-traco bg-barra backdrop-blur-xl px-4 text-barra-texto md:hidden">
-        <LogoManuFlow size="sm" />
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-barra-traco bg-barra px-4 md:hidden">
+        <Image
+          src={MARCA.branca}
+          alt="ManuFlow"
+          width={110}
+          height={28}
+          className="logo-escuro h-6 w-auto opacity-95"
+        />
+        <Image
+          src={MARCA.cor}
+          alt="ManuFlow"
+          width={110}
+          height={28}
+          className="logo-claro h-6 w-auto"
+        />
         <button
           onClick={() => setAberto(true)}
-          className="text-barra-texto hover:text-cyan-400 transition-colors"
+          className="text-barra-texto"
           aria-label="Abrir menu"
         >
           <Menu size={24} />
@@ -374,10 +392,10 @@ export function AppSidebar({
       {aberto && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setAberto(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-barra-traco bg-barra backdrop-blur-2xl px-4 py-5 text-barra-texto">
+          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col bg-barra px-4 py-5 text-barra-texto">
             <button
               onClick={() => setAberto(false)}
               className="mb-2 self-end text-barra-suave hover:text-barra-texto"
@@ -399,7 +417,7 @@ export function AppSidebar({
 
       {/* Barra fixa (computador) */}
       <aside
-        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-barra-traco bg-barra backdrop-blur-2xl px-3.5 py-5 text-barra-texto transition-[width] duration-200 md:flex ${
+        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-barra-traco bg-barra px-4 py-5 text-barra-texto transition-[width] duration-200 md:flex ${
           recolhido ? "w-[76px]" : "w-64"
         }`}
       >

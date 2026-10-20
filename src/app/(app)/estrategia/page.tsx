@@ -64,7 +64,7 @@ export default async function CentralEstrategia() {
           icone={Compass}
           tom="azul"
           titulo="Votos de 2022"
-          nota="Onde a campanha já teve voto, até o bairro"
+          nota="Onde a Talita já teve voto, até o bairro"
         />
         <Atalho
           href="/metas"

@@ -121,56 +121,32 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Identidade ManuFlow (Apple Glass / Dark Executive UI)
-   Inspirado nas referências visuais com visual escuro translúcido, gradientes neon
-   e cartões com vidro fumê (liquid glass).
+   Identidade Talita Oliveira
+   As cores da marca deixam de ser valor solto espalhado pelo código e passam a
+   ter nome. Trocar a marca vira trocar cinco linhas, não caçar hexadecimal.
    --------------------------------------------------------------------------- */
 :root {
-  --background: #080b12;
-  --foreground: #f8fafc;
-  --card: #0f1422;
-  --card-foreground: #ffffff;
-  --popover: #0f1422;
-  --popover-foreground: #ffffff;
-  --primary: #38bdf8;
-  --primary-foreground: #080b12;
-  --secondary: #161d2f;
-  --secondary-foreground: #f8fafc;
-  --muted: #161d2f;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: var(--tema);
-  --radius: 0.4375rem;
-  --sidebar: rgba(18, 22, 34, 0.95);
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: var(--tema);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.06);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: var(--tema);
+  --marca-azul: #0525f7; /* a cor do logo */
+  --marca-grafite: #161719; /* a barra lateral */
+  --marca-limao: #4ab608; /* verde vivo (manual novo), usar pouco */
+  --marca-rosa: #e71a75;
+  --marca-ambar: #ffb700;
 
-  --marca-azul: #2563eb;
-  --marca-ciano: #00f0ff;
-  --marca-grafite: #0b0f19;
-  --marca-limao: #10b981;
-  --marca-rosa: #f43f5e;
-  --marca-ambar: #f59e0b;
-
-  /* Neutros e superfícies escuras compatíveis com todas as telas */
-  --tinta-50: #080b12;
-  --tinta-100: #0e1320;
-  --tinta-200: rgba(255, 255, 255, 0.08);
-  --tinta-300: rgba(255, 255, 255, 0.16);
-  --tinta-400: #64748b;
-  --tinta-500: #94a3b8;
-  --tinta-600: #cbd5e1;
-  --tinta-700: #e2e8f0;
-  --tinta-800: #f1f5f9;
-  --tinta-900: #ffffff;
+  /* Neutros de grafite.
+     Eram puxados para o marinho — cinza com azul dentro. Isso somado a uma
+     barra lateral azul e a um azul de destaque deixava a tela inteira azul, e
+     cor que está em tudo deixa de significar qualquer coisa. Agora o neutro é
+     neutro de verdade, e o azul da marca fica guardado para o que importa. */
+  --tinta-50: #fafafa;
+  --tinta-100: #f2f2f3;
+  --tinta-200: #e6e6e9;
+  --tinta-300: #d2d2d7;
+  --tinta-400: #9b9ca4;
+  --tinta-500: #71727a;
+  --tinta-600: #52535c;
+  --tinta-700: #3c3d45;
+  --tinta-800: #26272c;
+  --tinta-900: #101114;
 }
 
 @theme inline {
@@ -191,51 +167,53 @@
   --color-tinta-900: var(--tinta-900);
 }
 
-:root,
-:root[data-barra="grafite"] {
-  --tema: #0525F7;
-  --barra-fundo: #121622;
+/* ---------------------------------------------------------------------------
+   Tema escolhido por quem usa
+   A cor de destaque e o fundo da barra lateral são preferência, não decisão de
+   projeto: quem passa o dia na tela é quem sabe o que cansa a vista. Ficam em
+   variáveis para trocar sem recarregar nada.
+   --------------------------------------------------------------------------- */
+:root {
+  /* O AZUL DO LOGO, E NÃO UM AZUL DE MODELO.
+     #4c8df6 era um azul de template — o mesmo de qualquer painel pronto. O da
+     marca é este, e ele é forte o bastante para aparecer pouco: fica no que se
+     clica e no que está selecionado, em mais nada. */
+  --tema: #0525f7;
+
+  /* BARRA DE GRAFITE.
+     A barra era o tema puxado para o escuro, ou seja, uma placa azul de 260px
+     encostada em toda tela. Ela competia com o conteúdo o dia inteiro e ainda
+     obrigava o resto da paleta a ser azul para combinar. Grafite neutro não
+     compete com nada: ele emoldura. */
+  --barra-fundo: #161719;
   --barra-realce: #ffffff;
-  --barra-texto: #f8fafc;
-  --barra-suave: #94a3b8;
-  --barra-fraca: #64748b;
-  --barra-ativo: var(--tema);
-  --barra-hover: rgba(255, 255, 255, 0.06);
+  --barra-texto: #f4f4f5;
+  --barra-suave: rgba(244, 244, 245, 0.55);
+  --barra-fraca: rgba(244, 244, 245, 0.32);
+  --barra-ativo: rgba(255, 255, 255, 0.07);
+  --barra-hover: rgba(255, 255, 255, 0.04);
   --barra-traco: rgba(255, 255, 255, 0.08);
 }
 
 :root[data-barra="escuro"] {
-  --barra-fundo: #05070c;
+  --barra-fundo: #000000;
   --barra-realce: var(--tema);
-  --barra-texto: #f8fafc;
-  --barra-suave: #94a3b8;
-  --barra-fraca: #64748b;
-  --barra-ativo: var(--tema);
-  --barra-hover: rgba(255, 255, 255, 0.05);
-  --barra-traco: rgba(255, 255, 255, 0.08);
+  --barra-suave: rgba(255, 255, 255, 0.56);
+  --barra-fraca: rgba(255, 255, 255, 0.34);
+  --barra-ativo: rgba(255, 255, 255, 0.08);
+  --barra-hover: rgba(255, 255, 255, 0.04);
+  --barra-traco: rgba(255, 255, 255, 0.09);
 }
 
 :root[data-barra="claro"] {
-  --barra-fundo: #ffffff;
+  --barra-fundo: #fafafa;
   --barra-texto: #101114;
   --barra-suave: #52535c;
   --barra-fraca: #9b9ca4;
-  --barra-ativo: var(--tema);
+  --barra-ativo: #eaeaec;
   --barra-hover: #f2f2f3;
   --barra-traco: #e6e6e9;
   --barra-realce: var(--tema);
-}
-
-/* Previne quebras visuais em cartões e blocos com bg-white no tema escuro */
-:root:not([data-barra="claro"]) .bg-white {
-  background-color: #0f1422 !important;
-  color: #f8fafc;
-}
-:root:not([data-barra="claro"]) .border-tinta-200 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-:root:not([data-barra="claro"]) .border-tinta-100 {
-  border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 /* O logo branco some no fundo claro e o azul some no escuro. */
