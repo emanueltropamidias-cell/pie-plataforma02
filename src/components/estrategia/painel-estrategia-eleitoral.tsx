@@ -48,6 +48,8 @@ export interface RaioXCandidato {
     municipios_com_voto: number;
   };
   votos_por_municipio: Record<string, number>;
+  /** Total por estado — o presidente tem voto em todos. */
+  votos_por_uf?: Record<string, number>;
   top_municipios: Array<{
     municipio: string;
     votos: number;
@@ -134,13 +136,13 @@ export function PainelEstrategiaEleitoral({
 
   // Cobertura do TSE
   const semCobertura = !cobertura;
-  const ufsDoAno = semCobertura
-    ? UFS.map((u) => u.uf)
-    : cobertura.filter((c) => c.ano === anoFiltro).map((c) => c.uf);
+  const ufsDeAno = (a: number) =>
+    semCobertura ? UFS.map((u) => u.uf) : cobertura.filter((c) => c.ano === a).map((c) => c.uf);
+  const ufsDoAno = ufsDeAno(anoFiltro);
 
   // Opções de cargos conforme ano
   const opcoesCargos =
-    anoFiltro === 2024
+    anoFiltro % 4 === 0
       ? [
           { valor: "TODOS", rotulo: "Todos os Cargos Municipais" },
           { valor: "PREFEITO", rotulo: "Prefeito" },
@@ -193,36 +195,94 @@ export function PainelEstrategiaEleitoral({
     setFotoErro(false);
     try {
       const res = await fetch(`/api/eleicao?candidatoId=${cand.id}`);
-      const data: RaioXCandidato = await res.json();
-      if (data && data.candidato) {
-        startTransition(() => {
-          setRaioX(data);
-          setAnoFiltro(data.candidato.ano);
-          setUfFiltro(data.candidato.uf);
-          setCargoFiltro(data.candidato.cargo);
-          if (data.candidato.cargo === "PRESIDENTE") {
-            setCamada("brasil");
-          } else {
-            setCamada("estado");
-          }
-          setMunicipioSelecionado(null);
-        });
-      }
+      abrirRaioX(await res.json());
     } catch (err) {
       console.error("Erro ao carregar raio-x do candidato:", err);
     }
   }
 
-  function transitarParaEstado(uf: string) {
+  function abrirRaioX(data: RaioXCandidato | null, camadaDestino?: "brasil" | "estado", ufMapa?: string) {
+    if (!data?.candidato) return;
+    setFotoErro(false);
+    startTransition(() => {
+      setRaioX(data);
+      setAnoFiltro(data.candidato.ano);
+      // Presidente é do "BR", mas o mapa estadual precisa de um estado.
+      setUfFiltro(ufMapa ?? data.candidato.uf);
+      setCargoFiltro(data.candidato.cargo);
+      setCamada(camadaDestino ?? (data.candidato.cargo === "PRESIDENTE" ? "brasil" : "estado"));
+      setMunicipioSelecionado(null);
+    });
+  }
+
+  // Trocar de eleição ou de cargo sempre muda o card para alguém DAQUELA
+  // eleição: a candidatura da casa, se ela concorreu (e ao cargo pedido), e
+  // senão o mais votado. Sem isso o card ficava parado — em 2024 seguia
+  // mostrando a Talita, que não foi candidata.
+  async function trocarEleicao(novoAno: number, novoCargo: string) {
+    setAnoFiltro(novoAno);
+    setCargoFiltro(novoCargo);
+    try {
+      const q = new URLSearchParams({ ano: String(novoAno), uf: CANDIDATO.uf, q: CANDIDATO.numeroUrna, exato: "1" });
+      const achados = (await (await fetch(`/api/eleicao?${q}`)).json()).candidatos as CandidatoBusca[] | undefined;
+      const daCasa = achados?.find(
+        (c) => c.ano === novoAno && ehDaCasa(c) && (novoCargo === "TODOS" || c.cargo === novoCargo),
+      );
+      if (daCasa && (ufFiltro === CANDIDATO.uf || ufFiltro === "BR")) return await selecionarCandidato(daCasa);
+
+      const uf = ufFiltro !== "BR" && ufsDeAno(novoAno).includes(ufFiltro) ? ufFiltro : CANDIDATO.uf;
+      const d = new URLSearchParams({ destaque: "1", ano: String(novoAno), uf });
+      if (novoCargo !== "TODOS") d.set("cargo", novoCargo);
+      abrirRaioX(await (await fetch(`/api/eleicao?${d}`)).json());
+    } catch (err) {
+      console.error("Erro ao trocar de eleição:", err);
+    }
+  }
+
+  // Abrir um estado (clique no mapa do Brasil ou seletor) mostra aquele
+  // estado de verdade: o presidente com os votos dele lá; os demais cargos,
+  // o mais votado daquele estado no mesmo cargo. Antes só trocava a malha e
+  // deixava os votos do candidato da Bahia — Minas aparecia vazia.
+  async function transitarParaEstado(uf: string) {
+    setMunicipioSelecionado(null);
+    if (uf === "BR") {
+      setCamada("brasil");
+      return;
+    }
     setUfFiltro(uf);
     setCamada("estado");
-    setMunicipioSelecionado(null);
+    try {
+      const c = raioX.candidato;
+      if (c.uf === "BR" || c.cargo === "PRESIDENTE") {
+        const q = new URLSearchParams({ candidatoId: String(c.id), uf });
+        return abrirRaioX(await (await fetch(`/api/eleicao?${q}`)).json(), "estado", uf);
+      }
+      if (c.uf === uf) return;
+      const d = new URLSearchParams({ destaque: "1", ano: String(anoFiltro), uf });
+      const cargo = cargoFiltro !== "TODOS" ? cargoFiltro : c.cargo;
+      if (cargo) d.set("cargo", cargo);
+      abrirRaioX(await (await fetch(`/api/eleicao?${d}`)).json(), "estado");
+    } catch (err) {
+      console.error("Erro ao abrir o estado:", err);
+    }
   }
 
   function transitarParaMunicipio(mun: string) {
     setMunicipioSelecionado(mun);
     setCamada("municipio");
   }
+
+  // O mapa manda o nome como está na malha ("Salvador"); os votos vêm com o
+  // nome do TSE ("SALVADOR"). Comparar literal abria a cidade com zero votos.
+  const municipioNoBanco = municipioSelecionado
+    ? (Object.keys(raioX.votos_por_municipio).find((m) => chave(m) === chave(municipioSelecionado)) ??
+      municipioSelecionado.toUpperCase())
+    : null;
+  const posicaoNoRanking = municipioNoBanco
+    ? Object.entries(raioX.votos_por_municipio)
+        .sort((a, b) => b[1] - a[1])
+        .findIndex(([m]) => m === municipioNoBanco) + 1 || undefined
+    : undefined;
 
   // Cálculos do candidato ativo
   const totalVotos = raioX.candidato.total_votos || 0;
@@ -349,7 +409,7 @@ export function PainelEstrategiaEleitoral({
               {ANOS.map((ano) => (
                 <button
                   key={ano}
-                  onClick={() => setAnoFiltro(ano)}
+                  onClick={() => trocarEleicao(ano, "TODOS")}
                   className={`rounded-lg px-2.5 py-1 font-bold transition flex items-center gap-1 ${
                     anoFiltro === ano
                       ? ano === 2026
@@ -359,7 +419,7 @@ export function PainelEstrategiaEleitoral({
                   }`}
                 >
                   {ano === 2026 && <Sparkles size={11} />}
-                  {ano === 2026 ? "2026 Meta" : ano}
+                  {ano}
                 </button>
               ))}
             </div>
@@ -367,18 +427,25 @@ export function PainelEstrategiaEleitoral({
             {/* Seletor de Estado */}
             <select
               value={ufFiltro}
-              onChange={(e) => {
-                const uf = e.target.value;
-                setUfFiltro(uf);
-                if (uf === "BR") setCamada("brasil");
-                else setCamada("estado");
-                setMunicipioSelecionado(null);
-              }}
+              onChange={(e) => transitarParaEstado(e.target.value)}
               className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
             >
               {ESTADOS_BR.map((e) => (
                 <option key={e.uf} value={e.uf}>
                   {e.nome} {e.uf !== "BR" ? `(${e.uf})` : ""}
+                </option>
+              ))}
+            </select>
+
+            {/* Seletor de Cargo: trocar abre o mais votado do cargo */}
+            <select
+              value={opcoesCargos.some((o) => o.valor === cargoFiltro) ? cargoFiltro : "TODOS"}
+              onChange={(e) => trocarEleicao(anoFiltro, e.target.value)}
+              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500"
+            >
+              {opcoesCargos.map((o) => (
+                <option key={o.valor} value={o.valor}>
+                  {o.rotulo}
                 </option>
               ))}
             </select>
@@ -483,7 +550,7 @@ export function PainelEstrategiaEleitoral({
         <div className="space-y-4">
           <MapaBrasil
             ufAtiva={ufFiltro}
-            votosPorUf={{ [raioX.candidato.uf]: totalVotos }}
+            votosPorUf={raioX.votos_por_uf ?? { [raioX.candidato.uf]: totalVotos }}
             ufsComDados={ufsDoAno}
             onSelecionarUf={transitarParaEstado}
           />
@@ -491,11 +558,12 @@ export function PainelEstrategiaEleitoral({
       ) : camada === "municipio" && municipioSelecionado ? (
         <DetalheMunicipioEstrategia
           municipio={municipioSelecionado}
-          municipioNoBanco={municipioSelecionado}
+          municipioNoBanco={municipioNoBanco}
           candidatoId={raioX.candidato.id}
-          ano={anoFiltro}
+          ano={raioX.candidato.ano}
           uf={ufFiltro}
-          votosMunicipio={raioX.votos_por_municipio[municipioSelecionado] || 0}
+          votosMunicipio={municipioNoBanco ? raioX.votos_por_municipio[municipioNoBanco] || 0 : 0}
+          posicaoRanking={posicaoNoRanking}
           totalVotosCandidato={totalVotos}
           nomeCandidato={raioX.candidato.nome_urna}
           temLiderancas={cSet.has(chave(municipioSelecionado))}

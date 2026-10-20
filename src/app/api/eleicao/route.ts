@@ -1,169 +1,82 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { buscarCandidatos, destaque, raioX, zonasNaCidade, decodificarId, ANOS_ELEICAO } from "@/lib/eleicao-arquivos";
 
 // ============================================================================
-// API DE DADOS ELEITORAIS (TSE CONSOLIDADO)
+// API DE DADOS ELEITORAIS (TSE, BRASIL INTEIRO)
 // ============================================================================
 //
-// 1. Busca Inteligente de Candidatos (Insensível a acentos, multi-eleição):
-//    GET /api/eleicao?q=Capitão%20Alden&ano=2022&uf=BA
+// Lê dos arquivos prontos no Storage (src/lib/eleicao-arquivos.ts), não mais
+// das tabelas — o país não cabe no Postgres gratuito.
 //
-// 2. Raio-X Completo do Candidato (Mapa de Votos + Top Municípios + Métricas):
-//    GET /api/eleicao?candidatoId=1627
+//   ?q=alden&ano=2022&uf=BA[&cargo=…][&exato=1]   busca
+//   ?candidatoId=<id>[&uf=MG]                     raio-x (uf = mapa do presidente)
+//   ?candidatoId=<id>&municipio=SALVADOR          camada municipal
+//   ?destaque=1&ano=2024&uf=MG[&cargo=…]          o mais votado
 //
+// O detalhe por LOCAL de votação (bairro) continua no banco, só para as
+// cidades-foco: é pequeno e tem consulta própria.
 // ────────────────────────────────────────────────────────────────────────────
-
-const CAMPOS =
-  "id, ano, turno, uf, nm_ue, cargo, numero, sq_candidato, nome_urna, nome_completo, partido_sigla, situacao, foto_url";
-
-function normalizar(s: string) {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
-}
 
 export async function GET(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
 
-  if (!user) {
-    return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
-  }
+  const sp = new URL(request.url).searchParams;
+  const idParam = sp.get("candidatoId");
+  const id = idParam ? Number(idParam) : NaN;
+  const ano = parseInt(sp.get("ano") ?? "2022", 10);
+  const uf = sp.get("uf")?.trim().toUpperCase() || null;
+  const cargoParam = sp.get("cargo")?.trim().toUpperCase();
+  const cargo = cargoParam && cargoParam !== "TODOS" ? cargoParam : null;
+  const municipio = sp.get("municipio")?.trim();
 
-  const { searchParams } = new URL(request.url);
-  const candidatoId = searchParams.get("candidatoId");
-  const qRaw = searchParams.get("q")?.trim();
-  const anoParam = searchParams.get("ano");
-  const ano = anoParam ? parseInt(anoParam, 10) : 2022;
-  const uf = searchParams.get("uf")?.trim().toUpperCase();
-  const cargo = searchParams.get("cargo")?.trim();
-  // `exato=1`: quem chama quer aquele ano e aquele número, sem a busca ampla
-  // em outras eleições — a troca de ano procura a candidatura da casa assim.
-  const exato = searchParams.get("exato") === "1";
-
-  // 0. Camada municipal: zonas e locais de UM candidato numa cidade.
-  //    GET /api/eleicao?candidatoId=1627&municipio=SALVADOR
-  const municipio = searchParams.get("municipio")?.trim();
-  if (candidatoId && municipio) {
-    const { data, error } = await supabase.rpc("obter_detalhe_municipio", {
-      p_candidato_id: parseInt(candidatoId, 10),
-      p_municipio: municipio,
-    });
-    if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
-    return NextResponse.json(data);
-  }
-
-  // 0b. O mais votado de uma eleição — para onde a tela vai ao trocar de ano
-  //     ou de cargo. GET /api/eleicao?destaque=1&ano=2024&uf=BA&cargo=VEREADOR
-  if (searchParams.get("destaque") === "1" && uf) {
-    const { data: id, error } = await supabase.rpc("eleicao_destaque", {
-      p_ano: ano,
-      p_uf: uf,
-      p_cargo: cargo && cargo !== "TODOS" ? cargo : null,
-    });
-    if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
-    if (!id) return NextResponse.json({ candidato: null });
-    const { data, error: e2 } = await supabase.rpc("obter_raio_x_candidato", { p_candidato_id: id });
-    if (e2) return NextResponse.json({ erro: e2.message }, { status: 500 });
-    return NextResponse.json(data);
-  }
-
-  // 1. Raio-X por Candidato ID
-  if (candidatoId) {
-    const idNum = parseInt(candidatoId, 10);
-    if (isNaN(idNum)) {
-      return NextResponse.json({ erro: "ID inválido" }, { status: 400 });
-    }
-
-    const { data, error } = await supabase.rpc("obter_raio_x_candidato", {
-      p_candidato_id: idNum,
-    });
-
-    if (error) {
-      return NextResponse.json({ erro: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json(data);
-  }
-
-  // 2. Busca de Candidatos
-  const qNorm = qRaw ? normalizar(qRaw) : "";
-  const isNumero = qNorm && /^\d+$/.test(qNorm);
-
-  // Tentativa 1: Busca respeitando os filtros selecionados
-  let query = supabase
-    .from("eleicao_candidatos")
-    .select(CAMPOS)
-    .order("numero", { ascending: true })
-    .limit(40);
-
-  if (ano) {
-    query = query.eq("ano", ano);
-  }
-
-  if (uf && uf !== "TODAS" && uf !== "BR") {
-    query = query.eq("uf", uf);
-  }
-
-  if (cargo && cargo !== "TODOS") {
-    query = query.ilike("cargo", `%${cargo}%`);
-  }
-
-  if (qNorm) {
-    if (isNumero) {
-      query = query.eq("numero", parseInt(qNorm, 10));
-    } else {
-      // Divide por palavras para casar "capitao" e "alden" simultaneamente
-      const palavras = qNorm.split(/\s+/).filter(Boolean);
-      for (const p of palavras) {
-        query = query.ilike("chave_busca", `%${p}%`);
-      }
-    }
-  }
-
-  const { data: candidatos, error } = await query;
-
-  if (error) {
-    return NextResponse.json({ erro: error.message }, { status: 500 });
-  }
-
-  // Se encontrou candidatos com os filtros atuais, retorna
-  if (candidatos && candidatos.length > 0) {
-    return NextResponse.json({ candidatos });
-  }
-
-  // Tentativa 2 (Fallback Inteligente): Se o usuário buscou por nome/número mas não achou
-  // (ex: digitou "Capitão Alden" enquanto estava com ano=2026 ou cargo errado selecionado),
-  // fazemos uma busca global ampla em todas as eleições e cargos para achar o candidato!
-  if (qNorm && !exato) {
-    let fallback = supabase
+  // Camada municipal: zonas do arquivo; locais (com bairro) do banco.
+  if (Number.isFinite(id) && municipio) {
+    const zonas = await zonasNaCidade(id, municipio);
+    const { ano: anoC, chave } = decodificarId(id);
+    const { data: cand } = await supabase
       .from("eleicao_candidatos")
-      .select(CAMPOS)
-      .order("ano", { ascending: false })
-      .order("numero", { ascending: true })
-      .limit(30);
+      .select("id")
+      .eq("ano", anoC)
+      .eq("sq_candidato", String(Math.floor(chave / 10)))
+      .eq("turno", chave % 10)
+      .maybeSingle();
+    const { data: det } = cand
+      ? await supabase.rpc("obter_detalhe_municipio", { p_candidato_id: cand.id, p_municipio: municipio })
+      : { data: null };
+    return NextResponse.json({ zonas, locais: det?.locais ?? null, tem_detalhe: det?.tem_detalhe ?? false });
+  }
 
-    if (isNumero) {
-      fallback = fallback.eq("numero", parseInt(qNorm, 10));
-    } else {
-      const palavras = qNorm.split(/\s+/).filter(Boolean);
-      for (const p of palavras) {
-        fallback = fallback.ilike("chave_busca", `%${p}%`);
-      }
-    }
+  if (sp.get("destaque") === "1" && uf) {
+    const idDestaque = await destaque(ano, uf, cargo);
+    if (!idDestaque) return NextResponse.json({ candidato: null });
+    return NextResponse.json(await raioX(idDestaque, uf));
+  }
 
-    const { data: achadosFallback } = await fallback;
-    if (achadosFallback && achadosFallback.length > 0) {
+  if (Number.isFinite(id)) {
+    const r = await raioX(id, uf);
+    return r ? NextResponse.json(r) : NextResponse.json({ erro: "Candidato não encontrado" }, { status: 404 });
+  }
+
+  const q = sp.get("q")?.trim() ?? "";
+  if (!q || !uf) return NextResponse.json({ candidatos: [] });
+
+  const candidatos = await buscarCandidatos({ q, ano, uf, cargo });
+  if (candidatos.length || sp.get("exato") === "1") return NextResponse.json({ candidatos });
+
+  // Não achou com os filtros: tenta as outras eleições do mesmo estado (ex.:
+  // "Capitão Alden" digitado com 2024 selecionado).
+  for (const outro of ANOS_ELEICAO.filter((a) => a !== ano).reverse()) {
+    const achados = await buscarCandidatos({ q, ano: outro, uf });
+    if (achados.length)
       return NextResponse.json({
-        candidatos: achadosFallback,
+        candidatos: achados,
         aviso: "Candidatos encontrados em outras eleições ou cargos disponíveis.",
       });
-    }
   }
-
   return NextResponse.json({ candidatos: [] });
 }

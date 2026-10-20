@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { lerTerritorio } from "@/lib/painel-territorio";
 import { Cabecalho } from "@/components/ui/pagina";
 import { CANDIDATO } from "@/lib/candidato";
+import { candidaturaDaCasa, cobertura as lerCobertura, raioX as raioXDoArquivo } from "@/lib/eleicao-arquivos";
 import { PainelEstrategiaEleitoral } from "@/components/estrategia/painel-estrategia-eleitoral";
 
 // Central de Estratégia e Inteligência Eleitoral.
@@ -30,38 +31,29 @@ export default async function CentralEstrategia({
     .eq("tipo", "lideranca");
 
   // Candidato pedido na URL ou a candidatura da casa — a mais recente com
-  // aquele número no estado. Antes era `numero = 1022` em 2022 sem estado nem
-  // cargo, com o id 1627 escrito à mão como reserva: na instalação de outro
-  // candidato abria a Talita.
-  const pedido = params.c ? parseInt(params.c, 10) : NaN;
-  const { data: candRows } = Number.isFinite(pedido)
-    ? await supabase.from("eleicao_candidatos").select("id").eq("id", pedido).limit(1)
-    : await supabase
-        .from("eleicao_candidatos")
-        .select("id")
-        .eq("uf", CANDIDATO.uf)
-        .eq("numero", parseInt(CANDIDATO.numeroUrna, 10))
-        .order("ano", { ascending: false })
-        .order("turno", { ascending: false })
-        .limit(1);
-  const candidatoId = candRows?.[0]?.id;
-
-  const { data: raioX } = candidatoId
-    ? await supabase.rpc("obter_raio_x_candidato", { p_candidato_id: candidatoId })
-    : { data: null };
+  // aquele número no estado. Os votos vêm dos arquivos do TSE no Storage
+  // (src/lib/eleicao-arquivos.ts), que cobrem o Brasil inteiro.
+  const pedido = params.c ? Number(params.c) : NaN;
+  const candidatoId = Number.isFinite(pedido)
+    ? pedido
+    : await candidaturaDaCasa(CANDIDATO.uf, parseInt(CANDIDATO.numeroUrna, 10));
+  const raioX = candidatoId ? await raioXDoArquivo(candidatoId) : null;
 
   const cidadesComBase = territorio.mapa.map((m) => m.municipio);
 
-  // O que existe no banco, por ano e estado: a tela só oferece isso.
+  // O que existe, por ano e estado (manifesto de cada eleição): a tela só
+  // oferece isso.
   //
-  // Falha aqui NÃO é "nada importado". Em 20/10/2026 a chamada falhou e a
-  // tela marcou 2022, 2024 e 2026 como "sem dados", com tudo no banco. Agora
-  // a falha chega como `null`, e o painel avisa em vez de esconder.
-  const { data: cobertura, error: erroCobertura } = await supabase.rpc("eleicao_cobertura");
-  if (erroCobertura) console.error("eleicao_cobertura falhou:", erroCobertura.message);
+  // Falha aqui NÃO é "nada importado". Em 20/10/2026 a leitura falhou e a
+  // tela marcou 2022, 2024 e 2026 como "sem dados", com tudo guardado. A
+  // falha chega como `null`, e o painel avisa em vez de esconder.
+  const cobertura = await lerCobertura().catch((e) => {
+    console.error("cobertura eleitoral falhou:", e);
+    return null;
+  });
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-8">
       <Cabecalho
         sobretitulo="Estratégia"
         titulo="Central de Estratégia & Território"
@@ -131,7 +123,7 @@ export default async function CentralEstrategia({
           <PainelEstrategiaEleitoral
             candidatoInicial={raioX}
             cidadesComBase={cidadesComBase}
-            cobertura={erroCobertura ? null : (cobertura ?? [])}
+            cobertura={cobertura && cobertura.length ? cobertura : null}
           />
         ) : (
           <div className="rounded-2xl border border-tinta-200 bg-white p-8 text-center text-tinta-500">
