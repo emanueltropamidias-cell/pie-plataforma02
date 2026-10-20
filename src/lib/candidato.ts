@@ -117,7 +117,7 @@ export const CANDIDATO = {
    * `capa.jpg`. Nome de arquivo com o nome da pessoa obriga a editar código
    * para trocar a arte; nome genérico faz trocar virar substituir o arquivo.
    */
-  marca: process.env.NEXT_PUBLIC_CANDIDATO_MARCA?.trim() || "talita",
+  marca: process.env.NEXT_PUBLIC_CANDIDATO_MARCA?.trim() || "manuflow",
 
   /** O site público, sem barra no fim. É a base dos links de QR. */
   site: (

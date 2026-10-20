@@ -19,6 +19,7 @@ import {
 import { LogoutButton } from "@/components/logout-button";
 import { SeletorTema } from "@/components/seletor-tema";
 import { moduloAtivo, moduloDoCaminho } from "@/lib/modulos";
+import { LogoManuFlow } from "@/components/brand/logo-manuflow";
 
 // Cada item tem ícone porque menu se varre, não se lê: o símbolo é reconhecido
 // antes da palavra, e é ele que sustenta o menu recolhido.
@@ -90,7 +91,7 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
         href: "/estrategia",
         label: "Estratégia",
         icone: Compass,
-        abrange: ["/crm", "/ranking", "/metas", "/dobradinha", "/estrategia/tse", "/estrategia/votos"],
+        abrange: ["/crm", "/ranking", "/metas", "/dobradinha", "/estrategia/votos"],
       },
       {
         href: "/gabinete",
@@ -202,66 +203,50 @@ function Conteudo({
       <div
         className={`flex items-center gap-2 ${recolhido ? "justify-center" : "justify-between"}`}
       >
-        {recolhido ? (
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-[14px] font-black text-white shadow-md shadow-blue-500/20">
-            M
-          </div>
-        ) : (
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 text-[13px] font-black text-white shadow-md shadow-blue-500/20">
-              M
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight text-white">
-                manu<span className="text-blue-400 font-extrabold">flow</span>
-              </span>
-            </div>
-          </div>
-        )}
+        <Link href="/dashboard" className="transition-transform duration-200 hover:scale-[1.02]">
+          {recolhido ? (
+            <LogoManuFlow iconOnly size="md" />
+          ) : (
+            <LogoManuFlow size="md" />
+          )}
+        </Link>
         {onRecolher && (
           <button
             type="button"
             onClick={onRecolher}
             aria-label={recolhido ? "Expandir menu" : "Recolher menu"}
-            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md text-barra-fraca transition-colors hover:bg-barra-hover hover:text-barra-texto md:flex"
+            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/5 bg-white/[0.04] text-zinc-400 transition-all hover:border-white/15 hover:bg-white/10 hover:text-white md:flex"
           >
             <ChevronLeft
-              size={16}
-              className={`transition-transform ${recolhido ? "rotate-180" : ""}`}
+              size={15}
+              className={`transition-transform duration-200 ${recolhido ? "rotate-180" : ""}`}
             />
           </button>
         )}
       </div>
 
-      {!recolhido && (
-        <p className="mt-1 text-[10.5px] font-medium tracking-[0.04em] text-zinc-400">
-          Inteligência & Gestão Política
-        </p>
-      )}
-
-      {/* Quem está usando, no alto. Em ferramenta compartilhada, saber com qual
-          conta se está evita registrar demanda em nome de outra pessoa. */}
+      {/* Usuário logado */}
       <div
-        className={`mt-5 flex items-center gap-2.5 rounded-lg border border-barra-traco bg-barra-hover ${
+        className={`mt-5 flex items-center gap-2.5 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md ${
           recolhido ? "justify-center px-0 py-2.5" : "px-3 py-2.5"
         }`}
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-tema text-[11.5px] font-bold text-white">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 text-[11.5px] font-bold text-white shadow-[0_0_12px_rgba(37,99,235,0.35)]">
           {iniciais(nome)}
         </span>
         {!recolhido && (
           <span className="min-w-0">
-            <span className="block truncate text-[12.5px] font-semibold text-barra-texto">
+            <span className="block truncate text-[12.5px] font-semibold text-white">
               {nome}
             </span>
-            <span className="block truncate text-[10.5px] text-barra-fraca">
+            <span className="block truncate text-[10.5px] text-zinc-400">
               {CARGO[papel ?? ""] ?? "Equipe"}
             </span>
           </span>
         )}
       </div>
 
-      <nav className="mt-5 flex flex-1 flex-col gap-5 overflow-y-auto">
+      <nav className="mt-5 flex flex-1 flex-col gap-5 overflow-y-auto pr-0.5">
         {visiveis.map((grupo) => (
           <div key={grupo.titulo} className="flex flex-col gap-0.5">
             {!recolhido && (
@@ -297,17 +282,19 @@ function Conteudo({
                     setIndo(item.href);
                     onNav?.();
                   }}
-                  className={`flex items-center gap-2.5 rounded-lg py-2 text-[13px] transition-colors ${
-                    recolhido ? "justify-center px-0" : "px-2.5"
+                  className={`group relative flex items-center gap-3 rounded-xl py-2.5 text-[13px] transition-all duration-200 ${
+                    recolhido ? "justify-center px-0" : "px-3"
                   } ${
                     ativo || indoPara
-                      ? "bg-barra-ativo font-semibold text-barra-texto"
-                      : "font-medium text-barra-suave hover:bg-barra-hover hover:text-barra-texto"
+                      ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 text-white font-semibold shadow-[0_0_20px_rgba(37,99,235,0.35)] border border-white/20"
+                      : "font-medium text-zinc-400 hover:bg-white/[0.06] hover:text-white"
                   }`}
                 >
                   <Icone
-                    size={16}
-                    className="shrink-0"
+                    size={17}
+                    className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                      ativo || indoPara ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]" : "text-zinc-400 group-hover:text-cyan-400"
+                    }`}
                     strokeWidth={ativo || indoPara ? 2.4 : 1.9}
                   />
                   {!recolhido && <span className="truncate">{item.label}</span>}
@@ -318,11 +305,11 @@ function Conteudo({
         ))}
       </nav>
 
-      <div className="mt-4 border-t border-barra-traco pt-3">
+      <div className="mt-4 border-t border-white/[0.08] pt-3">
         <SeletorTema recolhido={recolhido} />
         <div className="mt-2">
           {!recolhido && userEmail && (
-            <p className="mb-1.5 truncate px-2 text-[10.5px] text-barra-fraca">
+            <p className="mb-1.5 truncate px-2 text-[10.5px] text-zinc-400">
               {userEmail}
             </p>
           )}
@@ -366,18 +353,11 @@ export function AppSidebar({
   return (
     <>
       {/* Barra superior (só no celular) */}
-      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-barra-traco bg-barra px-4 md:hidden">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-tema text-[12px] font-black text-white shadow-sm shadow-black/20">
-            M
-          </div>
-          <span className="text-sm font-bold tracking-tight text-barra-texto font-sans">
-            manu<span className="text-tema font-extrabold">flow</span>
-          </span>
-        </div>
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#090d16]/90 backdrop-blur-xl px-4 md:hidden">
+        <LogoManuFlow size="sm" />
         <button
           onClick={() => setAberto(true)}
-          className="text-barra-texto"
+          className="text-white hover:text-cyan-400 transition-colors"
           aria-label="Abrir menu"
         >
           <Menu size={24} />
@@ -388,13 +368,13 @@ export function AppSidebar({
       {aberto && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setAberto(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col bg-barra px-4 py-5 text-barra-texto">
+          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-white/[0.08] bg-[#090d16]/95 backdrop-blur-2xl px-4 py-5 text-white">
             <button
               onClick={() => setAberto(false)}
-              className="mb-2 self-end text-barra-suave hover:text-barra-texto"
+              className="mb-2 self-end text-zinc-400 hover:text-white"
               aria-label="Fechar menu"
             >
               <X size={22} />
@@ -413,7 +393,7 @@ export function AppSidebar({
 
       {/* Barra fixa (computador) */}
       <aside
-        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-barra-traco bg-barra px-4 py-5 text-barra-texto transition-[width] duration-200 md:flex ${
+        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-white/[0.08] bg-[#090d16]/85 backdrop-blur-2xl px-3.5 py-5 text-white transition-[width] duration-300 md:flex ${
           recolhido ? "w-[76px]" : "w-64"
         }`}
       >

@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { MARCA } from "@/lib/candidato";
+import { LogoManuFlow } from "@/components/brand/logo-manuflow";
 
 type Msg = { tipo: "erro" | "ok"; texto: string } | null;
 
@@ -140,30 +141,24 @@ export default function LoginPage() {
 
   return (
     <main className="relative flex min-h-dvh w-full items-center justify-center p-4 sm:p-6 overflow-hidden bg-[#07090e]">
-      {/* Luzes ambiente de fundo (Glow estilo Apple Dark) */}
-      <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-600/15 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-indigo-500/10 blur-[140px]" />
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-sky-500/[0.04] blur-[150px]" />
+      {/* Luzes ambiente de fundo (Glow estilo Apple Dark / Liquid Glass) */}
+      <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-cyan-500/15 blur-[130px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/10 blur-[150px]" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-blue-600/8 blur-[160px]" />
 
       {/* Card Principal em Apple Glass */}
-      <div className="relative z-10 w-full max-w-[420px] rounded-[28px] border border-white/[0.12] bg-zinc-950/50 p-8 text-center backdrop-blur-2xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] sm:p-10">
-        {/* Marca Manuflow */}
+      <div className="relative z-10 w-full max-w-[420px] rounded-[32px] border border-white/[0.12] bg-[#0c101b]/80 p-8 text-center backdrop-blur-2xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] sm:p-10">
+        {/* Marca Manuflow com nova Logo */}
         <div className="mb-6 flex flex-col items-center">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/25">
-              <span className="text-xl font-black tracking-tighter">M</span>
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-white font-sans">
-              manu<span className="text-blue-400 font-extrabold">flow</span>
-            </span>
-          </div>
+          <LogoManuFlow size="lg" className="justify-center" />
 
-          <div className="mt-3 inline-flex items-center rounded-full border border-blue-400/20 bg-blue-500/[0.08] px-3.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">
-            Inteligência & Gestão Política
+          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-cyan-400/20 bg-cyan-500/[0.08] px-3.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee] animate-pulse" />
+            Acesso à Plataforma
           </div>
 
           <div className="mt-2 text-xs text-zinc-400 font-medium">
-            {modo === "geral" ? "Acesse sua conta" : modo === "criar" ? "Criar novo acesso" : "Painel da Liderança"}
+            {modo === "geral" ? "Entre com suas credenciais" : modo === "criar" ? "Criar novo acesso" : "Painel da Liderança"}
           </div>
         </div>
 
@@ -325,11 +320,7 @@ function BotaoVerde({ children, ...props }: React.ButtonHTMLAttributes<HTMLButto
   return (
     <button
       {...props}
-      className="mt-2 h-12 w-full rounded-[10px] text-[15px] font-bold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60"
-      style={{
-        background: "linear-gradient(135deg,#22b455 0%,#149a45 100%)",
-        boxShadow: "0 4px 20px rgba(20,154,69,0.30)",
-      }}
+      className="mt-2 h-12 w-full rounded-xl text-[15px] font-bold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.99] disabled:opacity-60 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] border border-white/20"
     >
       {children}
     </button>

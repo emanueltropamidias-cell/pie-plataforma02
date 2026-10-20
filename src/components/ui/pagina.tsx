@@ -38,22 +38,21 @@ export function Cabecalho({
             href={voltar}
             aria-label={`Voltar para ${sobretitulo}`}
             title={`Voltar para ${sobretitulo}`}
-            // Alinhada com o sobretítulo, não com o título: é dele que a seta
-            // fala, e é a primeira linha que a pessoa lê.
-            className="mt-px flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-tinta-200 bg-white text-tinta-500 transition-colors hover:border-tinta-300 hover:text-tinta-900"
+            className="mt-px flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-zinc-300 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft size={16} strokeWidth={2} />
           </Link>
         )}
         <div className="min-w-0">
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-tema">
+          <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-cyan-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
             {sobretitulo}
           </span>
-          <h1 className="mt-1.5 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-tinta-900">
+          <h1 className="mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.03em] text-white">
             {titulo}
           </h1>
           {descricao && (
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-tinta-500">
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-zinc-400">
               {descricao}
             </p>
           )}
@@ -68,7 +67,7 @@ export function Cabecalho({
   );
 }
 
-/** Superfície branca padrão. Borda discreta em vez de sombra pesada. */
+/** Superfície glassmorphic padrão. Vidro translúcido com borda suave e blur. */
 export function Cartao({
   children,
   className = "",
@@ -83,24 +82,19 @@ export function Cartao({
   acoes?: ReactNode;
 }) {
   return (
-    // min-w-0: item de grid e de flex nasce com min-width auto, ou seja, se
-    // recusa a ficar mais estreito que o conteúdo mais largo que tem dentro. Um
-    // título de uma linha só empurrava o cartão para além da tela, e no celular
-    // a página inteira andava de lado — o `truncate` lá dentro nunca chegava a
-    // valer porque quem não podia encolher era o cartão.
     <section
-      className={`min-w-0 rounded-xl border border-tinta-200 bg-white shadow-[0_1px_2px_rgba(22,32,46,0.04)] ${className}`}
+      className={`min-w-0 rounded-2xl border border-white/[0.08] bg-[#0f1422]/75 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.28)] transition-all hover:border-white/[0.12] ${className}`}
     >
       {(titulo || acoes) && (
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-tinta-100 px-5 py-3.5">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-3.5">
           <div>
             {titulo && (
-              <h2 className="text-[13.5px] font-bold text-tinta-800">
+              <h2 className="text-[14px] font-bold tracking-tight text-white">
                 {titulo}
               </h2>
             )}
             {descricao && (
-              <p className="mt-0.5 text-[12px] text-tinta-500">{descricao}</p>
+              <p className="mt-0.5 text-[12px] text-zinc-400">{descricao}</p>
             )}
           </div>
           {acoes && <div className="flex items-center gap-2">{acoes}</div>}
@@ -113,10 +107,6 @@ export function Cartao({
 
 /**
  * Indicador numérico.
- *
- * O rótulo vem pequeno e espaçado, o número vem grande e com dígito de largura
- * fixa, e o contexto vem por último — nessa ordem porque é a ordem em que o
- * olho procura: o que é, quanto é, e só então o que isso significa.
  */
 export function Indicador({
   rotulo,
@@ -131,16 +121,18 @@ export function Indicador({
   destaque?: boolean;
 }) {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-xl border border-tinta-200 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(22,32,46,0.04)]">
-      {destaque && <span className="absolute inset-x-0 top-0 h-0.5 bg-tema" />}
-      <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-tinta-500">
+    <div className="relative min-w-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0f1422]/75 px-5 py-4 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.28)] transition-all hover:border-white/[0.14] hover:shadow-[0_8px_30px_rgba(0,100,255,0.08)]">
+      {destaque && (
+        <span className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 shadow-[0_0_12px_#38bdf8]" />
+      )}
+      <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-cyan-400/90">
         {rotulo}
       </p>
-      <p className="tabular mt-2 text-[30px] font-extrabold leading-none tracking-[-0.03em] text-tinta-900">
+      <p className="tabular mt-2 text-[32px] font-extrabold leading-none tracking-[-0.03em] text-white">
         {valor}
       </p>
       {contexto && (
-        <p className="mt-2 text-[11.5px] leading-snug text-tinta-400">
+        <p className="mt-2 text-[12px] leading-snug text-zinc-400">
           {contexto}
         </p>
       )}

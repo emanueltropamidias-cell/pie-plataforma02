@@ -14,15 +14,15 @@ import { Cabecalho } from "@/components/ui/pagina";
 // tela desenhava o próprio cabeçalho, a diferença de dois pixels repetida cinco
 // vezes é o que fazia o sistema parecer remendado.
 
-/** As cores dos quadradinhos de ícone. Nome em vez de hexadecimal solto. */
+/** As cores dos quadradinhos de ícone. */
 const TONS = {
-  azul: { fundo: "#eceafe", tinta: "#0525f7" },
-  verde: { fundo: "#e9f3ec", tinta: "#12703c" },
-  roxo: { fundo: "#f1eefc", tinta: "#5b34c9" },
-  ambar: { fundo: "#fbf2e2", tinta: "#8a6009" },
-  rosa: { fundo: "#fceef3", tinta: "#c2185b" },
-  vermelho: { fundo: "#fdf1f1", tinta: "#c02020" },
-  cinza: { fundo: "#f1f1f3", tinta: "#52535c" },
+  azul: { fundo: "rgba(37, 99, 235, 0.2)", tinta: "#38bdf8" },
+  verde: { fundo: "rgba(16, 185, 129, 0.2)", tinta: "#34d399" },
+  roxo: { fundo: "rgba(124, 58, 237, 0.2)", tinta: "#a78bfa" },
+  ambar: { fundo: "rgba(245, 158, 11, 0.2)", tinta: "#fbbf24" },
+  rosa: { fundo: "rgba(244, 63, 94, 0.2)", tinta: "#fb7185" },
+  vermelho: { fundo: "rgba(239, 68, 68, 0.2)", tinta: "#f87171" },
+  cinza: { fundo: "rgba(255, 255, 255, 0.08)", tinta: "#94a3b8" },
 } as const;
 
 export type Tom = keyof typeof TONS;
@@ -37,28 +37,28 @@ export type Numero = {
 
 const NUMERO_TOM = {
   neutro: {
-    borda: "#e6e6e9",
-    fundo: "#ffffff",
-    rotulo: "#9b9ca4",
-    valor: "#101114",
+    borda: "rgba(255, 255, 255, 0.08)",
+    fundo: "rgba(15, 20, 34, 0.75)",
+    rotulo: "#94a3b8",
+    valor: "#ffffff",
   },
   bom: {
-    borda: "#cbe3d4",
-    fundo: "#f1f8f3",
-    rotulo: "#12703c",
-    valor: "#12703c",
+    borda: "rgba(16, 185, 129, 0.28)",
+    fundo: "rgba(16, 185, 129, 0.12)",
+    rotulo: "#34d399",
+    valor: "#34d399",
   },
   atencao: {
-    borda: "#f0dcc0",
-    fundo: "#fdf6ea",
-    rotulo: "#a35a00",
-    valor: "#a35a00",
+    borda: "rgba(245, 158, 11, 0.28)",
+    fundo: "rgba(245, 158, 11, 0.12)",
+    rotulo: "#fbbf24",
+    valor: "#fbbf24",
   },
   ruim: {
-    borda: "#f3d3d3",
-    fundo: "#fdf1f1",
-    rotulo: "#c02020",
-    valor: "#c02020",
+    borda: "rgba(239, 68, 68, 0.28)",
+    fundo: "rgba(239, 68, 68, 0.12)",
+    rotulo: "#f87171",
+    valor: "#f87171",
   },
 } as const;
 
@@ -77,13 +77,6 @@ export function Central({
   numeros?: Numero[];
   children: ReactNode;
   aviso?: { texto: ReactNode; urgente?: boolean };
-  /**
-   * O canto direito do cabeçalho.
-   *
-   * Existe pelo menu de conta: no subdomínio de atendimento NÃO HÁ barra
-   * lateral, então quem cai numa central — a supervisora — ficava sem lugar
-   * nenhum para trocar a senha ou sair.
-   */
   acoes?: ReactNode;
 }) {
   return (
@@ -98,7 +91,6 @@ export function Central({
       {numeros && numeros.length > 0 && (
         <div
           className={`grid grid-cols-2 gap-3 ${
-            // Cinco = quatro partes e o total que fecha a conta (Central da base).
             numeros.length === 5 ? "sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-4"
           }`}
         >
@@ -107,17 +99,17 @@ export function Central({
             return (
               <div
                 key={n.rotulo}
-                className="rounded-lg border px-4 py-3.5"
+                className="rounded-2xl border px-4 py-3.5 backdrop-blur-xl shadow-[0_8px_25px_rgba(0,0,0,0.25)] transition-all hover:scale-[1.01]"
                 style={{ borderColor: t.borda, background: t.fundo }}
               >
                 <span
-                  className="text-[10px] font-bold uppercase tracking-[0.12em]"
+                  className="text-[10px] font-bold uppercase tracking-[0.14em]"
                   style={{ color: t.rotulo }}
                 >
                   {n.rotulo}
                 </span>
                 <div
-                  className="tabular mt-1 text-[27px] font-extrabold leading-none tracking-[-0.02em]"
+                  className="tabular mt-1 text-[28px] font-extrabold leading-none tracking-[-0.03em]"
                   style={{ color: t.valor }}
                 >
                   {n.valor}
@@ -132,20 +124,20 @@ export function Central({
 
       {aviso && (
         <div
-          className={`rounded-lg border px-4 py-3.5 ${
+          className={`rounded-2xl border px-5 py-4 backdrop-blur-xl ${
             aviso.urgente
-              ? "border-[#f0dcc0] bg-[#fdf6ea]"
-              : "border-tinta-200 bg-white "
+              ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
+              : "border-white/[0.08] bg-[#0f1422]/75 text-zinc-300"
           }`}
         >
           <span
-            className={`text-[12.5px] font-bold ${aviso.urgente ? "text-[#a35a00]" : "text-tinta-800"}`}
+            className={`text-[13px] font-bold ${aviso.urgente ? "text-amber-400" : "text-white"}`}
           >
             O que precisa de você agora
           </span>
           <p
-            className={`mt-1 text-[12.5px] leading-relaxed ${
-              aviso.urgente ? "text-[#8a4a10]" : "text-tinta-500"
+            className={`mt-1 text-[13px] leading-relaxed ${
+              aviso.urgente ? "text-amber-200/90" : "text-zinc-400"
             }`}
           >
             {aviso.texto}
@@ -168,10 +160,10 @@ export function Faixa({
 }) {
   return (
     <section>
-      <h2 className="text-[15px] font-bold tracking-[-0.01em] text-tinta-900">
+      <h2 className="text-[16px] font-bold tracking-[-0.02em] text-white">
         {titulo}
       </h2>
-      {nota && <p className="mt-0.5 text-[12.5px] text-tinta-500">{nota}</p>}
+      {nota && <p className="mt-0.5 text-[12.5px] text-zinc-400">{nota}</p>}
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {children}
       </div>
@@ -179,7 +171,7 @@ export function Faixa({
   );
 }
 
-/** Um cartão-atalho. `selo` é para estado que não pode esperar o clique. */
+/** Um cartão-atalho com estilo glassmorphic Apple Spatial. */
 export function Atalho({
   href,
   icone: Icone,
@@ -196,7 +188,6 @@ export function Atalho({
   titulo: string;
   nota: string;
   selo?: { texto: string; tom: "bom" | "ruim" | "atencao" };
-  /** O atalho principal da área — o que a pessoa abre nove em cada dez vezes. */
   destaque?: boolean;
   emBreve?: boolean;
 }) {
@@ -207,21 +198,21 @@ export function Atalho({
     <>
       <div className="flex items-center gap-2.5">
         <span
-          className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-md"
+          className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-xl shadow-sm"
           style={{ background: c.fundo, color: c.tinta }}
         >
-          <Icone size={13} strokeWidth={2.2} />
+          <Icone size={14} strokeWidth={2.4} />
         </span>
         <h3
-          className={`min-w-0 truncate text-[13.5px] font-bold ${
-            emBreve ? "text-tinta-400" : "text-tinta-900"
+          className={`min-w-0 truncate text-[14px] font-bold tracking-tight ${
+            emBreve ? "text-zinc-500" : "text-white"
           }`}
         >
           {titulo}
         </h3>
         {s && (
           <span
-            className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] font-bold"
+            className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10.5px] font-bold backdrop-blur-md"
             style={{
               borderColor: s.borda,
               background: s.fundo,
@@ -229,24 +220,22 @@ export function Atalho({
             }}
           >
             <span
-              className="h-1.5 w-1.5 rounded-full"
+              className="h-1.5 w-1.5 rounded-full shadow-[0_0_6px_currentColor]"
               style={{ background: s.valor }}
             />
             {selo!.texto}
           </span>
         )}
       </div>
-      <p className="mt-1 pl-[32px] text-[12px] leading-relaxed text-tinta-500">
+      <p className="mt-1.5 pl-[34px] text-[12.5px] leading-relaxed text-zinc-400">
         {nota}
       </p>
     </>
   );
 
-  // Atalho que ainda não existe não vira link morto: fica visível, apagado e sem
-  // clique, porque a lista completa da área também informa.
   if (emBreve) {
     return (
-      <div className="min-w-0 rounded-lg border border-dashed border-tinta-200 px-4 py-3.5">
+      <div className="min-w-0 rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] px-4 py-3.5 opacity-60">
         {miolo}
       </div>
     );
@@ -256,10 +245,10 @@ export function Atalho({
     <Link
       href={href}
       prefetch
-      className={`min-w-0 rounded-lg border bg-white px-4 py-3.5  transition-colors hover:border-tema ${
+      className={`group min-w-0 rounded-2xl border px-4 py-3.5 backdrop-blur-xl transition-all duration-200 ${
         destaque
-          ? "border-tema shadow-[0_0_0_3px_rgba(5,37,247,0.08)]"
-          : "border-tinta-200"
+          ? "border-cyan-500/40 bg-gradient-to-b from-blue-900/25 to-[#0f1422]/80 shadow-[0_0_24px_rgba(0,240,255,0.12)] hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(0,240,255,0.22)]"
+          : "border-white/[0.08] bg-[#0f1422]/70 shadow-[0_8px_25px_rgba(0,0,0,0.22)] hover:border-white/20 hover:bg-[#121829]/80 hover:shadow-[0_8px_30px_rgba(0,100,255,0.1)]"
       }`}
     >
       {miolo}
