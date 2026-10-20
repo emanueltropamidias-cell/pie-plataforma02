@@ -21,7 +21,14 @@
 // banco, que é outra instalação — o que está oculto aqui simplesmente não tem
 // dado lá.
 
-export type Modulo = "dashboard" | "atendimento" | "trafego" | "base" | "estrategia" | "gabinete";
+export type Modulo =
+  | "dashboard"
+  | "atendimento"
+  | "trafego"
+  | "base"
+  | "estrategia"
+  | "liderancas"
+  | "gabinete";
 
 /** As rotas de cada módulo. A primeira é a casa dele. */
 export const ROTAS_DO_MODULO: Record<Modulo, string[]> = {
@@ -29,7 +36,10 @@ export const ROTAS_DO_MODULO: Record<Modulo, string[]> = {
   atendimento: ["/atendimento"],
   trafego: ["/trafego", "/api/trafego"],
   base: ["/base", "/rede", "/leads", "/mapa", "/municipios"],
-  estrategia: ["/estrategia", "/liderancas", "/crm", "/ranking", "/metas", "/dobradinha"],
+  estrategia: ["/estrategia"],
+  // Separada da Estratégia em 20/10/2026, quando ganhou item próprio no menu —
+  // dá para liberar o painel eleitoral sem liberar o cadastro de lideranças.
+  liderancas: ["/liderancas", "/crm", "/ranking", "/metas", "/dobradinha"],
   gabinete: ["/gabinete", "/demandas", "/conversas"],
 };
 
@@ -57,4 +67,45 @@ export function moduloDoCaminho(caminho: string): Modulo | null {
 export function caminhoOculto(caminho: string): boolean {
   const m = moduloDoCaminho(caminho);
   return m !== null && !moduloAtivo(m);
+}
+
+// ── AS ABAS DE CADA CONTA ───────────────────────────────────────────────────
+//
+// Além da instalação, cada conta pode ter as abas que usa (coluna
+// `profiles.modulos`, migração 0060): o admin marca na hora de criar. null =
+// todas, que é como tudo funcionava antes. Admin vê tudo sempre — quem
+// administra contas não pode se trancar fora da tela de usuários.
+//
+// É trava de TELA. O dado continua com a trava de papel no banco.
+
+/** As abas que se marcam na criação da conta, na ordem do menu. */
+export const ABAS: { modulo: Modulo; rotulo: string; nota: string }[] = [
+  { modulo: "dashboard", rotulo: "Dashboard", nota: "Números do dia" },
+  { modulo: "atendimento", rotulo: "Atendimento", nota: "Caixa de entrada e fila" },
+  { modulo: "trafego", rotulo: "Tráfego pago", nota: "Anúncios e leads" },
+  { modulo: "base", rotulo: "Base", nota: "As pessoas cadastradas" },
+  { modulo: "estrategia", rotulo: "Estratégia", nota: "Painel eleitoral do TSE" },
+  { modulo: "liderancas", rotulo: "Lideranças", nota: "Cadastro, metas e dobradinhas" },
+  { modulo: "gabinete", rotulo: "Gabinete", nota: "Demandas da população" },
+];
+
+export const TODOS_MODULOS = ABAS.map((a) => a.modulo);
+
+/** Se a conta alcança a aba: instalação ligada E (admin, sem lista, ou na lista). */
+export function contaVe(m: Modulo, conta: { role?: string | null; modulos?: string[] | null }): boolean {
+  if (!moduloAtivo(m)) return false;
+  if (conta.role === "admin" || !conta.modulos) return true;
+  return conta.modulos.includes(m);
+}
+
+/** O caminho cabe nas abas da conta? Caminho fora de qualquer aba (config, perfil) passa. */
+export function contaAlcanca(caminho: string, conta: { role?: string | null; modulos?: string[] | null }) {
+  const m = moduloDoCaminho(caminho);
+  return m === null || contaVe(m, conta);
+}
+
+/** Para onde mandar a conta quando ela cai fora das abas dela: a primeira que ela tem. */
+export function casaDaConta(conta: { role?: string | null; modulos?: string[] | null }): string {
+  const m = TODOS_MODULOS.find((x) => contaVe(x, conta));
+  return m ? ROTAS_DO_MODULO[m][0] : "/config";
 }

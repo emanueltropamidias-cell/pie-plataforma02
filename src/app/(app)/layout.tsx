@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ehPortaDaAtendente } from "@/lib/portas";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ehSubdominioAtendimento } from "@/middleware";
-import { caminhoOculto, moduloAtivo } from "@/lib/modulos";
+import { caminhoOculto, casaDaConta, contaAlcanca, moduloAtivo } from "@/lib/modulos";
 
 export default async function AppLayout({
   children,
@@ -33,7 +33,7 @@ export default async function AppLayout({
   // (42P01 / PGRST205) passa; o resto cai em /pendente.
   const { data: perfil, error: perfilErro } = await supabase
     .from("profiles")
-    .select("status, role")
+    .select("status, role, modulos")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -110,6 +110,14 @@ export default async function AppLayout({
   if (caminhoOculto(caminho))
     redirect(moduloAtivo("dashboard") ? "/dashboard" : "/atendimento");
 
+  // ── ABA QUE ESTA CONTA NÃO TEM ────────────────────────────────────────────
+  //
+  // O admin marca as abas de cada conta (profiles.modulos, migração 0060).
+  // Fora delas, nem o endereço digitado abre: volta para a primeira aba que a
+  // pessoa tem. Admin e conta sem lista veem tudo (ver contaVe).
+  const conta = { role: perfil?.role, modulos: (perfil?.modulos as string[] | null | undefined) ?? null };
+  if (!contaAlcanca(caminho, conta)) redirect(casaDaConta(conta));
+
   // ── A ALTURA MORA AQUI, E ISSO IMPORTA NO CELULAR ──────────────────────────
   //
   // `h-dvh` + `overflow-y-auto` no <main> faz duas coisas ao mesmo tempo:
@@ -137,7 +145,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex h-dvh bg-tinta-50">
-      <AppSidebar userEmail={user.email} papel={perfil?.role ?? undefined} />
+      <AppSidebar userEmail={user.email} papel={perfil?.role ?? undefined} modulos={conta.modulos} />
       <main className="h-dvh min-w-0 flex-1 overflow-y-auto pt-14 md:pt-0">
         {children}
       </main>

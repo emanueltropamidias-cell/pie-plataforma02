@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as criarServico } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { TODOS_MODULOS } from "@/lib/modulos";
 
 // Criar a conta da atendente, com senha, para o coordenador entregar na mão.
 //
@@ -321,7 +322,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let corpo: { email?: string; nome?: string; papel?: string };
+  let corpo: { email?: string; nome?: string; papel?: string; modulos?: unknown };
   try {
     corpo = await req.json();
   } catch {
@@ -343,6 +344,23 @@ export async function POST(req: Request) {
       { erro: "Papel não permitido aqui." },
       { status: 400 },
     );
+  }
+
+  // ── AS ABAS DA CONTA ──────────────────────────────────────────────────────
+  //
+  // Só valem para "usuario": atendente e supervisor já têm a tela travada no
+  // atendimento pelo próprio papel. Todas marcadas (ou nada enviado) = null,
+  // que é "todas" — e continua valendo para abas que surgirem depois.
+  let modulos: string[] | null = null;
+  if (papel === "usuario" && Array.isArray(corpo.modulos)) {
+    const pedidas = [...new Set(corpo.modulos.filter((m): m is string => typeof m === "string"))];
+    if (pedidas.some((m) => !TODOS_MODULOS.includes(m as (typeof TODOS_MODULOS)[number]))) {
+      return NextResponse.json({ erro: "Aba desconhecida." }, { status: 400 });
+    }
+    if (!pedidas.length) {
+      return NextResponse.json({ erro: "Marque pelo menos uma aba." }, { status: 400 });
+    }
+    modulos = pedidas.length === TODOS_MODULOS.length ? null : pedidas;
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -389,6 +407,7 @@ export async function POST(req: Request) {
     nome,
     role: papel,
     status: "ativo",
+    modulos,
   });
 
   if (erroPerfil) {
@@ -460,5 +479,5 @@ export async function POST(req: Request) {
   // A senha volta UMA VEZ e não é guardada em lugar nenhum. Se o coordenador
   // fechar a tela sem copiar, o caminho é gerar outra — que é o certo: senha
   // recuperável em texto é senha que vaza no dia em que o banco vazar.
-  return NextResponse.json({ ok: true, email, senha, nome, papel });
+  return NextResponse.json({ ok: true, email, senha, nome, papel, modulos });
 }

@@ -6,7 +6,7 @@ import {
   todasAsInstancias,
 } from "@/lib/evolution";
 import { Central, Faixa, Atalho } from "@/components/ui/central";
-import { moduloAtivo } from "@/lib/modulos";
+import { contaLogadaVe } from "@/lib/conta";
 import { MinhaConta } from "@/components/conta/minha-conta";
 
 // A casa do atendimento.
@@ -219,7 +219,7 @@ export default async function CentralAtendimento() {
           divisão por setor de 15/09 ele vem para cá, e antes de "Atender": é
           de onde nascem os leads que a caixa recebe. Quem olha custo por
           conversa precisa ver, no mesmo lugar, se a fila está dando conta. */}
-      {equipe === true && moduloAtivo("trafego") && (
+      {equipe === true && (await contaLogadaVe("trafego")) && (
         <Faixa titulo="Captar" nota="De onde vêm as conversas.">
           <Atalho
             href="/trafego"

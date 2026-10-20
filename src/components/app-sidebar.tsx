@@ -21,7 +21,7 @@ import {
 import { LogoutButton } from "@/components/logout-button";
 import { SeletorTema } from "@/components/seletor-tema";
 import { MARCA } from "@/lib/candidato";
-import { moduloAtivo, moduloDoCaminho } from "@/lib/modulos";
+import { contaVe, moduloDoCaminho } from "@/lib/modulos";
 
 // Cada item tem ícone porque menu se varre, não se lê: o símbolo é reconhecido
 // antes da palavra, e é ele que sustenta o menu recolhido.
@@ -121,6 +121,7 @@ function Conteudo({
   nome,
   userEmail,
   papel,
+  modulos,
   recolhido,
   onNav,
   onRecolher,
@@ -129,6 +130,7 @@ function Conteudo({
   nome: string;
   userEmail?: string;
   papel?: string;
+  modulos?: string[] | null;
   recolhido: boolean;
   onNav?: () => void;
   onRecolher?: () => void;
@@ -175,14 +177,15 @@ function Conteudo({
             itens: GRUPOS[0].itens.filter((i) => i.href === "/atendimento"),
           },
         ]
-      // Sem as áreas que esta instalação não usa (src/lib/modulos.ts).
+      // Sem as áreas que esta instalação não usa e sem as abas que esta conta
+      // não tem (src/lib/modulos.ts, profiles.modulos).
       : GRUPOS.map((g) => ({
           ...g,
           itens: g.itens.filter((i) => {
             const m = moduloDoCaminho(i.href);
-            return m === null || moduloAtivo(m);
+            return m === null || contaVe(m, { role: papel, modulos });
           }),
-        }));
+        })).filter((g) => g.itens.length > 0);
 
   useEffect(() => {
     setIndo(null);
@@ -338,9 +341,11 @@ function Conteudo({
 export function AppSidebar({
   userEmail,
   papel,
+  modulos,
 }: {
   userEmail?: string;
   papel?: string;
+  modulos?: string[] | null;
 }) {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
@@ -412,6 +417,7 @@ export function AppSidebar({
               nome={nome}
               userEmail={userEmail}
               papel={papel}
+              modulos={modulos}
               recolhido={false}
               onNav={() => setAberto(false)}
             />
@@ -430,6 +436,7 @@ export function AppSidebar({
           nome={nome}
           userEmail={userEmail}
           papel={papel}
+          modulos={modulos}
           recolhido={recolhido}
           onRecolher={alternarRecolhido}
         />

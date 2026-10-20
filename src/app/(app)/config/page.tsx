@@ -27,7 +27,7 @@ export default async function ConfigPage() {
   if (admin) {
     const { data } = await supabase
       .from("profiles")
-      .select("id, nome, email, role, status")
+      .select("id, nome, email, role, status, modulos")
       .order("created_at", { ascending: true });
     usuarios = (data ?? []) as Perfil[];
   }

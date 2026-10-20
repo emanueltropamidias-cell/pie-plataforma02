@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, Copy, Check, X } from "lucide-react";
 import { CANDIDATO } from "@/lib/candidato";
+import { ABAS, moduloAtivo, type Modulo } from "@/lib/modulos";
+import { SeletorAbas } from "@/components/config/seletor-abas";
 
 // Criar a conta da equipe e entregar a senha na mão.
 //
@@ -21,7 +23,7 @@ import { CANDIDATO } from "@/lib/candidato";
 const PAPEIS = [
   { v: "atendente", label: "Atendente", nota: "Só a caixa de entrada" },
   { v: "supervisor", label: "Supervisor", nota: "Toda a área de atendimento" },
-  { v: "usuario", label: "Usuário", nota: "A plataforma inteira" },
+  { v: "usuario", label: "Usuário", nota: "As abas que você marcar" },
 ];
 
 type Criada = { email: string; senha: string; nome: string; papel: string };
@@ -32,6 +34,8 @@ export function CriarConta() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [papel, setPapel] = useState("atendente");
+  // Começa com tudo marcado: desmarcar é o gesto de restringir.
+  const [abas, setAbas] = useState<Modulo[]>(ABAS.filter((a) => moduloAtivo(a.modulo)).map((a) => a.modulo));
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [criada, setCriada] = useState<Criada | null>(null);
@@ -44,7 +48,7 @@ export function CriarConta() {
       const r = await fetch("/api/equipe/criar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, email, papel }),
+        body: JSON.stringify({ nome, email, papel, modulos: papel === "usuario" ? abas : undefined }),
       });
       const j = await r.json();
       if (!r.ok) {
@@ -241,6 +245,11 @@ export function CriarConta() {
             </button>
           ))}
         </div>
+        {papel === "usuario" && (
+          <div className="mt-3">
+            <SeletorAbas marcadas={abas} onMudar={setAbas} />
+          </div>
+        )}
         {/* Admin não sai daqui de propósito: criar login já é a porta mais
             larga da plataforma, e promover alguém a admin merece ser um gesto
             separado, na lista abaixo, onde a mudança fica visível. */}
@@ -253,7 +262,7 @@ export function CriarConta() {
       <div className="mt-4 flex items-center gap-2">
         <button
           onClick={criar}
-          disabled={enviando || !nome.trim() || !email.trim()}
+          disabled={enviando || !nome.trim() || !email.trim() || (papel === "usuario" && abas.length === 0)}
           className="h-9 rounded-lg bg-tema px-4 text-[13px] font-semibold text-white disabled:opacity-40"
         >
           {enviando ? "Criando…" : "Criar e mostrar a senha"}

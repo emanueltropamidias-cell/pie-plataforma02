@@ -6,6 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { CriarConta } from "@/components/config/criar-conta";
+import { SeletorAbas } from "@/components/config/seletor-abas";
+import { ABAS, moduloAtivo, type Modulo } from "@/lib/modulos";
+
+const ABAS_DA_INSTALACAO = ABAS.filter((a) => moduloAtivo(a.modulo)).map((a) => a.modulo);
 
 type Previa = {
   id: string;
@@ -27,6 +31,8 @@ export type Perfil = {
   email: string | null;
   role: string;
   status: string;
+  /** Abas liberadas (migração 0060). null = todas. */
+  modulos?: string[] | null;
 };
 
 // AS PALAVRAS AQUI SÃO AS MESMAS DO BANCO. Não são rótulo.
@@ -41,7 +47,7 @@ export type Perfil = {
 // lado: quem escolhe precisa saber o que está entregando.
 const ROLES = [
   { v: "admin", label: "Admin — plataforma toda" },
-  { v: "usuario", label: "Usuário — plataforma toda" },
+  { v: "usuario", label: "Usuário — as abas marcadas" },
   { v: "supervisor", label: "Supervisor — só o atendimento" },
   { v: "atendente", label: "Atendente — só a caixa de entrada" },
   { v: "lideranca", label: "Liderança — só o portal dela" },
@@ -56,6 +62,8 @@ export function GerenciarUsuarios({
 }) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState<string | null>(null);
+  // Edição das abas de UMA conta por vez, aberta embaixo da linha dela.
+  const [editandoAbas, setEditandoAbas] = useState<{ id: string; abas: Modulo[] } | null>(null);
   // A exclusão é em duas etapas: a primeira chamada devolve o RASTRO da pessoa,
   // a segunda executa. Apagar conta com histórico não apaga só a conta — as
   // conversas dela voltam para a fila sem dono e as mensagens perdem o autor.
@@ -107,6 +115,15 @@ export function GerenciarUsuarios({
     } finally {
       setExcluindo(false);
     }
+  }
+
+  async function salvarAbas() {
+    if (!editandoAbas || editandoAbas.abas.length === 0) return;
+    // Todas marcadas = null ("todas"), para abas que surgirem depois também
+    // valerem para quem já tinha tudo.
+    const todas = ABAS_DA_INSTALACAO.every((m) => editandoAbas.abas.includes(m));
+    await atualizar(editandoAbas.id, { modulos: todas ? null : editandoAbas.abas });
+    setEditandoAbas(null);
   }
 
   async function atualizar(id: string, campos: Partial<Perfil>) {
@@ -174,6 +191,26 @@ export function GerenciarUsuarios({
                 {u.status}
               </span>
 
+              {u.role === "usuario" && (
+                <button
+                  disabled={ocupado === u.id}
+                  onClick={() =>
+                    setEditandoAbas(
+                      editandoAbas?.id === u.id
+                        ? null
+                        : { id: u.id, abas: (u.modulos as Modulo[] | null | undefined) ?? ABAS_DA_INSTALACAO },
+                    )
+                  }
+                  className="h-8 rounded-md border border-tinta-200 bg-white px-2.5 text-[12px] font-semibold text-tinta-700 hover:border-tinta-300"
+                  title="Escolher as abas que esta conta pode usar"
+                >
+                  Abas:{" "}
+                  {u.modulos
+                    ? `${u.modulos.filter((m) => ABAS_DA_INSTALACAO.includes(m as Modulo)).length} de ${ABAS_DA_INSTALACAO.length}`
+                    : "todas"}
+                </button>
+              )}
+
               <select
                 value={u.role}
                 disabled={souEu || ocupado === u.id}
@@ -219,6 +256,28 @@ export function GerenciarUsuarios({
                 >
                   <Trash2 size={15} />
                 </button>
+              )}
+
+              {editandoAbas?.id === u.id && (
+                <div className="basis-full rounded-lg border border-tema/40 bg-white p-3">
+                  <SeletorAbas
+                    compacto
+                    marcadas={editandoAbas.abas}
+                    onMudar={(abas) => setEditandoAbas({ id: u.id, abas })}
+                  />
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <Button size="sm" disabled={ocupado === u.id || editandoAbas.abas.length === 0} onClick={salvarAbas}>
+                      Salvar abas
+                    </Button>
+                    <button
+                      onClick={() => setEditandoAbas(null)}
+                      className="text-[12px] text-tinta-500 hover:text-tinta-900"
+                    >
+                      Cancelar
+                    </button>
+                    <span className="text-[11px] text-tinta-400">Vale no próximo clique da pessoa.</span>
+                  </div>
+                </div>
               )}
             </div>
           );

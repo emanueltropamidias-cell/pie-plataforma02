@@ -17,7 +17,8 @@ import { VOTOS_TALITA } from "@/lib/votos-talita";
 import { ordenarPlacar } from "@/lib/ranking";
 import { humanizar, type Demanda } from "@/components/demandas/constantes";
 import { Cabecalho, Cartao, Indicador } from "@/components/ui/pagina";
-import { moduloAtivo } from "@/lib/modulos";
+import { contaAtual } from "@/lib/conta";
+import { contaVe } from "@/lib/modulos";
 
 // Painel geral.
 //
@@ -34,6 +35,9 @@ function dataBR(iso: string | null) {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  // Atalhos só para as abas que esta conta tem (profiles.modulos).
+  const conta = await contaAtual();
+  const ve = (m: Parameters<typeof contaVe>[0]) => contaVe(m, conta);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -182,7 +186,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {grafiasSoltas > 0 && (
+      {grafiasSoltas > 0 && ve("base") && (
         <Link
           href="/municipios"
           className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ambar/40 bg-ambar/10 px-5 py-3.5 transition-colors hover:bg-ambar/20"
@@ -207,12 +211,14 @@ export default async function DashboardPage() {
           titulo="Onde tivemos voto e não temos ninguém"
           descricao={`${lacunas.length} municípios · ${votosSemBase.toLocaleString("pt-BR")} votos em 2022`}
           acoes={
-            <Link
-              href="/mapa"
-              className="inline-flex items-center gap-1 text-[12px] font-semibold text-tema hover:underline"
-            >
-              Ver no mapa <ArrowUpRight size={13} />
-            </Link>
+            ve("base") ? (
+              <Link
+                href="/mapa"
+                className="inline-flex items-center gap-1 text-[12px] font-semibold text-tema hover:underline"
+              >
+                Ver no mapa <ArrowUpRight size={13} />
+              </Link>
+            ) : undefined
           }
         >
           <div className="px-5 py-3.5">
@@ -243,7 +249,7 @@ export default async function DashboardPage() {
         </Cartao>
 
         {/* O que o gabinete tem para responder — só onde o Gabinete existe (src/lib/modulos.ts). */}
-        {moduloAtivo("gabinete") && (
+        {ve("gabinete") && (
         <Cartao
           titulo="Últimas demandas"
           descricao={
@@ -307,12 +313,14 @@ export default async function DashboardPage() {
           titulo="Placar das lideranças"
           descricao="Pessoas indicadas por cada liderança"
           acoes={
-            <Link
-              href="/ranking"
-              className="inline-flex items-center gap-1 text-[12px] font-semibold text-tema hover:underline"
-            >
-              Placar completo <ArrowUpRight size={13} />
-            </Link>
+            ve("liderancas") ? (
+              <Link
+                href="/ranking"
+                className="inline-flex items-center gap-1 text-[12px] font-semibold text-tema hover:underline"
+              >
+                Placar completo <ArrowUpRight size={13} />
+              </Link>
+            ) : undefined
           }
         >
           <div className="px-5 py-3.5">
