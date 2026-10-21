@@ -10,3 +10,5 @@ Não copiar conteúdo para cá; editar lá.
 @.agents/rules/02-padrao-profissional.md
 @.agents/rules/03-entrega-de-arquivos.md
 @.agents/rules/04-dominio-pie.md
+@.agents/rules/05-passagem-de-bastao.md
+@.agents/DIARIO.md

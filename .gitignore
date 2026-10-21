@@ -51,6 +51,7 @@ next-env.d.ts
 
 # as regras de trabalho SAO nossas e vao para o repositorio
 !.agents/rules/
+!.agents/DIARIO.md
 
 # lixo do CLI do Supabase
 supabase/.temp/
