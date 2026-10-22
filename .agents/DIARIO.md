@@ -5,10 +5,11 @@ cada ação concluída.
 
 ## Em andamento
 
-- 22/10/2026 · Claude · **Estratégia v2** na branch `estrategia-v2` (pedido do Emanuel: aplicar todas as melhorias propostas). FEITO no código: correções (Presença real, selo de resultado, abre o mais votado em vez de sortear, camada "sua campanha" só com base, demo e painel duplicado apagados, `/estrategia/votos` redireciona), mapa em votos / % eleitorado / % válidos, abas Quociente/Disputa, Comparar, Trajetória, Gastos, Perguntar (IA com ferramentas, `/api/eleicao/pergunta`), cidade com eleitorado e perfil, página pública `/candidato/[id]`. Dados: `scripts/gerar-eleicao-extras.mjs`; 2022 gerado e no Storage (apuração, quociente, perfil, ficha, pessoas). FALTA: (1) terminar downloads em `.cache/tse` (perfil 2024/2026, prestação de contas 2022/2024/2026) — baixador paralelo em pedaços, a CDN do TSE limita cada conexão a ~40 KB/s; (2) `--so=perfil,contas` por ano e `--so=contas` 2022; (3) subir 2024 e 2026 com `--apenas="^(apuracao|quociente|perfil|contas|pessoas|ficha)/"`; (4) `next build`, mostrar ao Emanuel, merge.
+- 22/10/2026 · Claude · **Estratégia v2** pronta na branch `estrategia-v2`, aguardando o Emanuel ver antes do merge na `main` (regra 02: mudança visual ampla, mostrar antes). Dados de 2022, 2024 e 2026 já estão no Storage (só acréscimo; a `main` no ar não lê os arquivos novos). Conferido: build de produção, tipos, lint dos arquivos novos, telas Mapa/Quociente/Trajetória/Gastos/cidade em prévia local, página pública, IA respondendo com a chave do Assessor. NÃO conferido: aba Comparar clicando (sem navegador), IA com a chave da Vercel (a do `.env.local` tem 13 caracteres, não é chave real).
 
 ## Feito (mais recente no topo)
 
+- 22/10/2026 · Claude · Estratégia v2 (branch `estrategia-v2`): abas Quociente/Disputa, Comparar, Trajetória, Gastos, Perguntar; mapa em % do eleitorado; cidade com eleitorado e perfil; página pública `/candidato/[id]`; dados extras do TSE via `scripts/gerar-eleicao-extras.mjs`
 - 22/10/2026 · Claude · pasta `conteudo/` criada: contexto de conteúdo do Manuflow para o setor Criação de Vídeo da Opifex (`conteudo/PROJETO.md`) e os vídeos feitos (`conteudo/videos/`); mídia fora do git · `357c33e`
 - 22/10/2026 · Gemini · foto de urna preenchendo o círculo no card da Estratégia (removido span wrapper com border redundante) · `d9514bc`
 - 21/10/2026 · Claude · criado este diário e a regra 05 de passagem de bastão
@@ -19,6 +20,10 @@ cada ação concluída.
 - 20/10/2026 · — · fotos de urna maiores · `fbf99c3`
 
 ## Armadilhas
+
+- Prestação de contas do TSE repete o mesmo gasto em várias prestações (relatório financeiro, parcial, final, regularização). O gerador usa UMA por candidato; somar o arquivo inteiro infla o valor.
+- A CDN do TSE limita cada conexão a ~40 KB/s: arquivo grande só baixa em pedaços paralelos (faixas de bytes).
+- Chrome sem janela não desenha abaixo de 500 px: print "de celular" com `--window-size=390` sai cortado e não é defeito da página.
 
 - `conteudo/` é do setor de vídeo da Opifex (o processo mora em `~/Desktop/V.E.R.T.U.S`); não é importada pelo app. MP4, WAV e `conteudo/referencias/` ficam fora do git para não pesar no deploy.
 - Desde 20/10/2026 só ManuFlow: não migrar nem conferir a instalação do Manassés.

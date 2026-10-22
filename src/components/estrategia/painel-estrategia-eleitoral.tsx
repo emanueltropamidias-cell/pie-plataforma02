@@ -122,10 +122,13 @@ export function PainelEstrategiaEleitoral({
   candidatoInicial,
   cidadesComBase,
   cobertura,
+  abaInicial,
 }: {
   candidatoInicial: RaioXCandidato;
   cidadesComBase: string[];
   cobertura?: CoberturaEleicao[] | null;
+  /** `?aba=quociente` no endereço abre direto na aba (link para mandar). */
+  abaInicial?: string;
 }) {
   const [raioX, setRaioX] = useState<RaioXCandidato>(candidatoInicial);
 
@@ -143,9 +146,17 @@ export function PainelEstrategiaEleitoral({
   });
 
   // Camadas de navegação e abas
-  const [camada, setCamada] = useState<"brasil" | "estado" | "municipio">(raioX.candidato.uf === "BR" ? "brasil" : "estado");
-  const [municipioSelecionado, setMunicipioSelecionado] = useState<string | null>(null);
-  const [aba, setAba] = useState<Aba>("mapa");
+  // Prefeito e vereador abrem na própria cidade: o mapa do estado teria uma
+  // cidade pintada e o resto vazio.
+  const cidadeDe = (r: RaioXCandidato) => (MUNICIPAIS.has(r.candidato.cargo) ? (Object.keys(r.votos_por_municipio)[0] ?? null) : null);
+  const [camada, setCamada] = useState<"brasil" | "estado" | "municipio">(
+    raioX.candidato.uf === "BR" ? "brasil" : cidadeDe(raioX) ? "municipio" : "estado",
+  );
+  const [municipioSelecionado, setMunicipioSelecionado] = useState<string | null>(cidadeDe(raioX));
+  const [aba, setAba] = useState<Aba>(() => {
+    const a = abaInicial === "quociente" || abaInicial === "disputa" ? "eleicao" : abaInicial;
+    return ABAS.some((x) => x.id === a) ? (a as Aba) : "mapa";
+  });
   const [medida, setMedida] = useState<MedidaMapa>("votos");
 
   // Busca e autocomplete
@@ -231,8 +242,9 @@ export function PainelEstrategiaEleitoral({
       // Presidente é do "BR", mas o mapa estadual precisa de um estado.
       setUfFiltro(ufMapa ?? data.candidato.uf);
       setCargoFiltro(data.candidato.cargo);
-      setCamada(camadaDestino ?? (data.candidato.cargo === "PRESIDENTE" && !ufMapa ? "brasil" : "estado"));
-      setMunicipioSelecionado(null);
+      const cidade = cidadeDe(data);
+      setCamada(cidade ? "municipio" : (camadaDestino ?? (data.candidato.cargo === "PRESIDENTE" && !ufMapa ? "brasil" : "estado")));
+      setMunicipioSelecionado(cidade);
     });
     // A URL guarda o candidato aberto: dá para mandar o link para alguém.
     try {
@@ -558,7 +570,16 @@ export function PainelEstrategiaEleitoral({
         {ABAS.map(({ id, rotulo, icone: Icone }) => (
           <button
             key={id}
-            onClick={() => setAba(id)}
+            onClick={() => {
+              setAba(id);
+              try {
+                const url = new URL(window.location.href);
+                url.searchParams.set("aba", id);
+                window.history.replaceState(null, "", url);
+              } catch {
+                /* sem window */
+              }
+            }}
             aria-current={aba === id ? "page" : undefined}
             className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-bold transition ${
               aba === id ? "bg-tema text-white shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"

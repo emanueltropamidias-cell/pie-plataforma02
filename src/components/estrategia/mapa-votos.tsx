@@ -50,12 +50,15 @@ const SEM_VOTO = "var(--tinta-100)";
 const fmt = (n: number) => n.toLocaleString("pt-BR");
 const pct = (n: number) => `${n.toLocaleString("pt-BR", { maximumFractionDigits: n < 1 ? 2 : 1 })}%`;
 
-/** Cortes das 5 classes pelos quintis dos valores positivos. */
+/**
+ * Cortes das classes pelos quintis dos valores positivos, sem repetir: com
+ * poucas cidades (ou uma só) a legenda dizia "até 36.065" cinco vezes.
+ */
 function cortes(valores: number[]) {
   const v = valores.filter((x) => x > 0).sort((a, b) => a - b);
   if (!v.length) return [];
   const q = (p: number) => v[Math.min(v.length - 1, Math.floor(p * v.length))];
-  return [q(0.2), q(0.4), q(0.6), q(0.8)];
+  return [...new Set([q(0.2), q(0.4), q(0.6), q(0.8)])].filter((x) => x < v[v.length - 1]);
 }
 
 function classe(valor: number, c: number[]) {
@@ -157,19 +160,17 @@ export function MapaVotos({
 
   const legenda = useMemo(() => {
     if (pintura) return pintura.legenda;
-    if (!c.length) return [];
     const f = medidaReal === "votos" ? (n: number) => fmt(Math.round(n)) : pct;
-    const limites = [0, ...c];
-    return RAMPA.map((cor, i) => ({
-      cor,
-      rotulo: i === RAMPA.length - 1 ? `acima de ${f(limites[i])}` : `até ${f(c[i])}`,
-    }));
-  }, [c, medidaReal, pintura]);
+    if (!c.length) return desenho?.some((x) => valorDe(x.k) > 0) ? [{ cor: RAMPA[RAMPA.length - 1], rotulo: "com voto" }] : [];
+    // As classes usadas são as últimas da rampa: poucas classes ficam escuras.
+    const cores = RAMPA.slice(RAMPA.length - c.length - 1);
+    return cores.map((cor, i) => ({ cor, rotulo: i === c.length ? `acima de ${f(c[i - 1])}` : `até ${f(c[i])}` }));
+  }, [c, medidaReal, pintura, desenho, valorDe]);
 
   function corDe(k: string) {
     if (pintura) return pintura.cor(k) ?? SEM_VOTO;
     const v = valorDe(k);
-    return v > 0 ? RAMPA[classe(v, c)] : SEM_VOTO;
+    return v > 0 ? RAMPA[RAMPA.length - c.length - 1 + classe(v, c)] : SEM_VOTO;
   }
 
   function dicaDe(k: string, nome: string) {

@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function CentralEstrategia({
   searchParams,
 }: {
-  searchParams: Promise<{ c?: string }>;
+  searchParams: Promise<{ c?: string; aba?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -56,6 +56,7 @@ export default async function CentralEstrategia({
             candidatoInicial={raioX}
             cidadesComBase={cidadesComBase}
             cobertura={cobertura && cobertura.length ? cobertura : null}
+            abaInicial={params.aba}
           />
         ) : (
           <div className="rounded-2xl border border-tinta-200 bg-white p-8 text-center text-tinta-500">

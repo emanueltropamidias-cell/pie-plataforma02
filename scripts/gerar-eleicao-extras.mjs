@@ -19,8 +19,8 @@
 //                        (votacao_partido_munzona + consulta_vagas)
 //   perfil/<UF>.json     por município: total, gênero, 6 faixas de idade e 5
 //                        de escolaridade (perfil_eleitorado)
-//   contas/<UF>.json     por SQ_CANDIDATO: [receitas, despesas contratadas]
-//                        em reais inteiros (prestacao_de_contas_eleitorais)
+//   contas/<UF>.json     por SQ_CANDIDATO: [receitas, despesas contratadas] da
+//                        prestação mais definitiva, em reais inteiros
 //   ficha/<UF>.json      por chave do candidato: [gênero, nascimento,
 //                        instrução, ocupação, chapa] (consulta_cand)
 //   pessoas/<UF>.json    por chave: todas as candidaturas da mesma pessoa em
@@ -222,6 +222,15 @@ async function perfil(ano, escrever) {
 
 // ── PRESTAÇÃO DE CONTAS ─────────────────────────────────────────────────────
 
+// Uma candidatura aparece em várias prestações: relatórios financeiros (cada
+// doação, em 72 h), a parcial de setembro, a final, a regularização de quem
+// não prestou. Cada uma repete as anteriores — somar tudo contava o mesmo
+// real duas, três vezes. Fica UMA por candidato: a de tipo mais definitivo, do
+// turno mais alto (quem foi ao 2º turno presta uma final acumulada) e, no
+// empate, a mais recente.
+const PRIORIDADE = { FINAL: 4, "REGULARIZAÇÃO DA OMISSÃO": 3, PARCIAL: 2, "RELATÓRIO FINANCEIRO": 1 };
+const dataIso = (d) => (/^(\d{2})\/(\d{2})\/(\d{4})/.exec(d || "") ?? []).slice(1).reverse().join("");
+
 async function contas(ano, escrever) {
   const z = zip(`prestacao_de_contas_eleitorais_candidatos_${ano}.zip`);
   if (!z) return console.log(`contas ${ano}: zip ausente`);
@@ -231,26 +240,32 @@ async function contas(ano, escrever) {
     const rec = dentro.find((x) => /^receitas_candidatos_\d{4}_/.test(x) && x.endsWith(`_${uf}.csv`));
     const desp = dentro.find((x) => /^despesas_contratadas_candidatos_\d{4}_/.test(x) && x.endsWith(`_${uf}.csv`));
     if (!rec && !desp) continue;
-    const porSq = {};
-    const somar = (i, valor) => (sq) => {
-      const c = (porSq[sq] ??= [0, 0]);
-      c[i] += valor;
+    // SQ → prestação ("tipo|turno|prestador") → { ordem, valores [receitas, despesas] }
+    const porSq = new Map();
+    const somar = (i, valorCol) => (v) => {
+      const sq = v("SQ_CANDIDATO");
+      if (nulo(sq)) return;
+      const tipo = (v("TP_PRESTACAO_CONTAS") || "").toUpperCase();
+      const turno = inteiro(v("ST_TURNO")) || 1;
+      const k = `${tipo}|${turno}|${v("SQ_PRESTADOR_CONTAS")}`;
+      const ps = porSq.get(sq) ?? new Map();
+      const pr = ps.get(k) ?? { ordem: [PRIORIDADE[tipo] ?? 0, turno, dataIso(v("DT_PRESTACAO_CONTAS"))], valores: [0, 0] };
+      pr.valores[i] += reais(v(valorCol));
+      ps.set(k, pr);
+      porSq.set(sq, ps);
     };
-    if (rec)
-      await lerCsv(z, rec, (v) => {
-        const sq = v("SQ_CANDIDATO");
-        if (!nulo(sq)) somar(0, reais(v("VR_RECEITA")))(sq);
-      });
-    if (desp)
-      await lerCsv(z, desp, (v) => {
-        const sq = v("SQ_CANDIDATO");
-        if (!nulo(sq)) somar(1, reais(v("VR_DESPESA_CONTRATADA")))(sq);
-      });
-    for (const c of Object.values(porSq)) {
-      c[0] = Math.round(c[0]);
-      c[1] = Math.round(c[1]);
+    if (rec) await lerCsv(z, rec, somar(0, "VR_RECEITA"));
+    if (desp) await lerCsv(z, desp, somar(1, "VR_DESPESA_CONTRATADA"));
+    const saida = {};
+    const maior = (a, b) => (a[0] - b[0]) || (a[1] - b[1]) || a[2].localeCompare(b[2]);
+    for (const [sq, ps] of porSq) {
+      // Receita e despesa saem da mesma prestação: a melhor que tiver cada uma.
+      const lista = [...ps.values()].sort((a, b) => maior(b.ordem, a.ordem));
+      const receita = lista.find((p) => p.valores[0] > 0)?.valores[0] ?? 0;
+      const despesa = lista.find((p) => p.valores[1] > 0)?.valores[1] ?? 0;
+      saida[sq] = [Math.round(receita), Math.round(despesa)];
     }
-    escrever(`contas/${uf}.json`, porSq);
+    escrever(`contas/${uf}.json`, saida);
     n++;
   }
   console.log(`contas ${ano}: ${n} arquivos`);
