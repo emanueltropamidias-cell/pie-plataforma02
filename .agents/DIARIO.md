@@ -9,7 +9,7 @@ Nada em andamento.
 
 ## Feito (mais recente no topo)
 
-- 22/10/2026 · Gemini · foto de urna preenchendo o círculo no card da Estratégia (removido span wrapper com border redundante)
+- 22/10/2026 · Gemini · foto de urna preenchendo o círculo no card da Estratégia (removido span wrapper com border redundante) · `d9514bc`
 - 21/10/2026 · Claude · criado este diário e a regra 05 de passagem de bastão
 - 20/10/2026 · — · layout de celular na Estratégia e nos indicadores · `51bada9`
 - 20/10/2026 · — · identidade ManuFlow (pino, escuro padrão, claro com menu preto) · `4bafe24`
