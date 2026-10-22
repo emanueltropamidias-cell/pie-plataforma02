@@ -127,3 +127,36 @@ const CARGOS_MUNICIPAIS = new Set(["PREFEITO", "VICE-PREFEITO", "VEREADOR"]);
 export function ondeDisputa(c: { cargo: string; uf: string; nm_ue?: string | null }) {
   return CARGOS_MUNICIPAIS.has(c.cargo) && c.nm_ue ? `${c.nm_ue} · ${c.uf}` : c.uf;
 }
+
+export type TomResultado = "eleito" | "segundo" | "suplente" | "nao" | "anulado" | "outro";
+
+/**
+ * O resultado da candidatura, como o TSE totalizou (DS_SIT_TOT_TURNO).
+ *
+ * O selo do painel mostrava a situação com um ponto verde piscando para
+ * qualquer valor — "NÃO ELEITO" e "#NULO" (candidatura sem voto válido, em
+ * geral indeferida) pareciam tão bem quanto "ELEITO".
+ */
+export function resultadoDe(situacao: string | null | undefined): { rotulo: string; tom: TomResultado } {
+  const s = (situacao ?? "").toUpperCase().trim();
+  if (s === "ELEITO POR QP") return { rotulo: "Eleito por quociente", tom: "eleito" };
+  if (s === "ELEITO POR MÉDIA") return { rotulo: "Eleito por média", tom: "eleito" };
+  if (s === "ELEITO") return { rotulo: "Eleito", tom: "eleito" };
+  if (s === "2º TURNO") return { rotulo: "Foi ao 2º turno", tom: "segundo" };
+  if (s === "SUPLENTE") return { rotulo: "Suplente", tom: "suplente" };
+  if (s === "NÃO ELEITO") return { rotulo: "Não eleito", tom: "nao" };
+  if (!s || s === "#NULO" || s === "#NE") return { rotulo: "Sem resultado (candidatura sem voto válido)", tom: "anulado" };
+  return { rotulo: s.charAt(0) + s.slice(1).toLowerCase(), tom: "outro" };
+}
+
+export const CLASSE_RESULTADO: Record<TomResultado, string> = {
+  eleito: "border-emerald-200/60 bg-emerald-50 text-emerald-700",
+  segundo: "border-blue-200/60 bg-blue-50 text-blue-700",
+  suplente: "border-amber-200/60 bg-amber-50 text-amber-700",
+  nao: "border-tinta-200 bg-tinta-100 text-tinta-600",
+  anulado: "border-rose-200/60 bg-rose-50 text-rose-700",
+  outro: "border-tinta-200 bg-tinta-100 text-tinta-600",
+};
+
+/** Cargo eleito pelo sistema proporcional (quociente eleitoral). */
+export const CARGOS_PROPORCIONAIS = new Set(["DEPUTADO FEDERAL", "DEPUTADO ESTADUAL", "DEPUTADO DISTRITAL", "VEREADOR"]);

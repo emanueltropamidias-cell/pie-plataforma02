@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useEffect, useMemo, useTransition, type ReactNode } from "react";
+import Link from "next/link";
 import {
   Search,
   Check,
@@ -14,15 +15,43 @@ import {
   Compass,
   ArrowUpRight,
   Sparkles,
+  Map as IconeMapa,
+  Scale,
+  GitCompare,
+  History,
+  Wallet,
+  Percent,
+  ExternalLink,
 } from "lucide-react";
 import { MapaBrasil } from "@/components/estrategia/mapa-brasil";
-import { MapaVotos } from "@/components/estrategia/mapa-votos";
+import { MapaVotos, type BaseCidade, type MedidaMapa } from "@/components/estrategia/mapa-votos";
 import { DetalheMunicipioEstrategia } from "@/components/estrategia/detalhe-municipio-estrategia";
-import { chave, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
+import { AbaEleicao } from "@/components/estrategia/aba-eleicao";
+import { AbaComparar } from "@/components/estrategia/aba-comparar";
+import { AbaTrajetoria } from "@/components/estrategia/aba-trajetoria";
+import { AbaGastos } from "@/components/estrategia/aba-gastos";
+import { AbaPerguntar } from "@/components/estrategia/aba-perguntar";
+import { SeloResultado, fmt, pct } from "@/components/estrategia/comum";
+import { CARGOS_PROPORCIONAIS, chave, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
+import { municipiosDaUf } from "@/lib/estados";
 import { CANDIDATO } from "@/lib/candidato";
 import UFS from "@/lib/ufs.json";
 import APELIDOS_MUNICIPIOS from "@/lib/municipios-apelidos.json";
 import { FotoUrna, SeletorCandidatos } from "@/components/estrategia/seletor-candidatos";
+
+// Central de Estratégia: os dados do TSE de 2022, 2024 e 2026, Brasil inteiro.
+//
+// ── DUAS CAMADAS (22/10/2026) ───────────────────────────────────────────────
+//
+// A tela nasceu para a campanha da Talita, e tudo nela pressupunha uma base
+// de lideranças: "sem liderança", "voto sem rede", "cadastrar liderança". A
+// plataforma passou a ser para qualquer pessoa, e quem chega sem campanha via
+// esses números zerados como se fossem informação.
+//
+//   pública   os dados do TSE — votação, eleição, comparação, trajetória,
+//             gastos, perguntas. Vale para qualquer conta.
+//   campanha  o cruzamento com a base de quem está logado. Só aparece quando
+//             a conta tem pessoas cadastradas em alguma cidade.
 
 export interface CandidatoBusca {
   id: number;
@@ -53,6 +82,9 @@ export interface RaioXCandidato {
     votos: number;
     codigo_tse: string;
   }>;
+  /** Eleitores e válidos do cargo por município (null = ainda não importado). */
+  base_por_municipio?: Record<string, BaseCidade> | null;
+  totais_unidade?: BaseCidade | null;
 }
 
 export interface CoberturaEleicao {
@@ -62,19 +94,41 @@ export interface CoberturaEleicao {
   municipios: number;
 }
 
-
-
 const ESTADOS_BR = [{ uf: "BR", nome: "Brasil (Visão Nacional)" }, ...UFS];
 const ANOS = [2026, 2024, 2022];
+const MUNICIPAIS = new Set(["PREFEITO", "VEREADOR"]);
+
+type Aba = "mapa" | "eleicao" | "comparar" | "trajetoria" | "gastos" | "perguntar";
+
+const ABAS: { id: Aba; rotulo: string; icone: typeof IconeMapa }[] = [
+  { id: "mapa", rotulo: "Mapa", icone: IconeMapa },
+  { id: "eleicao", rotulo: "Eleição", icone: Scale },
+  { id: "comparar", rotulo: "Comparar", icone: GitCompare },
+  { id: "trajetoria", rotulo: "Trajetória", icone: History },
+  { id: "gastos", rotulo: "Gastos", icone: Wallet },
+  { id: "perguntar", rotulo: "Perguntar", icone: Sparkles },
+];
+
+const MEDIDAS: { id: MedidaMapa; rotulo: string }[] = [
+  { id: "votos", rotulo: "Votos" },
+  { id: "eleitorado", rotulo: "% eleitorado" },
+  { id: "validos", rotulo: "% válidos" },
+];
+
+const SELECT =
+  "h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 sm:h-9 sm:w-auto";
 
 export function PainelEstrategiaEleitoral({
   candidatoInicial,
   cidadesComBase,
   cobertura,
+  abaInicial,
 }: {
   candidatoInicial: RaioXCandidato;
   cidadesComBase: string[];
   cobertura?: CoberturaEleicao[] | null;
+  /** `?aba=quociente` no endereço abre direto na aba (link para mandar). */
+  abaInicial?: string;
 }) {
   const [raioX, setRaioX] = useState<RaioXCandidato>(candidatoInicial);
 
@@ -83,6 +137,7 @@ export function PainelEstrategiaEleitoral({
   const [cargoFiltro, setCargoFiltro] = useState<string>("TODOS");
   const [ufFiltro, setUfFiltro] = useState<string>(raioX.candidato.uf || "BA");
   const [partidoFiltro, setPartidoFiltro] = useState<string>("TODOS");
+
   // Cargos e partidos que EXISTEM no estado e eleição abertos, vindos do
   // seletor de candidatos. Antes eram 30 partidos escritos à mão.
   const [opcoes, setOpcoes] = useState<{ cargos: { valor: string; n: number }[]; partidos: { valor: string; n: number }[] }>({
@@ -90,19 +145,29 @@ export function PainelEstrategiaEleitoral({
     partidos: [],
   });
 
-  // Camadas de Navegação
-  const [camada, setCamada] = useState<"brasil" | "estado" | "municipio">("estado");
-  const [municipioSelecionado, setMunicipioSelecionado] = useState<string | null>(null);
+  // Camadas de navegação e abas
+  // Prefeito e vereador abrem na própria cidade: o mapa do estado teria uma
+  // cidade pintada e o resto vazio.
+  const cidadeDe = (r: RaioXCandidato) => (MUNICIPAIS.has(r.candidato.cargo) ? (Object.keys(r.votos_por_municipio)[0] ?? null) : null);
+  const [camada, setCamada] = useState<"brasil" | "estado" | "municipio">(
+    raioX.candidato.uf === "BR" ? "brasil" : cidadeDe(raioX) ? "municipio" : "estado",
+  );
+  const [municipioSelecionado, setMunicipioSelecionado] = useState<string | null>(cidadeDe(raioX));
+  const [aba, setAba] = useState<Aba>(() => {
+    const a = abaInicial === "quociente" || abaInicial === "disputa" ? "eleicao" : abaInicial;
+    return ABAS.some((x) => x.id === a) ? (a as Aba) : "mapa";
+  });
+  const [medida, setMedida] = useState<MedidaMapa>("votos");
 
-  // Busca e Autocomplete
+  // Busca e autocomplete
   const [busca, setBusca] = useState("");
   const [sugestoesBrutas, setSugestoes] = useState<CandidatoBusca[]>([]);
-  const [buscando, setBuscando] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
   const [, startTransition] = useTransition();
-
   const sugestoes = busca.trim().length >= 2 ? sugestoesBrutas : [];
+
   const cSet = useMemo(() => new Set(cidadesComBase.map(chave)), [cidadesComBase]);
+  const campanha = cSet.size > 0;
 
   // Cobertura do TSE
   const semCobertura = !cobertura;
@@ -138,32 +203,20 @@ export function PainelEstrategiaEleitoral({
   // Busca inteligente via API
   useEffect(() => {
     if (!busca || busca.trim().length < 2) return;
-
     const timer = setTimeout(async () => {
-      setBuscando(true);
       try {
-        const urlParams = new URLSearchParams({
-          q: busca.trim(),
-          ano: String(anoFiltro),
-          uf: ufFiltro,
-        });
+        const urlParams = new URLSearchParams({ q: busca.trim(), ano: String(anoFiltro), uf: ufFiltro });
         if (cargoFiltro !== "TODOS") urlParams.set("cargo", cargoFiltro);
-
         const res = await fetch(`/api/eleicao?${urlParams.toString()}`);
         const data = await res.json();
         let list: CandidatoBusca[] = data.candidatos || [];
-        if (partidoFiltro !== "TODOS") {
-          list = list.filter((c) => c.partido_sigla?.toUpperCase() === partidoFiltro);
-        }
+        if (partidoFiltro !== "TODOS") list = list.filter((c) => c.partido_sigla?.toUpperCase() === partidoFiltro);
         setSugestoes(list);
         setMenuAberto(true);
       } catch (err) {
         console.error("Erro ao buscar candidatos:", err);
-      } finally {
-        setBuscando(false);
       }
     }, 250);
-
     return () => clearTimeout(timer);
   }, [busca, anoFiltro, ufFiltro, cargoFiltro, partidoFiltro]);
 
@@ -171,8 +224,11 @@ export function PainelEstrategiaEleitoral({
     setMenuAberto(false);
     setBusca("");
     try {
-      const res = await fetch(`/api/eleicao?candidatoId=${cand.id}`);
-      abrirRaioX(await res.json());
+      const p = new URLSearchParams({ candidatoId: String(cand.id) });
+      // Presidente: o mapa segue no estado aberto.
+      if (cand.uf === "BR" && ufFiltro !== "BR") p.set("uf", ufFiltro);
+      const res = await fetch(`/api/eleicao?${p}`);
+      abrirRaioX(await res.json(), undefined, cand.uf === "BR" ? ufFiltro : undefined);
     } catch (err) {
       console.error("Erro ao carregar raio-x do candidato:", err);
     }
@@ -186,26 +242,34 @@ export function PainelEstrategiaEleitoral({
       // Presidente é do "BR", mas o mapa estadual precisa de um estado.
       setUfFiltro(ufMapa ?? data.candidato.uf);
       setCargoFiltro(data.candidato.cargo);
-      setCamada(camadaDestino ?? (data.candidato.cargo === "PRESIDENTE" ? "brasil" : "estado"));
-      setMunicipioSelecionado(null);
+      const cidade = cidadeDe(data);
+      setCamada(cidade ? "municipio" : (camadaDestino ?? (data.candidato.cargo === "PRESIDENTE" && !ufMapa ? "brasil" : "estado")));
+      setMunicipioSelecionado(cidade);
     });
+    // A URL guarda o candidato aberto: dá para mandar o link para alguém.
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("c", String(data.candidato.id));
+      window.history.replaceState(null, "", url);
+    } catch {
+      /* sem window (render no servidor) */
+    }
   }
 
-  // Um candidato qualquer do estado aberto, na eleição (e cargo/partido) do
-  // filtro. É para onde o card vai ao trocar de estado, de ano ou de cargo —
-  // antes ele ficava parado e a Talita seguia na tela de 2024, onde ela não
-  // concorreu, ou na de Minas.
-  async function sortearCandidato(o: { ano: number; uf: string; cargo: string; partido?: string }) {
-    const d = new URLSearchParams({ aleatorio: "1", ano: String(o.ano), uf: o.uf });
+  // O mais votado do estado aberto, na eleição (e cargo/partido) do filtro.
+  // Trocar de estado, ano, cargo ou partido abre quem ganhou ali — antes abria
+  // um candidato sorteado, e quem chegava na tela caía num desconhecido.
+  async function abrirDestaque(o: { ano: number; uf: string; cargo: string; partido?: string }) {
+    const d = new URLSearchParams({ destaque: "1", ano: String(o.ano), uf: o.uf });
     if (o.cargo !== "TODOS") d.set("cargo", o.cargo);
     if (o.partido && o.partido !== "TODOS") d.set("partido", o.partido);
     try {
       const r = await (await fetch(`/api/eleicao?${d}`)).json();
       if (r?.candidato) return abrirRaioX(r, o.uf === "BR" ? "brasil" : "estado", o.uf === "BR" ? undefined : o.uf);
       // O cargo pedido não existe ali (ex.: governador em 2024): qualquer um.
-      if (o.cargo !== "TODOS" || o.partido) return sortearCandidato({ ano: o.ano, uf: o.uf, cargo: "TODOS" });
+      if (o.cargo !== "TODOS" || o.partido) return abrirDestaque({ ano: o.ano, uf: o.uf, cargo: "TODOS" });
     } catch (err) {
-      console.error("Erro ao sortear candidato:", err);
+      console.error("Erro ao abrir o mais votado:", err);
     }
   }
 
@@ -213,152 +277,173 @@ export function PainelEstrategiaEleitoral({
     setAnoFiltro(novoAno);
     setCargoFiltro(novoCargo);
     const uf = ufsDeAno(novoAno).includes(ufFiltro) || ufFiltro === "BR" ? ufFiltro : CANDIDATO.uf;
-    return sortearCandidato({ ano: novoAno, uf, cargo: novoCargo, partido: partidoFiltro });
+    // Presidente só existe no índice nacional.
+    return abrirDestaque({ ano: novoAno, uf: novoCargo === "PRESIDENTE" ? "BR" : uf, cargo: novoCargo, partido: partidoFiltro });
   }
 
   function trocarPartido(partido: string) {
     setPartidoFiltro(partido);
     if (partido !== "TODOS" && raioX.candidato.partido_sigla !== partido)
-      sortearCandidato({ ano: anoFiltro, uf: ufFiltro, cargo: cargoFiltro, partido });
+      abrirDestaque({ ano: anoFiltro, uf: ufFiltro, cargo: cargoFiltro, partido });
   }
 
   function transitarParaEstado(uf: string) {
     setMunicipioSelecionado(null);
-    setUfFiltro(uf);
-    setCamada(uf === "BR" ? "brasil" : "estado");
     setPartidoFiltro("TODOS");
-    // Cargo municipal/estadual que não existe no "BR" (só presidente) cai em todos.
-    const cargo = uf === "BR" ? "TODOS" : cargoFiltro === "PRESIDENTE" ? "TODOS" : cargoFiltro;
-    return sortearCandidato({ ano: anoFiltro, uf, cargo });
+    if (uf === "BR") {
+      setCamada("brasil");
+      return abrirDestaque({ ano: anoFiltro, uf: "BR", cargo: "TODOS" });
+    }
+    setUfFiltro(uf);
+    setCamada("estado");
+    // Presidente aberto: ver o mesmo presidente no estado clicado.
+    if (raioX.candidato.uf === "BR") {
+      return fetch(`/api/eleicao?candidatoId=${raioX.candidato.id}&uf=${uf}`)
+        .then((r) => r.json())
+        .then((r) => abrirRaioX(r, "estado", uf))
+        .catch(() => undefined);
+    }
+    const cargo = cargoFiltro === "PRESIDENTE" ? "TODOS" : cargoFiltro;
+    return abrirDestaque({ ano: anoFiltro, uf, cargo });
   }
 
   function transitarParaMunicipio(mun: string) {
     setMunicipioSelecionado(mun);
     setCamada("municipio");
+    setAba("mapa");
   }
 
-  const APELIDOS_UF =
-    (APELIDOS_MUNICIPIOS as Record<string, Record<string, string>>)[ufFiltro] ?? {};
+  // O estado que o mapa mostra: o do candidato, ou o escolhido para o presidente.
+  const ufMapa = raioX.candidato.uf === "BR" ? (ufFiltro === "BR" ? CANDIDATO.uf : ufFiltro) : raioX.candidato.uf;
+
+  const APELIDOS_UF = (APELIDOS_MUNICIPIOS as Record<string, Record<string, string>>)[ufMapa] ?? {};
+
   // O mapa manda o nome como está na malha ("Salvador"); os votos vêm com o
   // nome do TSE ("SALVADOR"). Comparar literal abria a cidade com zero votos.
   const municipioNoBanco = municipioSelecionado
-    ? (Object.keys(raioX.votos_por_municipio).find((m) => {
+    ? (Object.keys({ ...(raioX.base_por_municipio ?? {}), ...raioX.votos_por_municipio }).find((m) => {
         const k = chave(m);
         const alvo = chave(municipioSelecionado);
         return k === alvo || APELIDOS_UF[k] === alvo; // malha com nome antigo
-      }) ??
-      municipioSelecionado.toUpperCase())
+      }) ?? municipioSelecionado.toUpperCase())
     : null;
+
   const posicaoNoRanking = municipioNoBanco
     ? Object.entries(raioX.votos_por_municipio)
         .sort((a, b) => b[1] - a[1])
         .findIndex(([m]) => m === municipioNoBanco) + 1 || undefined
     : undefined;
 
-  // Cálculos do candidato ativo
-  const totalVotos = raioX.candidato.total_votos || 0;
+  // ── Cálculos do candidato ativo (no estado do mapa) ──────────────────────
+  const c = raioX.candidato;
+  const municipal = MUNICIPAIS.has(c.cargo);
+  const votosNoMapa = Object.values(raioX.votos_por_municipio).reduce((s, v) => s + v, 0);
+  const totalVotos = c.uf === "BR" ? votosNoMapa : c.total_votos || 0;
+  const cidadesComVoto = Object.values(raioX.votos_por_municipio).filter((v) => v > 0).length;
   const top10 = raioX.top_municipios.slice(0, 10);
   const top5 = top10.slice(0, 5);
   const votosTop10 = top10.reduce((s, m) => s + m.votos, 0);
-  const concentracao = totalVotos > 0 ? (votosTop10 / totalVotos) * 100 : 0;
+  const concentracao = votosNoMapa > 0 ? (votosTop10 / votosNoMapa) * 100 : 0;
   const maiorVotoTopo = top5[0]?.votos || 1;
+  const municipiosDaUfMapa = municipiosDaUf(ufMapa);
+  const presenca = municipiosDaUfMapa ? (cidadesComVoto / municipiosDaUfMapa) * 100 : null;
+  const tot = raioX.totais_unidade ?? null;
+  const pctValidos = tot?.validos ? (votosNoMapa / tot.validos) * 100 : null;
+  const pctEleitorado = tot?.aptos ? (votosNoMapa / tot.aptos) * 100 : null;
+  const base = raioX.base_por_municipio ?? null;
 
-  const lacunas = Object.entries(raioX.votos_por_municipio)
-    .filter(([mun, v]) => v > 0 && !cSet.has(chave(mun)))
-    .map(([municipio, votos]) => ({ municipio, votos }))
-    .sort((a, b) => b.votos - a.votos);
-
+  const lacunas = campanha
+    ? Object.entries(raioX.votos_por_municipio)
+        .filter(([mun, v]) => v > 0 && !cSet.has(chave(mun)))
+        .map(([municipio, votos]) => ({ municipio, votos }))
+        .sort((a, b) => b.votos - a.votos)
+    : [];
   const votosSemRede = lacunas.reduce((s, l) => s + l.votos, 0);
 
   return (
     <div className="space-y-5">
-      {/* ── 1. HEADER DE COMANDO EXECUTIVO UNIFICADO (CLEAN) ─────────── */}
+      {/* ── 1. CABEÇALHO: CANDIDATO + FILTROS ──────────────────────────── */}
       <header className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          
-          {/* Identidade Sóbria do Candidato */}
           <div className="flex min-w-0 items-center gap-3.5">
             <FotoUrna
-              key={raioX.candidato.id}
-              src={fotoDoCandidato(raioX.candidato)}
-              nome={raioX.candidato.nome_urna}
+              key={c.id}
+              src={fotoDoCandidato(c)}
+              nome={c.nome_urna}
               tamanho={88}
               className="border-2 shadow-sm"
             />
-
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 border border-blue-200/60">
-                  {raioX.candidato.partido_sigla} · {raioX.candidato.numero}
+                <span className="rounded-md border border-blue-200/60 bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+                  {c.partido_sigla} · {c.numero}
                 </span>
                 <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                  {raioX.candidato.cargo} · {ondeDisputa(raioX.candidato)}
+                  {c.cargo} · {ondeDisputa(c)}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200/50">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {raioX.candidato.situacao || "REGISTRADO"}
-                </span>
+                <SeloResultado situacao={c.situacao} />
               </div>
-
-              <h1 className="mt-1 break-words text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">
-                {raioX.candidato.nome_urna}
+              <h1 className="mt-1 break-words text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
+                {c.nome_urna}
               </h1>
               <p className="text-[12px] text-slate-500">
-                Disputa em {raioX.candidato.uf} · Eleição {raioX.candidato.ano} ·{" "}
-                <b className="font-semibold text-slate-800">{totalVotos.toLocaleString("pt-BR")}</b> votos válidos apurados
+                Eleição {c.ano}
+                {c.turno === 2 ? " · 2º turno" : ""} ·{" "}
+                <b className="font-semibold text-slate-800">{fmt(c.total_votos)}</b> votos válidos
+                {c.uf === "BR" ? " no Brasil" : ""}
+                {pctValidos !== null && c.uf !== "BR" && <> · <b className="font-semibold text-slate-800">{pct(pctValidos)}</b> dos válidos</>}
+                {" · "}
+                <Link href={`/candidato/${c.id}`} target="_blank" className="inline-flex items-center gap-0.5 font-semibold text-blue-700 hover:underline">
+                  página pública <ExternalLink size={11} />
+                </Link>
               </p>
             </div>
           </div>
 
-          {/* Controles de Navegação, Filtros e Busca Spotlight
+          {/* Controles de navegação, filtros e busca.
               No celular cada controle ocupa a linha inteira: soltos em
               flex-wrap, cada um ficava do tamanho do próprio texto e a pilha
               parecia montada ao acaso; lado a lado, o 16px que o celular
               força nos campos cortava "Todos os cargos" no meio. */}
           <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2.5">
-            {/* Pílula de Navegação de Camadas */}
             <div className="flex min-w-0 items-center overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[12px] sm:inline-flex">
               <button
                 onClick={() => {
                   setCamada("brasil");
                   setMunicipioSelecionado(null);
+                  setAba("mapa");
                 }}
                 className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold transition sm:py-1 ${
-                  camada === "brasil"
-                    ? "bg-white text-blue-700 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
+                  camada === "brasil" && aba === "mapa" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <Globe2 size={13} />
                 Brasil
               </button>
-
               <ChevronRight size={13} className="shrink-0 text-slate-300" />
-
               <button
                 onClick={() => {
                   setCamada("estado");
                   setMunicipioSelecionado(null);
+                  setAba("mapa");
                 }}
                 className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold transition sm:py-1 ${
-                  camada === "estado"
-                    ? "bg-white text-blue-700 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
+                  camada === "estado" && aba === "mapa" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <MapPin size={13} />
-                {ufFiltro === "BR" ? "Estado" : ufFiltro}
+                {ufMapa}
               </button>
-
               {municipioSelecionado && (
                 <>
                   <ChevronRight size={13} className="shrink-0 text-slate-300" />
                   <button
-                    onClick={() => setCamada("municipio")}
+                    onClick={() => {
+                      setCamada("municipio");
+                      setAba("mapa");
+                    }}
                     className={`flex min-w-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold transition sm:py-1 ${
-                      camada === "municipio"
-                        ? "bg-white text-blue-700 shadow-sm"
-                        : "text-slate-600 hover:text-slate-900"
+                      camada === "municipio" && aba === "mapa" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     <Building2 size={13} className="shrink-0" />
@@ -368,7 +453,6 @@ export function PainelEstrategiaEleitoral({
               )}
             </div>
 
-            {/* Alternador de Ano: 2026, 2024, 2022 */}
             <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[12px] sm:inline-flex">
               {ANOS.map((ano) => (
                 <button
@@ -387,12 +471,7 @@ export function PainelEstrategiaEleitoral({
               ))}
             </div>
 
-            {/* Seletor de Estado */}
-            <select
-              value={ufFiltro}
-              onChange={(e) => transitarParaEstado(e.target.value)}
-              className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 sm:h-9 sm:w-auto"
-            >
+            <select value={ufFiltro} onChange={(e) => transitarParaEstado(e.target.value)} className={SELECT}>
               {ESTADOS_BR.map((e) => (
                 <option key={e.uf} value={e.uf}>
                   {e.nome} {e.uf !== "BR" ? `(${e.uf})` : ""}
@@ -400,11 +479,10 @@ export function PainelEstrategiaEleitoral({
               ))}
             </select>
 
-            {/* Seletor de Cargo: trocar abre o mais votado do cargo */}
             <select
               value={cargosDaTela.some((o) => o.valor === cargoFiltro) ? cargoFiltro : "TODOS"}
               onChange={(e) => trocarEleicao(anoFiltro, e.target.value)}
-              className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 sm:h-9 sm:w-auto"
+              className={SELECT}
             >
               {cargosDaTela.map((o) => (
                 <option key={o.valor} value={o.valor}>
@@ -413,12 +491,7 @@ export function PainelEstrategiaEleitoral({
               ))}
             </select>
 
-            {/* Partidos que concorreram neste estado e eleição (do TSE) */}
-            <select
-              value={partidoFiltro}
-              onChange={(e) => trocarPartido(e.target.value)}
-              className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 sm:h-9 sm:w-auto"
-            >
+            <select value={partidoFiltro} onChange={(e) => trocarPartido(e.target.value)} className={SELECT}>
               <option value="TODOS">Todos os partidos ({opcoes.partidos.length})</option>
               {[...opcoes.partidos]
                 .sort((a, b) => a.valor.localeCompare(b.valor, "pt-BR"))
@@ -429,13 +502,9 @@ export function PainelEstrategiaEleitoral({
                 ))}
             </select>
 
-            {/* Campo de Busca Spotlight de Candidatos */}
             <div className="relative w-full sm:w-64">
               <div className="relative">
-                <Search
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                />
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={busca}
@@ -445,32 +514,27 @@ export function PainelEstrategiaEleitoral({
                   className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-9 pr-3 text-[12.5px] outline-none transition focus:border-blue-500 focus:bg-white sm:h-9"
                 />
               </div>
-
               {menuAberto && sugestoes.length > 0 && (
                 <div className="absolute left-0 right-0 top-11 z-50 max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
-                  {sugestoes.map((c) => (
+                  {sugestoes.map((s) => (
                     <button
-                      key={c.id}
-                      onClick={() => selecionarCandidato(c)}
+                      key={s.id}
+                      onClick={() => selecionarCandidato(s)}
                       className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-slate-50"
                     >
-                      <FotoUrna src={fotoDoCandidato(c)} nome={c.nome_urna} tamanho={40} />
+                      <FotoUrna src={fotoDoCandidato(s)} nome={s.nome_urna} tamanho={40} />
                       <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 items-center gap-1.5">
-                          <span className="truncate font-bold text-slate-900 text-[12.5px]">
-                            {c.nome_urna}
-                          </span>
+                          <span className="truncate text-[12.5px] font-bold text-slate-900">{s.nome_urna}</span>
                           <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
-                            {c.partido_sigla} · {c.numero}
+                            {s.partido_sigla} · {s.numero}
                           </span>
                         </div>
                         <span className="block truncate text-[11px] text-slate-500">
-                          {c.cargo} · {ondeDisputa(c)}
+                          {s.cargo} · {ondeDisputa(s)} · {s.ano}
                         </span>
                       </div>
-                      {c.id === raioX.candidato.id && (
-                        <Check size={14} className="text-blue-600 shrink-0" />
-                      )}
+                      {s.id === c.id && <Check size={14} className="shrink-0 text-blue-600" />}
                     </button>
                   ))}
                 </div>
@@ -496,195 +560,224 @@ export function PainelEstrategiaEleitoral({
         uf={ufFiltro}
         cargo={cargoFiltro}
         partido={partidoFiltro}
-        idAtual={raioX.candidato.id}
+        idAtual={c.id}
         onEscolher={selecionarCandidato}
         onOpcoes={setOpcoes}
       />
 
-      {/* ── 2. VISÃO PRINCIPAL: SPLIT-SCREEN (MAPA + INTELIGÊNCIA) ──── */}
-      {camada === "brasil" ? (
-        <div className="space-y-4">
+      {/* ── 2. ABAS ────────────────────────────────────────────────────── */}
+      <nav className="flex gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_4px_20px_rgb(0,0,0,0.02)]" aria-label="Análises do candidato">
+        {ABAS.map(({ id, rotulo, icone: Icone }) => (
+          <button
+            key={id}
+            onClick={() => {
+              setAba(id);
+              try {
+                const url = new URL(window.location.href);
+                url.searchParams.set("aba", id);
+                window.history.replaceState(null, "", url);
+              } catch {
+                /* sem window */
+              }
+            }}
+            aria-current={aba === id ? "page" : undefined}
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-bold transition ${
+              aba === id ? "bg-tema text-white shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            }`}
+          >
+            <Icone size={14} />
+            {id === "eleicao" ? (CARGOS_PROPORCIONAIS.has(c.cargo) ? "Quociente" : "Disputa") : rotulo}
+          </button>
+        ))}
+      </nav>
+
+      {aba === "eleicao" && <AbaEleicao key={c.id} raioX={raioX} onEscolher={selecionarCandidato} />}
+      {aba === "comparar" && <AbaComparar key={`${c.id}|${ufMapa}`} raioX={raioX} ufMapa={ufMapa} />}
+      {aba === "trajetoria" && <AbaTrajetoria key={c.id} raioX={raioX} onEscolher={selecionarCandidato} />}
+      {aba === "gastos" && <AbaGastos key={c.id} raioX={raioX} />}
+      {aba === "perguntar" && <AbaPerguntar raioX={raioX} />}
+
+      {/* ── 3. MAPA: BRASIL → ESTADO → MUNICÍPIO ──────────────────────── */}
+      {aba === "mapa" &&
+        (camada === "brasil" ? (
           <MapaBrasil
-            ufAtiva={ufFiltro}
-            votosPorUf={raioX.votos_por_uf ?? { [raioX.candidato.uf]: totalVotos }}
+            ufAtiva={ufMapa}
+            votosPorUf={raioX.votos_por_uf ?? { [c.uf]: c.total_votos }}
             ufsComDados={ufsDoAno}
             onSelecionarUf={transitarParaEstado}
           />
-        </div>
-      ) : camada === "municipio" && municipioSelecionado ? (
-        <DetalheMunicipioEstrategia
-          municipio={municipioSelecionado}
-          municipioNoBanco={municipioNoBanco}
-          candidatoId={raioX.candidato.id}
-          ano={raioX.candidato.ano}
-          uf={ufFiltro}
-          votosMunicipio={municipioNoBanco ? raioX.votos_por_municipio[municipioNoBanco] || 0 : 0}
-          posicaoRanking={posicaoNoRanking}
-          totalVotosCandidato={totalVotos}
-          nomeCandidato={raioX.candidato.nome_urna}
-          temLiderancas={cSet.has(chave(municipioSelecionado))}
-          onVoltarEstado={() => setCamada("estado")}
-        />
-      ) : (
-        /* CAMADA ESTADUAL COM SPLIT-SCREEN EXECUTIVO */
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-          
-          {/* COLUNA ESQUERDA (65%): MAPA VETORIAL IMERSIVO */}
-          <div className="min-w-0 xl:col-span-8 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] sm:p-5">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-                  Mapa Cartográfico Interativo · {ufFiltro}
-                </span>
-                <h2 className="text-[15px] font-extrabold text-slate-900 sm:text-base">
-                  Calor da Votação por Município {partidoFiltro !== "TODOS" ? `· ${partidoFiltro}` : ""}
-                </h2>
+        ) : camada === "municipio" && municipioSelecionado ? (
+          <DetalheMunicipioEstrategia
+            municipio={municipioSelecionado}
+            municipioNoBanco={municipioNoBanco}
+            candidatoId={c.id}
+            ano={c.ano}
+            uf={ufMapa}
+            votosMunicipio={municipioNoBanco ? raioX.votos_por_municipio[municipioNoBanco] || 0 : 0}
+            posicaoRanking={posicaoNoRanking}
+            totalVotosCandidato={votosNoMapa}
+            nomeCandidato={c.nome_urna}
+            temLiderancas={cSet.has(chave(municipioSelecionado))}
+            campanha={campanha}
+            cargo={c.cargo}
+            turno={c.turno}
+            onVoltarEstado={() => setCamada("estado")}
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+            {/* COLUNA ESQUERDA: MAPA */}
+            <div className="min-w-0 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] xl:col-span-8 sm:p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+                    {municipal ? `${c.nm_ue} · ${c.ano}` : `${ufMapa} · ${c.ano}`}
+                  </span>
+                  <h2 className="text-[15px] font-extrabold text-slate-900 sm:text-base">
+                    {medida === "votos" ? "Votos" : medida === "eleitorado" ? "Fatia do eleitorado" : "Fatia dos votos válidos"} por município
+                  </h2>
+                </div>
+                <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[11.5px]" role="group" aria-label="Medida do mapa">
+                  {MEDIDAS.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => setMedida(m.id)}
+                      disabled={m.id !== "votos" && !base}
+                      title={m.id !== "votos" && !base ? "Eleitorado desta eleição ainda não importado" : undefined}
+                      className={`rounded-lg px-2.5 py-1 font-bold transition disabled:opacity-40 ${
+                        medida === m.id ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      {m.rotulo}
+                    </button>
+                  ))}
+                </div>
               </div>
-
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
-                <span className="sm:hidden">Toque</span>
-                <span className="hidden sm:inline">Clique</span> na cidade para detalhar
-              </span>
-            </div>
-
-            {/* O Mapa do Estado com todos os municípios e cores vivas */}
-            <div className="relative">
               <MapaVotos
-                uf={ufFiltro}
-                semRede={lacunas.map((l) => l.municipio)}
+                uf={ufMapa}
                 votosPorMunicipio={raioX.votos_por_municipio}
-                corTema="#1d4ed8"
+                base={base}
+                medida={medida}
+                ano={c.ano}
+                semRede={campanha ? lacunas.map((l) => l.municipio) : undefined}
                 onAbrirMunicipio={transitarParaMunicipio}
               />
             </div>
+
+            {/* COLUNA DIREITA: NÚMEROS E REDUTOS */}
+            <div className="min-w-0 space-y-4 xl:col-span-4">
+              <div className="grid grid-cols-2 gap-2.5">
+                <Metrica rotulo="Votos" icone={<Award size={14} className="text-blue-600" />} valor={fmt(totalVotos)} nota={c.uf === "BR" ? `em ${ufMapa}` : `em ${cidadesComVoto} ${cidadesComVoto === 1 ? "cidade" : "cidades"}`} />
+                <Metrica
+                  rotulo="Dos válidos"
+                  icone={<Percent size={14} className="text-emerald-600" />}
+                  valor={pctValidos !== null ? pct(pctValidos) : "—"}
+                  nota={pctValidos !== null ? (municipal ? `do cargo em ${c.nm_ue}` : `do cargo em ${ufMapa}`) : "eleitorado não importado"}
+                />
+                {municipal ? (
+                  <Metrica
+                    rotulo="Do eleitorado"
+                    icone={<Users2 size={14} className="text-purple-600" />}
+                    valor={pctEleitorado !== null ? pct(pctEleitorado, 2) : "—"}
+                    nota={tot?.aptos ? `${fmt(tot.aptos)} eleitores aptos` : "eleitorado não importado"}
+                  />
+                ) : (
+                  <Metrica rotulo="Concentração" icone={<TrendingUp size={14} className="text-emerald-600" />} valor={pct(concentracao, 0)} nota="nos 10 maiores municípios" />
+                )}
+                {municipal ? (
+                  <Metrica
+                    rotulo="Comparecimento"
+                    icone={<Compass size={14} className="text-purple-600" />}
+                    valor={tot?.aptos ? pct((tot.comparecimento / tot.aptos) * 100) : "—"}
+                    nota="dos eleitores aptos votaram"
+                  />
+                ) : (
+                  <Metrica
+                    rotulo="Presença"
+                    icone={<Compass size={14} className="text-purple-600" />}
+                    valor={presenca !== null ? pct(presenca, 0) : "—"}
+                    nota={`${cidadesComVoto} de ${municipiosDaUfMapa} municípios de ${ufMapa}`}
+                  />
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <h3 className="text-[13px] font-bold text-slate-900">{municipal ? "Zonas e cidade" : "Principais redutos"}</h3>
+                  <span className="text-[11px] font-medium text-slate-400">Top 5</span>
+                </div>
+                <div className="space-y-2.5">
+                  {top5.map((m, i) => {
+                    const b = base?.[m.municipio];
+                    return (
+                      <button
+                        key={m.municipio}
+                        onClick={() => transitarParaMunicipio(m.municipio)}
+                        className="group flex w-full flex-col gap-1 rounded-xl p-2 text-left transition hover:bg-slate-50"
+                      >
+                        <div className="flex min-w-0 items-center justify-between text-[12.5px]">
+                          <span className="flex min-w-0 items-center gap-1.5 font-semibold text-slate-800 group-hover:text-blue-600">
+                            <span className="shrink-0 text-[11px] font-bold text-slate-400">#{i + 1}</span>
+                            <span className="truncate">{m.municipio}</span>
+                          </span>
+                          <span className="shrink-0 pl-2 text-right">
+                            <span className="block font-mono font-bold text-slate-700">{fmt(m.votos)}</span>
+                            {b?.aptos ? <span className="block text-[10.5px] text-slate-500">{pct((m.votos / b.aptos) * 100, 2)} do eleitorado</span> : null}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full bg-blue-600 transition-all duration-300 group-hover:bg-blue-700"
+                            style={{ width: `${(m.votos / maiorVotoTopo) * 100}%` }}
+                          />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── SUA CAMPANHA: só com base cadastrada ─────────────────── */}
+              {campanha && (
+                <div className="rounded-2xl border border-amber-200/70 bg-amber-50 p-4 shadow-sm">
+                  <div className="flex items-center gap-2 text-[12.5px] font-bold text-amber-800">
+                    <Users2 size={15} className="text-amber-600" />
+                    Sua campanha · votos sem liderança
+                  </div>
+                  <p className="mt-1 text-[11.5px] leading-relaxed text-slate-600">
+                    {c.nome_urna} teve <b>{fmt(votosSemRede)} votos</b> em {lacunas.length}{" "}
+                    {lacunas.length === 1 ? "cidade" : "cidades"} onde sua base ainda não tem ninguém cadastrado. No mapa, elas
+                    têm contorno âmbar.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {lacunas.slice(0, 4).map((l) => (
+                      <button
+                        key={l.municipio}
+                        type="button"
+                        onClick={() => transitarParaMunicipio(l.municipio)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-amber-300/60 bg-white px-2 py-1 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100"
+                      >
+                        {l.municipio}: {fmt(l.votos)} <ArrowUpRight size={10} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+        ))}
+    </div>
+  );
+}
 
-          {/* COLUNA DIREITA (35%): PAINEL DE INTELIGÊNCIA E REDUTOS */}
-          <div className="min-w-0 xl:col-span-4 space-y-4">
-            
-            {/* 4 Métricas Executivas em Grid Compacto */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wider">Votos Totais</span>
-                  <Award size={14} className="text-blue-600" />
-                </div>
-                <div className="mt-1 text-xl font-extrabold text-slate-900">
-                  {totalVotos.toLocaleString("pt-BR")}
-                </div>
-                <p className="mt-0.5 text-[11px] text-slate-500">
-                  em {raioX.candidato.municipios_com_voto} cidades
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wider">Concentração</span>
-                  <TrendingUp size={14} className="text-emerald-600" />
-                </div>
-                <div className="mt-1 text-xl font-extrabold text-slate-900">
-                  {concentracao.toFixed(0)}%
-                </div>
-                <p className="mt-0.5 text-[11px] text-slate-500">
-                  nos 10 maiores polos
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wider">Sem Liderança</span>
-                  <Users2 size={14} className="text-amber-500" />
-                </div>
-                <div className="mt-1 text-xl font-extrabold text-slate-900">
-                  {votosSemRede.toLocaleString("pt-BR")}
-                </div>
-                <p className="mt-0.5 text-[11px] text-slate-500">
-                  em {lacunas.length} municípios
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wider">Presença</span>
-                  <Compass size={14} className="text-purple-600" />
-                </div>
-                <div className="mt-1 text-xl font-extrabold text-slate-900">
-                  {Math.round((raioX.candidato.municipios_com_voto / (raioX.candidato.uf === "BA" ? 417 : 100)) * 100)}%
-                </div>
-                <p className="mt-0.5 text-[11px] text-slate-500">
-                  de cobertura na UF
-                </p>
-              </div>
-            </div>
-
-            {/* Ranking dos Maiores Redutos Eleitorais */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm">
-              <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2.5">
-                <h3 className="text-[13px] font-bold text-slate-900">
-                  Principais Redutos Eleitorais
-                </h3>
-                <span className="text-[11px] font-medium text-slate-400">Top 5</span>
-              </div>
-
-              <div className="space-y-2.5">
-                {top5.map((m, i) => {
-                  const perc = (m.votos / maiorVotoTopo) * 100;
-                  return (
-                    <button
-                      key={m.municipio}
-                      onClick={() => transitarParaMunicipio(m.municipio)}
-                      className="group flex w-full flex-col gap-1 rounded-xl p-2 text-left transition hover:bg-slate-50"
-                    >
-                      <div className="flex min-w-0 items-center justify-between text-[12.5px]">
-                        <span className="flex min-w-0 items-center gap-1.5 font-semibold text-slate-800 group-hover:text-blue-600">
-                          <span className="shrink-0 text-[11px] font-bold text-slate-400">#{i + 1}</span>
-                          <span className="truncate">{m.municipio}</span>
-                        </span>
-                        <span className="shrink-0 pl-2 font-mono font-bold text-slate-700">
-                          {m.votos.toLocaleString("pt-BR")}
-                        </span>
-                      </div>
-                      
-                      {/* Barra de progresso visual */}
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-blue-600 transition-all duration-300 group-hover:bg-blue-700"
-                          style={{ width: `${perc}%` }}
-                        />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Card de Oportunidades (Voto Sem Rede) */}
-            <div className="rounded-2xl border border-amber-200/70 bg-gradient-to-br from-amber-50/50 to-orange-50/30 p-4 shadow-sm">
-              <div className="flex items-center gap-2 text-amber-800 font-bold text-[12.5px]">
-                <Sparkles size={15} className="text-amber-600" />
-                Votos sem Liderança Cadastrada
-              </div>
-              <p className="mt-1 text-[11.5px] text-slate-600 leading-relaxed">
-                {raioX.candidato.nome_urna} teve <b>{votosSemRede.toLocaleString("pt-BR")} votos</b> em {lacunas.length} cidades onde a campanha ainda não tem liderança cadastrada.
-              </p>
-              
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {lacunas.slice(0, 3).map((l) => (
-                  <button
-                    key={l.municipio}
-                    type="button"
-                    onClick={() => transitarParaMunicipio(l.municipio)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-amber-300/60 bg-white px-2 py-1 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100 sm:py-0.5"
-                  >
-                    {l.municipio}: {l.votos.toLocaleString("pt-BR")} <ArrowUpRight size={10} />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
+function Metrica({ rotulo, icone, valor, nota }: { rotulo: string; icone: ReactNode; valor: string; nota: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
+      <div className="flex items-center justify-between text-slate-400">
+        <span className="text-[10.5px] font-bold uppercase tracking-wider">{rotulo}</span>
+        {icone}
+      </div>
+      <div className="mt-1 text-xl font-extrabold text-slate-900">{valor}</div>
+      <p className="mt-0.5 text-[11px] text-slate-500">{nota}</p>
     </div>
   );
 }

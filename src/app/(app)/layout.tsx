@@ -16,8 +16,12 @@ export default async function AppLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Toda a área logada é protegida.
-  if (!user) redirect("/login");
+  // Toda a área logada é protegida. Quem cai fora volta para onde ia depois
+  // de entrar (o caminho vem do middleware, no cabeçalho x-caminho).
+  if (!user) {
+    const ia = (await headers()).get("x-caminho");
+    redirect(ia && ia !== "/" ? `/login?proximo=${encodeURIComponent(ia)}` : "/login");
+  }
 
   // Trava de aprovação: conta precisa estar "ativa".
   //
