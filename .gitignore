@@ -61,3 +61,8 @@ site-talita/originais/
 # Fotos de urna do TSE: moram no Storage (scripts/subir-fotos-urna.mjs).
 # Em public/ só funcionariam na máquina, e são 50 MB por estado por eleição.
 /public/urna/
+
+# conteúdo (vídeos do Instagram): mídia pesada fora do git e do deploy
+/conteudo/referencias/
+/conteudo/**/*.mp4
+/conteudo/**/*.wav

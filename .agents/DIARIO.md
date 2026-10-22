@@ -9,6 +9,7 @@ Nada em andamento.
 
 ## Feito (mais recente no topo)
 
+- 22/10/2026 · Claude · pasta `conteudo/` criada: contexto de conteúdo do Manuflow para o setor Criação de Vídeo da Opifex (`conteudo/PROJETO.md`) e os vídeos feitos (`conteudo/videos/`); mídia fora do git
 - 22/10/2026 · Gemini · foto de urna preenchendo o círculo no card da Estratégia (removido span wrapper com border redundante) · `d9514bc`
 - 21/10/2026 · Claude · criado este diário e a regra 05 de passagem de bastão
 - 20/10/2026 · — · layout de celular na Estratégia e nos indicadores · `51bada9`
@@ -19,6 +20,7 @@ Nada em andamento.
 
 ## Armadilhas
 
+- `conteudo/` é do setor de vídeo da Opifex (o processo mora em `~/Desktop/V.E.R.T.U.S`); não é importada pelo app. MP4, WAV e `conteudo/referencias/` ficam fora do git para não pesar no deploy.
 - Desde 20/10/2026 só ManuFlow: não migrar nem conferir a instalação do Manassés.
 - ManuFlow é multi-campanha: usar as classes de paleta de `src/app/globals.css`, não cor
   fixa.
