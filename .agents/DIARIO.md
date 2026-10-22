@@ -5,7 +5,7 @@ cada ação concluída.
 
 ## Em andamento
 
-Nada em andamento.
+- 22/10/2026 · Claude · **Estratégia v2** na branch `estrategia-v2` (pedido do Emanuel: aplicar todas as melhorias propostas). FEITO no código: correções (Presença real, selo de resultado, abre o mais votado em vez de sortear, camada "sua campanha" só com base, demo e painel duplicado apagados, `/estrategia/votos` redireciona), mapa em votos / % eleitorado / % válidos, abas Quociente/Disputa, Comparar, Trajetória, Gastos, Perguntar (IA com ferramentas, `/api/eleicao/pergunta`), cidade com eleitorado e perfil, página pública `/candidato/[id]`. Dados: `scripts/gerar-eleicao-extras.mjs`; 2022 gerado e no Storage (apuração, quociente, perfil, ficha, pessoas). FALTA: (1) terminar downloads em `.cache/tse` (perfil 2024/2026, prestação de contas 2022/2024/2026) — baixador paralelo em pedaços, a CDN do TSE limita cada conexão a ~40 KB/s; (2) `--so=perfil,contas` por ano e `--so=contas` 2022; (3) subir 2024 e 2026 com `--apenas="^(apuracao|quociente|perfil|contas|pessoas|ficha)/"`; (4) `next build`, mostrar ao Emanuel, merge.
 
 ## Feito (mais recente no topo)
 

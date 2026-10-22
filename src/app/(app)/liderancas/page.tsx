@@ -45,11 +45,11 @@ export default async function CentralLiderancas() {
         <Atalho href="/metas" icone={Target} tom="verde" titulo="Metas por cidade" nota="Quanto falta para a meta de cada uma" />
         <Atalho href="/dobradinha" icone={Handshake} tom="roxo" titulo="Dobradinhas" nota="A votação da parceira ao lado da nossa" />
         <Atalho
-          href="/estrategia/votos"
+          href="/estrategia"
           icone={Compass}
           tom="azul"
-          titulo="Votos de 2022 até o bairro"
-          nota="Onde a Talita já teve voto"
+          titulo="Estratégia eleitoral"
+          nota="Votos até o bairro, sem liderança em destaque"
         />
       </Faixa>
     </Central>

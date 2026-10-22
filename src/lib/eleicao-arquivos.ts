@@ -259,12 +259,27 @@ export async function aleatorio(ano: number, uf: string, cargo?: string | null, 
   return codificarId(ano, uf, pool[Math.floor(Math.random() * pool.length)][0]);
 }
 
-/** O mais votado de uma eleição (1º turno), opcionalmente de um cargo. */
-export async function destaque(ano: number, uf: string, cargo?: string | null) {
+/**
+ * O mais votado de uma eleição (1º turno), opcionalmente de um cargo e de um
+ * partido. É para onde o painel vai ao trocar de ano, estado, cargo ou partido:
+ * antes ia para um candidato sorteado, e quem chegava na tela caía num
+ * desconhecido qualquer em vez de ver quem ganhou.
+ *
+ * Sem cargo, prefere o cargo que decide a eleição ali: governador numa
+ * eleição geral, prefeito numa municipal (o mais votado do estado seria
+ * sempre o governador ou o prefeito da capital, de qualquer jeito).
+ */
+export async function destaque(ano: number, uf: string, cargo?: string | null, partido?: string | null) {
   const indice = await lerIndice(ano, uf);
   if (!indice) return null;
-  let melhor: LinhaIndice | null = null;
-  for (const l of indice) if (l[1] === 1 && (!cargo || l[2] === cargo) && (!melhor || l[9] > melhor[9])) melhor = l;
+  const preferido = cargo ? null : uf === "BR" ? "PRESIDENTE" : ano % 4 === 0 ? "PREFEITO" : "GOVERNADOR";
+  const achar = (c: string | null) => {
+    let melhor: LinhaIndice | null = null;
+    for (const l of indice)
+      if (l[1] === 1 && (!c || l[2] === c) && (!partido || l[6] === partido) && (!melhor || l[9] > melhor[9])) melhor = l;
+    return melhor && melhor[9] > 0 ? melhor : null;
+  };
+  const melhor = (preferido && achar(preferido)) || achar(cargo ?? null);
   return melhor ? codificarId(ano, uf, melhor[0]) : null;
 }
 
@@ -314,11 +329,24 @@ export async function raioX(id: number, ufMapa?: string | null) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 20)
     .map(([municipio, votos]) => ({ municipio, votos, codigo_tse: "" }));
+  // Eleitores e válidos do cargo em cada município do mapa: é o que deixa o
+  // mapa em "% do eleitorado" e o card em "% dos válidos". Sem isso a cor
+  // mostrava onde mora mais gente, não onde o candidato é forte.
+  const base = await baseDoCargo(ano, estado, l[2], l[1]);
+  const unidade = base
+    ? MUNICIPAIS.has(l[2])
+      ? Object.keys(porMunicipio).map((m) => base[m]).filter(Boolean)
+      : Object.values(base)
+    : [];
+  const somar = (k: keyof BaseMunicipio) => unidade.reduce((s, b) => s + b[k], 0);
   return {
     candidato: paraCandidato(ano, uf, l, fotos),
     votos_por_municipio: porMunicipio,
     votos_por_uf: votosPorUf,
     top_municipios: top,
+    base_por_municipio: base,
+    // Onde a disputa aconteceu: a cidade (municipal) ou o estado do mapa.
+    totais_unidade: base ? { aptos: somar("aptos"), comparecimento: somar("comparecimento"), validos: somar("validos") } : null,
   };
 }
 
@@ -353,4 +381,282 @@ export async function candidaturaDaCasa(uf: string, numero: number) {
     if (l) return codificarId(ano, uf, l[0]);
   }
   return null;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// DADOS ALÉM DO VOTO (22/10/2026)
+//
+// Gerados por scripts/gerar-eleicao-extras.mjs, no mesmo bucket e com a mesma
+// versão do manifesto. Arquivo que ainda não subiu volta `null`, e a tela diz
+// "ainda não importado" em vez de mostrar zero.
+//
+//   <ano>/apuracao/<UF>.json   eleitores aptos (município e zona) e, por cargo
+//                              e turno, comparecimento, válidos, brancos, nulos
+//   <ano>/quociente/<UF>.json  vagas e votos de cada partido (nominal +
+//                              legenda) por unidade e cargo proporcional
+//   <ano>/perfil/<UF>.json     eleitorado por gênero, idade e escolaridade
+//   <ano>/contas/<UF>.json     receitas e despesas declaradas por candidato
+//   <ano>/pessoas/<UF>.json    outras candidaturas da mesma pessoa (título de
+//                              eleitor igual), em qualquer ano e estado
+//   <ano>/ficha/<UF>.json      gênero, nascimento, instrução, ocupação, chapa
+// ════════════════════════════════════════════════════════════════════════════
+
+type Apuracao = {
+  aptos: Record<string, number>;
+  zonas: Record<string, Record<string, number>>;
+  /** "CARGO|turno" → município → [comparecimento, válidos, brancos, nulos] */
+  cargos: Record<string, Record<string, [number, number, number, number]>>;
+};
+
+export type BaseMunicipio = { aptos: number; comparecimento: number; validos: number };
+
+const lerApuracao = (ano: number, uf: string) => lerDoAno<Apuracao>(ano, `apuracao/${uf}.json`);
+
+/** Eleitores, comparecimento e válidos do cargo em cada município de um estado. */
+export async function baseDoCargo(ano: number, uf: string, cargo: string, turno: number) {
+  const ap = await lerApuracao(ano, uf);
+  if (!ap) return null;
+  const doCargo = ap.cargos[`${cargo}|${turno}`] ?? {};
+  const porMunicipio: Record<string, BaseMunicipio> = {};
+  for (const [m, aptos] of Object.entries(ap.aptos)) {
+    const c = doCargo[m];
+    porMunicipio[m] = { aptos, comparecimento: c?.[0] ?? 0, validos: c?.[1] ?? 0 };
+  }
+  return porMunicipio;
+}
+
+/** Eleitores aptos por zona numa cidade. */
+export async function aptosPorZona(ano: number, uf: string, municipio: string) {
+  const ap = await lerApuracao(ano, uf);
+  return ap?.zonas[municipio] ?? null;
+}
+
+/** A apuração de uma cidade, em todos os cargos (camada municipal). */
+export async function apuracaoDaCidade(ano: number, uf: string, municipio: string) {
+  const ap = await lerApuracao(ano, uf);
+  if (!ap || ap.aptos[municipio] === undefined) return null;
+  const cargos = Object.entries(ap.cargos)
+    .filter(([, porMun]) => porMun[municipio])
+    .map(([k, porMun]) => {
+      const [cargo, turno] = k.split("|");
+      const [comparecimento, validos, brancos, nulos] = porMun[municipio];
+      return { cargo, turno: Number(turno), comparecimento, validos, brancos, nulos };
+    });
+  return { aptos: ap.aptos[municipio], cargos };
+}
+
+// ── PERFIL DO ELEITORADO ────────────────────────────────────────────────────
+
+export const FAIXAS_IDADE = ["16 a 24", "25 a 34", "35 a 44", "45 a 59", "60 a 69", "70 ou mais"];
+export const NIVEIS_ESCOLARIDADE = ["Analfabeto", "Lê e escreve", "Fundamental", "Médio", "Superior"];
+
+type PerfilArquivo = Record<string, { t: number; g: Record<string, number>; i: number[]; e: number[] }>;
+
+export async function perfilDoEleitorado(ano: number, uf: string, municipio: string) {
+  const p = await lerDoAno<PerfilArquivo>(ano, `perfil/${uf}.json`);
+  const m = p?.[municipio];
+  if (!m) return null;
+  return {
+    total: m.t,
+    genero: m.g,
+    idade: FAIXAS_IDADE.map((rotulo, i) => ({ rotulo, n: m.i[i] ?? 0 })),
+    escolaridade: NIVEIS_ESCOLARIDADE.map((rotulo, i) => ({ rotulo, n: m.e[i] ?? 0 })),
+  };
+}
+
+// ── QUOCIENTE ELEITORAL ─────────────────────────────────────────────────────
+//
+// Lei 9.504 e Código Eleitoral (art. 106 a 109), como ficaram em 2021:
+//
+//   QE = válidos ÷ vagas, desprezada a fração até meio e arredondada para
+//        cima acima de meio
+//   QP = votos da agremiação ÷ QE, desprezada a fração
+//   eleito pelo QP precisa de 10% do QE em votos nominais; nas sobras, 20%
+//   e a agremiação, 80% do QE
+//
+// Agremiação é o partido ou a federação (2022 em diante), que conta como um
+// partido só. As cadeiras NÃO são simuladas aqui: vêm do resultado oficial
+// (situação "ELEITO POR QP" ou "POR MÉDIA" de cada candidato). A distribuição
+// das sobras tem três fases e decisão judicial no meio; recalcular daria um
+// número parecido com o oficial e às vezes diferente, que é o pior tipo.
+
+type QuocienteArquivo = Record<
+  string,
+  { ue: string; vagas: number; validos: number; partidos: [sigla: string, federacao: string | null, nominais: number, legenda: number][] }
+>;
+
+const ELEITO = /^ELEITO/;
+
+function quocienteEleitoral(validos: number, vagas: number) {
+  if (!vagas) return 0;
+  const q = validos / vagas;
+  return q - Math.floor(q) > 0.5 ? Math.ceil(q) : Math.floor(q);
+}
+
+export async function quocienteDe(id: number) {
+  const achado = await linhaPorId(id);
+  if (!achado) return null;
+  const { ano, uf, l } = achado;
+  const cargo = l[2];
+  const sgUe = l[11] ?? uf;
+  const arq = await lerDoAno<QuocienteArquivo>(ano, `quociente/${uf}.json`);
+  const ue = arq?.[`${sgUe}|${cargo}`];
+  if (!ue) return null;
+
+  const qe = quocienteEleitoral(ue.validos, ue.vagas);
+  const agremiacaoDe = new Map<string, string>();
+  const ag = new Map<string, { nome: string; partidos: string[]; nominais: number; legenda: number }>();
+  for (const [sigla, federacao, nominais, legenda] of ue.partidos) {
+    const nome = federacao || sigla;
+    agremiacaoDe.set(sigla, nome);
+    const a = ag.get(nome) ?? { nome, partidos: [], nominais: 0, legenda: 0 };
+    a.partidos.push(sigla);
+    a.nominais += nominais;
+    a.legenda += legenda;
+    ag.set(nome, a);
+  }
+
+  // Candidatos da mesma disputa (unidade + cargo), do índice do estado.
+  const indice = (await lerIndice(ano, uf)) ?? [];
+  const fotos = await ufsComFoto(ano);
+  const daDisputa = indice.filter((x) => x[2] === cargo && (x[11] ?? uf) === sgUe && x[1] === 1);
+  const cadeiras = new Map<string, number>();
+  for (const x of daDisputa)
+    if (ELEITO.test(x[7])) {
+      const a = agremiacaoDe.get(x[6]) ?? x[6];
+      cadeiras.set(a, (cadeiras.get(a) ?? 0) + 1);
+    }
+
+  const agremiacoes = [...ag.values()]
+    .map((a) => {
+      const votos = a.nominais + a.legenda;
+      return {
+        nome: a.nome,
+        partidos: a.partidos,
+        votos,
+        legenda: a.legenda,
+        pct: ue.validos ? (votos / ue.validos) * 100 : 0,
+        qp: qe ? Math.floor(votos / qe) : 0,
+        cadeiras: cadeiras.get(a.nome) ?? 0,
+        // Sem 80% do QE a agremiação fica fora das sobras.
+        disputaSobras: votos >= qe * 0.8,
+      };
+    })
+    .sort((a, b) => b.votos - a.votos);
+
+  const minha = agremiacaoDe.get(l[6]) ?? l[6];
+  const daChapa = daDisputa
+    .filter((x) => (agremiacaoDe.get(x[6]) ?? x[6]) === minha)
+    .sort((a, b) => b[9] - a[9]);
+  const eleitosDaChapa = daChapa.filter((x) => ELEITO.test(x[7]));
+  const ultimoEleito = eleitosDaChapa[eleitosDaChapa.length - 1] ?? null;
+  const primeiroSuplente = daChapa.find((x) => x[7] === "SUPLENTE") ?? null;
+  const resumo = (x: LinhaIndice) => paraCandidato(ano, uf, x, fotos);
+
+  return {
+    ue: ue.ue,
+    cargo,
+    vagas: ue.vagas,
+    validos: ue.validos,
+    qe,
+    minimoQp: Math.ceil(qe * 0.1),
+    minimoSobras: Math.ceil(qe * 0.2),
+    agremiacoes,
+    chapa: {
+      nome: minha,
+      posicao: daChapa.findIndex((x) => x[0] === l[0]) + 1,
+      candidatos: daChapa.length,
+      eleitos: eleitosDaChapa.map(resumo),
+      ultimoEleito: ultimoEleito ? resumo(ultimoEleito) : null,
+      primeiroSuplente: primeiroSuplente ? resumo(primeiroSuplente) : null,
+    },
+    // Os eleitos da disputa inteira, do mais ao menos votado.
+    eleitos: daDisputa
+      .filter((x) => ELEITO.test(x[7]))
+      .sort((a, b) => b[9] - a[9])
+      .map(resumo),
+  };
+}
+
+// ── PRESTAÇÃO DE CONTAS ─────────────────────────────────────────────────────
+
+type ContasArquivo = Record<string, [receitas: number, despesas: number]>;
+
+function mediana(ns: number[]) {
+  if (!ns.length) return null;
+  const o = [...ns].sort((a, b) => a - b);
+  const m = Math.floor(o.length / 2);
+  return o.length % 2 ? o[m] : (o[m - 1] + o[m]) / 2;
+}
+
+export async function contasDe(id: number) {
+  const achado = await linhaPorId(id);
+  if (!achado) return null;
+  const { ano, uf, l } = achado;
+  const arq = await lerDoAno<ContasArquivo>(ano, `contas/${uf}.json`);
+  if (!arq) return null;
+  const sq = (x: LinhaIndice) => String(Math.floor(x[0] / 10));
+  const [receitas, despesas] = arq[sq(l)] ?? [0, 0];
+
+  // Comparação com quem disputou o mesmo cargo no mesmo lugar e se elegeu.
+  const indice = (await lerIndice(ano, uf)) ?? [];
+  const sgUe = l[11] ?? uf;
+  const pares = indice.filter((x) => x[2] === l[2] && (x[11] ?? uf) === sgUe && x[1] === 1 && ELEITO.test(x[7]));
+  const despEleitos = pares.map((x) => arq[sq(x)]?.[1] ?? 0).filter((v) => v > 0);
+  const custoEleitos = pares
+    .map((x) => ((arq[sq(x)]?.[1] ?? 0) > 0 && x[9] > 0 ? arq[sq(x)][1] / x[9] : 0))
+    .filter((v) => v > 0);
+
+  return {
+    receitas,
+    despesas,
+    declarou: arq[sq(l)] !== undefined,
+    custoPorVoto: despesas > 0 && l[9] > 0 ? despesas / l[9] : null,
+    eleitosComparados: despEleitos.length,
+    medianaDespesaEleitos: mediana(despEleitos),
+    medianaCustoEleitos: mediana(custoEleitos),
+  };
+}
+
+// ── TRAJETÓRIA E FICHA ──────────────────────────────────────────────────────
+
+type PessoasArquivo = Record<string, [ano: number, uf: string, chave: number][]>;
+
+/** Todas as candidaturas da pessoa, a mais antiga primeiro. */
+export async function trajetoriaDe(id: number) {
+  const achado = await linhaPorId(id);
+  if (!achado) return [];
+  const { ano, uf, l } = achado;
+  const arq = await lerDoAno<PessoasArquivo>(ano, `pessoas/${uf}.json`);
+  const outras = arq?.[l[0]] ?? [[ano, uf, l[0]]];
+  const lidas = await Promise.all(
+    outras.map(async ([a, u, k]) => {
+      const indice = await lerIndice(a, u);
+      const x = indice?.find((y) => y[0] === k);
+      if (!x) return null;
+      return paraCandidato(a, u, x, await ufsComFoto(a));
+    }),
+  );
+  return lidas
+    .filter((c): c is CandidatoArquivo => !!c)
+    .sort((a, b) => a.ano - b.ano || a.turno - b.turno);
+}
+
+type FichaArquivo = Record<string, [genero: string, nascimento: string, instrucao: string, ocupacao: string, chapa: string]>;
+
+export async function fichaDe(id: number) {
+  const achado = await linhaPorId(id);
+  if (!achado) return null;
+  const arq = await lerDoAno<FichaArquivo>(achado.ano, `ficha/${achado.uf}.json`);
+  const f = arq?.[achado.l[0]];
+  if (!f) return null;
+  const [genero, nascimento, instrucao, ocupacao, chapa] = f;
+  return { genero, nascimento, instrucao, ocupacao, chapa };
+}
+
+/** O candidato pelo id, sem os votos (página pública, metadados). */
+export async function candidatoPorId(id: number) {
+  const achado = await linhaPorId(id);
+  if (!achado) return null;
+  return paraCandidato(achado.ano, achado.uf, achado.l, await ufsComFoto(achado.ano));
 }

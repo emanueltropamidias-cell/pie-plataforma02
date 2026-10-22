@@ -9,6 +9,13 @@ import {
   zonasNaCidade,
   decodificarId,
   ANOS_ELEICAO,
+  aptosPorZona,
+  apuracaoDaCidade,
+  contasDe,
+  fichaDe,
+  perfilDoEleitorado,
+  quocienteDe,
+  trajetoriaDe,
 } from "@/lib/eleicao-arquivos";
 
 // ============================================================================
@@ -24,6 +31,8 @@ import {
 //   ?destaque=1&ano=2024&uf=MG[&cargo=…]          o mais votado
 //   ?aleatorio=1&ano=2024&uf=MG[&cargo=…][&partido=…]   um qualquer do estado
 //   ?lista=1&ano=2022&uf=SP[&cargo][&partido][&q][&pagina]   seletor de candidatos
+//   ?candidatoId=<id>&extra=quociente|contas|trajetoria|ficha   abas do painel
+//   ?cidade=SALVADOR&ano=2022&uf=BA                apuração e perfil do eleitorado
 //
 // O detalhe por LOCAL de votação (bairro) continua no banco, só para as
 // cidades-foco: é pequeno e tem consulta própria.
@@ -45,10 +54,27 @@ export async function GET(request: Request) {
   const cargo = cargoParam && cargoParam !== "TODOS" ? cargoParam : null;
   const municipio = sp.get("municipio")?.trim();
 
+  // Abas do painel: cada uma pede só o que vai desenhar.
+  const extra = sp.get("extra");
+  if (Number.isFinite(id) && extra) {
+    const leitor = { quociente: quocienteDe, contas: contasDe, trajetoria: trajetoriaDe, ficha: fichaDe }[extra];
+    if (!leitor) return NextResponse.json({ erro: "extra desconhecido" }, { status: 400 });
+    return NextResponse.json({ dados: await leitor(id) });
+  }
+
+  // A cidade, sem candidato: comparecimento por cargo e perfil do eleitorado.
+  const cidade = sp.get("cidade")?.trim();
+  if (cidade && uf) {
+    const [apuracao, perfil] = await Promise.all([apuracaoDaCidade(ano, uf, cidade), perfilDoEleitorado(ano, uf, cidade)]);
+    return NextResponse.json({ apuracao, perfil });
+  }
+
   // Camada municipal: zonas do arquivo; locais (com bairro) do banco.
   if (Number.isFinite(id) && municipio) {
     const zonas = await zonasNaCidade(id, municipio);
-    const { ano: anoC, chave } = decodificarId(id);
+    const { ano: anoC, chave, uf: ufC } = decodificarId(id);
+    const ufCidade = ufC === "BR" ? (uf ?? "BA") : ufC;
+    const aptosZona = await aptosPorZona(anoC, ufCidade, municipio);
     const { data: cand } = await supabase
       .from("eleicao_candidatos")
       .select("id")
@@ -59,7 +85,11 @@ export async function GET(request: Request) {
     const { data: det } = cand
       ? await supabase.rpc("obter_detalhe_municipio", { p_candidato_id: cand.id, p_municipio: municipio })
       : { data: null };
-    return NextResponse.json({ zonas, locais: det?.locais ?? null, tem_detalhe: det?.tem_detalhe ?? false });
+    return NextResponse.json({
+      zonas: zonas.map((z) => ({ ...z, aptos: aptosZona?.[String(z.zona)] ?? null })),
+      locais: det?.locais ?? null,
+      tem_detalhe: det?.tem_detalhe ?? false,
+    });
   }
 
   const partidoParam = sp.get("partido")?.trim(); // sem maiúscula: a sigla do TSE é "PC do B"
@@ -85,7 +115,7 @@ export async function GET(request: Request) {
   }
 
   if (sp.get("destaque") === "1" && uf) {
-    const idDestaque = await destaque(ano, uf, cargo);
+    const idDestaque = await destaque(ano, uf, cargo, partido);
     if (!idDestaque) return NextResponse.json({ candidato: null });
     return NextResponse.json(await raioX(idDestaque, uf));
   }
