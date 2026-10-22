@@ -12,6 +12,16 @@ type Msg = { tipo: "erro" | "ok"; texto: string } | null;
 const INPUT_CLS =
   "h-12 border-tinta-200 bg-tinta-50 focus-visible:border-tema focus-visible:ring-tema/15";
 
+/**
+ * Para onde voltar depois de entrar (`?proximo=/estrategia?c=…`): quem chega
+ * pela página pública de um candidato quer abrir a análise dele, não o painel
+ * geral. Só caminho interno — "//site.com" levaria para fora da plataforma.
+ */
+function destinoDepoisDeEntrar() {
+  const d = new URLSearchParams(window.location.search).get("proximo");
+  return d && d.startsWith("/") && !d.startsWith("//") && !d.startsWith("/\\") ? d : "/dashboard";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -37,8 +47,10 @@ export default function LoginPage() {
     if (!erro) return;
     setMsg({ tipo: "erro", texto: erro });
     setDetalhe(p.get("det"));
-    // Limpa a URL: recarregar a página não deve ressuscitar o aviso.
-    window.history.replaceState({}, "", window.location.pathname);
+    // Limpa a URL: recarregar a página não deve ressuscitar o aviso. O
+    // destino (`proximo`) fica.
+    const destino = p.get("proximo");
+    window.history.replaceState({}, "", destino ? `${window.location.pathname}?proximo=${encodeURIComponent(destino)}` : window.location.pathname);
   }, []);
 
   function trocarModo(novo: "geral" | "lideranca" | "criar") {
@@ -54,7 +66,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
     setCarregando(false);
     if (error) return setMsg({ tipo: "erro", texto: traduzErro(error.message) });
-    router.push("/dashboard");
+    router.push(destinoDepoisDeEntrar());
     router.refresh();
   }
 

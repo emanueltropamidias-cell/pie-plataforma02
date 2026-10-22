@@ -660,3 +660,12 @@ export async function candidatoPorId(id: number) {
   if (!achado) return null;
   return paraCandidato(achado.ano, achado.uf, achado.l, await ufsComFoto(achado.ano));
 }
+
+/** Ids de quem teve voto no 1º turno, do mais ao menos votado (sitemap). */
+export async function idsComVoto(ano: number, uf: string) {
+  const indice = (await lerIndice(ano, uf)) ?? [];
+  return indice
+    .filter((l) => l[1] === 1 && l[9] > 0)
+    .sort((a, b) => b[9] - a[9])
+    .map((l) => codificarId(ano, uf, l[0]));
+}

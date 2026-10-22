@@ -182,7 +182,7 @@ export default async function PaginaCandidato({ params }: Params) {
               em português sobre os dados.
             </p>
           </div>
-          <Link href="/login" className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-tema px-4 py-2.5 text-[13px] font-bold text-white">
+          <Link href={`/login?proximo=${encodeURIComponent(`/estrategia?c=${c.id}`)}`} className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-tema px-4 py-2.5 text-[13px] font-bold text-white">
             Abrir análise completa <ArrowRight size={15} />
           </Link>
         </section>
