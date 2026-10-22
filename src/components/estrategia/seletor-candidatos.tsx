@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, ChevronDown, Search, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ondeDisputa } from "@/lib/eleicao";
 import type { CandidatoBusca } from "@/components/estrategia/painel-estrategia-eleitoral";
 
@@ -19,7 +20,17 @@ type Lista = {
 };
 
 /** Foto de urna com reserva: falhou, mostra as iniciais — nunca imagem quebrada. */
-export function FotoUrna({ src, nome, tamanho }: { src: string | null; nome: string; tamanho: number }) {
+export function FotoUrna({
+  src,
+  nome,
+  tamanho,
+  className,
+}: {
+  src: string | null;
+  nome: string;
+  tamanho: number;
+  className?: string;
+}) {
   // Uma segunda tentativa antes de desistir: a foto vem do TSE, e um tropeço
   // de rede não pode virar "candidato sem foto".
   const [tentativa, setTentativa] = useState<{ src: string | null; n: number }>({ src, n: 0 });
@@ -34,7 +45,10 @@ export function FotoUrna({ src, nome, tamanho }: { src: string | null; nome: str
     .join("");
   return (
     <span
-      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 font-bold text-slate-400"
+      className={cn(
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 font-bold text-slate-400",
+        className
+      )}
       style={{ width: tamanho, height: tamanho, fontSize: Math.max(9, tamanho / 3.2) }}
     >
       {src && falhou !== src ? (

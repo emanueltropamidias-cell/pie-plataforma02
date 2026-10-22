@@ -278,9 +278,13 @@ export function PainelEstrategiaEleitoral({
           
           {/* Identidade Sóbria do Candidato */}
           <div className="flex min-w-0 items-center gap-3.5">
-            <span className="shrink-0 rounded-full border-2 border-slate-200 shadow-sm">
-              <FotoUrna key={raioX.candidato.id} src={fotoDoCandidato(raioX.candidato)} nome={raioX.candidato.nome_urna} tamanho={88} />
-            </span>
+            <FotoUrna
+              key={raioX.candidato.id}
+              src={fotoDoCandidato(raioX.candidato)}
+              nome={raioX.candidato.nome_urna}
+              tamanho={88}
+              className="border-2 shadow-sm"
+            />
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
