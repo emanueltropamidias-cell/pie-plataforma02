@@ -9,7 +9,7 @@ Nada em andamento.
 
 ## Feito (mais recente no topo)
 
-- 22/10/2026 · Claude · pasta `conteudo/` criada: contexto de conteúdo do Manuflow para o setor Criação de Vídeo da Opifex (`conteudo/PROJETO.md`) e os vídeos feitos (`conteudo/videos/`); mídia fora do git
+- 22/10/2026 · Claude · pasta `conteudo/` criada: contexto de conteúdo do Manuflow para o setor Criação de Vídeo da Opifex (`conteudo/PROJETO.md`) e os vídeos feitos (`conteudo/videos/`); mídia fora do git · `357c33e`
 - 22/10/2026 · Gemini · foto de urna preenchendo o círculo no card da Estratégia (removido span wrapper com border redundante) · `d9514bc`
 - 21/10/2026 · Claude · criado este diário e a regra 05 de passagem de bastão
 - 20/10/2026 · — · layout de celular na Estratégia e nos indicadores · `51bada9`
