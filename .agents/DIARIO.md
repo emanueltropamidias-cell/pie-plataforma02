@@ -5,10 +5,11 @@ cada ação concluída.
 
 ## Em andamento
 
-- 22/10/2026 · Claude · Estratégia v2 juntada na `main` com aprovação do Emanuel. FALTA: testar a aba Comparar clicando (não testada); conferir a aba Perguntar no ar (chave da Vercel); depois de 25/10 regerar 2026 (2º turno) e, quando o TSE fechar, as contas de 2026 (`scripts/gerar-eleicao-extras.mjs`).
+- 24/10/2026 · Claude · Estratégia v2 está na `main` e no GitHub, mas NÃO na produção: a Vercel não publica sozinha a partir do GitHub, e a última publicação é de 16/10 (antes também das entregas de 20–22/10). Publicar: `npx vercel deploy --prod` na pasta (o Emanuel roda; a trava do Claude Code bloqueia publicação em produção). Depois de publicar: testar a aba Perguntar logado (a `ANTHROPIC_API_KEY` existe na Vercel). Depois de 25/10: regerar 2026 com o 2º turno; quando o TSE fechar, as contas de 2026 (`scripts/gerar-eleicao-extras.mjs`).
 
 ## Feito (mais recente no topo)
 
+- 24/10/2026 · Claude · aba Comparar testada no navegador (sem erros); medida "as bases se parecem X%"; legenda sem chave repetida; `.vercelignore` (sem `.cache/` e `conteudo/`); token do GitHub tirado do endereço do `origin` — o git usa o login do `gh`
 - 22/10/2026 · Claude · login volta para onde a pessoa ia (`?proximo=`), sitemaps de candidatos e robots.txt
 - 22/10/2026 · Claude · Estratégia v2 (branch `estrategia-v2`): abas Quociente/Disputa, Comparar, Trajetória, Gastos, Perguntar; mapa em % do eleitorado; cidade com eleitorado e perfil; página pública `/candidato/[id]`; dados extras do TSE via `scripts/gerar-eleicao-extras.mjs`
 - 22/10/2026 · Claude · pasta `conteudo/` criada: contexto de conteúdo do Manuflow para o setor Criação de Vídeo da Opifex (`conteudo/PROJETO.md`) e os vídeos feitos (`conteudo/videos/`); mídia fora do git · `357c33e`
@@ -21,6 +22,8 @@ cada ação concluída.
 - 20/10/2026 · — · fotos de urna maiores · `fbf99c3`
 
 ## Armadilhas
+
+- O `origin` tinha um token do GitHub dentro do endereço (`https://usuario:ghp_…@github.com/…`) e uma linha vazia de `credential.helper` no `.git/config`. Os dois foram tirados em 24/10: o envio usa o login do `gh` (conta com permissão no repositório). Nunca pôr token no endereço do remoto.
 
 - Prestação de contas do TSE repete o mesmo gasto em várias prestações (relatório financeiro, parcial, final, regularização). O gerador usa UMA por candidato; somar o arquivo inteiro infla o valor.
 - A CDN do TSE limita cada conexão a ~40 KB/s: arquivo grande só baixa em pedaços paralelos (faixas de bytes).

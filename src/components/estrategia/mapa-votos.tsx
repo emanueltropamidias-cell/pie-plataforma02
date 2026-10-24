@@ -214,7 +214,7 @@ export function MapaVotos({
 
         <div className="flex flex-wrap items-center gap-2.5 text-[10.5px] text-tinta-500">
           {legenda.map((f) => (
-            <span key={f.rotulo} className="inline-flex items-center gap-1">
+            <span key={`${f.cor}-${f.rotulo}`} className="inline-flex items-center gap-1">
               <span className="h-3 w-3 rounded-sm ring-1 ring-inset ring-black/10" style={{ background: f.cor }} />
               {f.rotulo}
             </span>

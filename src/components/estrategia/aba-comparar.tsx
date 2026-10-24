@@ -147,6 +147,11 @@ function Comparacao({ a, b, uf }: { a: RaioXCandidato; b: RaioXCandidato; uf: st
       // Quanto da votação de A está em cidades onde B também teve voto.
       sobreposicaoA: (ambos.reduce((s, l) => s + l.a, 0) / ta) * 100,
       sobreposicaoB: (ambos.reduce((s, l) => s + l.b, 0) / tb) * 100,
+      // Semelhança das bases: soma, cidade a cidade, do menor dos dois pesos
+      // (fatia da votação de cada um). 100% = distribuição idêntica; 0% =
+      // nenhuma cidade em comum. Com dois candidatos de voto no estado
+      // inteiro a sobreposição dava 100% e 100% e não dizia nada.
+      semelhanca: linhas.reduce((s, l) => s + Math.min(l.a / ta, l.b / tb), 0) * 100,
       fortesA: [...linhas].sort((p, q) => q.ma - q.mb - (p.ma - p.mb)).filter((l) => l.ma > l.mb).slice(0, 8),
       fortesB: [...linhas].sort((p, q) => p.ma - p.mb - (q.ma - q.mb)).filter((l) => l.mb > l.ma).slice(0, 8),
     };
@@ -196,9 +201,13 @@ function Comparacao({ a, b, uf }: { a: RaioXCandidato; b: RaioXCandidato; uf: st
         </div>
         <div className={CAIXA}>
           <Titulo sobre="Bases" titulo={`${dados.ambos} cidades em comum`} nota={`${dados.soA} só de ${a.candidato.nome_urna} · ${dados.soB} só de ${b.candidato.nome_urna}`} />
+          <p className="mb-2 text-[12.5px] leading-relaxed text-tinta-700">
+            As bases se parecem <b>{pct(dados.semelhanca, 0)}</b>: quanto do peso de cada cidade na votação de um coincide com o
+            peso dela na do outro. Perto de 100%, disputam o mesmo eleitor; perto de 0%, se completam.
+          </p>
           <p className="text-[12.5px] leading-relaxed text-tinta-700">
             <b>{pct(dados.sobreposicaoA, 0)}</b> dos votos de {a.candidato.nome_urna} em {uf} vieram de cidades onde {b.candidato.nome_urna} também
-            teve voto; no sentido contrário, <b>{pct(dados.sobreposicaoB, 0)}</b>. Quanto menor a sobreposição, mais as bases se completam.
+            teve voto; no sentido contrário, <b>{pct(dados.sobreposicaoB, 0)}</b>.
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
             <Lista titulo={`Mais forte: ${a.candidato.nome_urna}`} tom="text-blue-700" linhas={dados.fortesA.map((l) => ({ m: l.municipio, x: l.a, y: l.b }))} />
