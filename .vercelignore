@@ -1,0 +1,5 @@
+# O envio pela linha de comando (vercel deploy) sobe a pasta inteira. Isto fica
+# de fora: dados brutos do TSE (gigabytes, só para os scripts) e o material de
+# vídeo da Opifex, que o app não importa.
+.cache/
+conteudo/
