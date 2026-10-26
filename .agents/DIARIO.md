@@ -9,6 +9,7 @@ cada ação concluída.
 
 ## Feito (mais recente no topo)
 
+- 26/10/2026 · Claude · Estratégia: presidente na lista de cargos do estado; filtro por resultado; resultado final do 2º turno no selo; 1º → 2º turno por cidade (aba Disputa); planilhas (lista filtrada e votos por cidade); aba Partido com lacunas do candidato (dados `partido/<UF>.json`, etapa `partido` do gerador); simulador de chapa (`src/lib/quociente.ts`, reproduz o oficial em 23/23 disputas testadas). Falta publicar (`npx vercel deploy --prod`)
 - 26/10/2026 · Claude + Emanuel · produção consertada: as variáveis da Vercel apontavam para o Supabase antigo (`unmjcm…`, apagado depois da migração de 20/10); trocadas pelas do banco novo (`lrccsrz…`), publicado pelo Emanuel. Dados de 2026 regerados e subidos (18.543 arquivos)
 - 24/10/2026 · Claude · aba Comparar testada no navegador (sem erros); medida "as bases se parecem X%"; legenda sem chave repetida; `.vercelignore` (sem `.cache/` e `conteudo/`); token do GitHub tirado do endereço do `origin` — o git usa o login do `gh`
 - 22/10/2026 · Claude · login volta para onde a pessoa ia (`?proximo=`), sitemaps de candidatos e robots.txt
@@ -23,6 +24,8 @@ cada ação concluída.
 - 20/10/2026 · — · fotos de urna maiores · `fbf99c3`
 
 ## Armadilhas
+
+- Sobras do quociente: a última fase vai para TODAS as agremiações (STF, fev/2024), e isso vale também para 2022 — o TSE recontou (Amapá trocou deputados) e o dado oficial já é o recontado. Com a regra antiga o simulador erra o Amapá 2022.
 
 - A Vercel NÃO publica a partir do GitHub: publicar é `npx vercel deploy --prod` na pasta (o Emanuel roda; a trava do Claude Code bloqueia). As variáveis do banco moram na Vercel e NÃO acompanham o `.env.local`: trocou de banco, trocar lá também (`vercel env update NOME -e production`; as `NEXT_PUBLIC_` pedem `--type config`).
 

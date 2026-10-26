@@ -625,6 +625,13 @@ export async function quocienteDe(id: number) {
       ultimoEleito: ultimoEleito ? resumo(ultimoEleito) : null,
       primeiroSuplente: primeiroSuplente ? resumo(primeiroSuplente) : null,
     },
+    // Votos nominais de cada candidato, por agremiação (simulador de chapa).
+    candidatosPorAgremiacao: Object.fromEntries(
+      [...ag.keys()].map((nome) => [
+        nome,
+        daDisputa.filter((x) => (agremiacaoDe.get(x[6]) ?? x[6]) === nome).map((x) => x[9]),
+      ]),
+    ),
     // Os eleitos da disputa inteira, do mais ao menos votado.
     eleitos: daDisputa
       .filter((x) => ELEITO.test(x[7]))

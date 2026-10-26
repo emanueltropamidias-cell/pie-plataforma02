@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ArrowUpRight, Repeat, Scale, Trophy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowUpRight, FlaskConical, Repeat, Scale, Trophy } from "lucide-react";
+import { distribuirCadeiras } from "@/lib/quociente";
 import { CARGOS_PROPORCIONAIS, ondeDisputa } from "@/lib/eleicao";
 import { FotoUrna } from "@/components/estrategia/seletor-candidatos";
 import type { CandidatoBusca, RaioXCandidato } from "@/components/estrategia/painel-estrategia-eleitoral";
@@ -37,6 +38,7 @@ type Quociente = {
     primeiroSuplente: Candidato | null;
   };
   eleitos: Candidato[];
+  candidatosPorAgremiacao: Record<string, number[]>;
 };
 
 export function AbaEleicao({
@@ -194,6 +196,115 @@ function Proporcional({ raioX, onEscolher }: { raioX: RaioXCandidato; onEscolher
           </div>
         </div>
       </div>
+      <div className="xl:col-span-12">
+        <Simulador q={q} />
+      </div>
+    </div>
+  );
+}
+
+// ── SIMULADOR DE CHAPA ──────────────────────────────────────────────────────
+//
+// "E se estes partidos tivessem concorrido juntos (federação)?" Junta os
+// votos e os candidatos das agremiações marcadas e redistribui as cadeiras
+// pela regra oficial (src/lib/quociente.ts). Antes de qualquer "e se", a tela
+// confere se a regra reproduz o resultado oficial sem mudança nenhuma — se não
+// reproduz, avisa, porque a simulação partiria de uma base errada.
+
+function Simulador({ q }: { q: Quociente }) {
+  const [juntar, setJuntar] = useState<string[]>([]);
+
+  const resultado = useMemo(() => {
+    const original = q.agremiacoes.map((a) => ({ nome: a.nome, votos: a.votos, candidatos: q.candidatosPorAgremiacao[a.nome] ?? [] }));
+    const base = distribuirCadeiras({ vagas: q.vagas, validos: q.validos, agremiacoes: original });
+    const confere = q.agremiacoes.every((a) => (base.get(a.nome) ?? 0) === a.cadeiras);
+    if (juntar.length < 2) return { confere, linhas: null };
+    const nomeJunto = juntar.join(" + ");
+    const agrupadas = [
+      {
+        nome: nomeJunto,
+        votos: original.filter((a) => juntar.includes(a.nome)).reduce((s, a) => s + a.votos, 0),
+        candidatos: original.filter((a) => juntar.includes(a.nome)).flatMap((a) => a.candidatos),
+      },
+      ...original.filter((a) => !juntar.includes(a.nome)),
+    ];
+    const sim = distribuirCadeiras({ vagas: q.vagas, validos: q.validos, agremiacoes: agrupadas });
+    const oficial = (nome: string) =>
+      nome === nomeJunto
+        ? q.agremiacoes.filter((a) => juntar.includes(a.nome)).reduce((s, a) => s + a.cadeiras, 0)
+        : (q.agremiacoes.find((a) => a.nome === nome)?.cadeiras ?? 0);
+    const linhas = agrupadas
+      .map((a) => ({ nome: a.nome, votos: a.votos, oficial: oficial(a.nome), simulado: sim.get(a.nome) ?? 0 }))
+      .filter((l) => l.oficial || l.simulado)
+      .sort((a, b) => b.simulado - a.simulado || b.votos - a.votos);
+    return { confere, linhas };
+  }, [q, juntar]);
+
+  const alternar = (nome: string) => setJuntar((j) => (j.includes(nome) ? j.filter((x) => x !== nome) : [...j, nome]));
+
+  return (
+    <div className={CAIXA}>
+      <Titulo
+        icone={<FlaskConical size={13} />}
+        sobre="Simulador de chapa"
+        titulo="E se estes partidos tivessem concorrido juntos?"
+        nota="Marque dois ou mais partidos ou federações. A soma dos votos e dos candidatos passa pela regra oficial de distribuição das cadeiras."
+      />
+      <p className={`mb-3 rounded-lg px-3 py-2 text-[11.5px] ${resultado.confere ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>
+        {resultado.confere
+          ? "Conferência: sem juntar ninguém, a regra reproduz exatamente as cadeiras oficiais desta eleição."
+          : "Atenção: sem juntar ninguém, a regra não reproduz as cadeiras oficiais desta eleição (empate ou decisão judicial). Use a simulação com cautela."}
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {q.agremiacoes
+          .filter((a) => a.votos > 0)
+          .map((a) => {
+            const marcado = juntar.includes(a.nome);
+            return (
+              <button
+                key={a.nome}
+                onClick={() => alternar(a.nome)}
+                aria-pressed={marcado}
+                className={`rounded-lg border px-2.5 py-1 text-[11.5px] font-semibold transition ${
+                  marcado ? "border-blue-300 bg-blue-50 text-blue-700" : "border-tinta-200 text-tinta-700 hover:bg-tinta-50"
+                }`}
+              >
+                {a.nome} <span className="font-normal text-tinta-500">({a.cadeiras})</span>
+              </button>
+            );
+          })}
+      </div>
+      {resultado.linhas && (
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[460px] text-[12px]">
+            <thead>
+              <tr className="border-b border-tinta-100 text-left text-[10.5px] font-bold uppercase tracking-wider text-tinta-500">
+                <th className="py-2 pr-2">Partido / federação</th>
+                <th className="py-2 pr-2 text-right">Votos</th>
+                <th className="py-2 pr-2 text-right">Cadeiras oficiais</th>
+                <th className="py-2 pr-2 text-right">Simuladas</th>
+                <th className="py-2 text-right">Diferença</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resultado.linhas.map((l) => {
+                const dif = l.simulado - l.oficial;
+                return (
+                  <tr key={l.nome} className={`border-b border-tinta-100 ${l.nome.includes(" + ") ? "bg-blue-50" : ""}`}>
+                    <td className="py-2 pr-2 font-semibold text-tinta-800">{l.nome}</td>
+                    <td className="tabular py-2 pr-2 text-right text-tinta-600">{fmt(l.votos)}</td>
+                    <td className="tabular py-2 pr-2 text-right text-tinta-700">{l.oficial}</td>
+                    <td className="tabular py-2 pr-2 text-right font-bold text-tinta-900">{l.simulado}</td>
+                    <td className={`tabular py-2 text-right font-bold ${dif > 0 ? "text-emerald-700" : dif < 0 ? "text-rose-700" : "text-tinta-400"}`}>
+                      {dif > 0 ? `+${dif}` : dif || "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
