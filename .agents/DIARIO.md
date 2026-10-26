@@ -5,10 +5,11 @@ cada ação concluída.
 
 ## Em andamento
 
-- 24/10/2026 · Claude · Estratégia v2 está na `main` e no GitHub, mas NÃO na produção: a Vercel não publica sozinha a partir do GitHub, e a última publicação é de 16/10 (antes também das entregas de 20–22/10). Publicar: `npx vercel deploy --prod` na pasta (o Emanuel roda; a trava do Claude Code bloqueia publicação em produção). Depois de publicar: testar a aba Perguntar logado (a `ANTHROPIC_API_KEY` existe na Vercel). 2º turno de 2026: os arquivos do TSE de 25/10 foram gerados às 12h58 (antes do fim da votação) e ainda não têm o 2º turno; regerado e subido mesmo assim (cadastro atualizado). Quando o TSE publicar o 2º turno (`PRESIDENTE|2` aparece em `apuracao/BA.json`), rodar `gerar-eleicao-arquivos.mjs --ano=2026`, depois `gerar-eleicao-extras.mjs --ano=2026` e `--pessoas` (o primeiro APAGA a pasta do ano) e subir; quando o TSE fechar, as contas de 2026 (`scripts/gerar-eleicao-extras.mjs`).
+- 26/10/2026 · Claude · Estratégia v2 NO AR (pieplataforma.vercel.app e talitaoliveiraoficial.com). FALTA: o Emanuel entrar e testar a aba Perguntar logado; 2º turno de 2026 quando o TSE publicar (`PRESIDENTE|2` em `apuracao/BA.json`): `gerar-eleicao-arquivos.mjs --ano=2026` (APAGA a pasta do ano), depois `gerar-eleicao-extras.mjs --ano=2026` e `--pessoas`, e subir; contas finais de 2026 quando o TSE fechar.
 
 ## Feito (mais recente no topo)
 
+- 26/10/2026 · Claude + Emanuel · produção consertada: as variáveis da Vercel apontavam para o Supabase antigo (`unmjcm…`, apagado depois da migração de 20/10); trocadas pelas do banco novo (`lrccsrz…`), publicado pelo Emanuel. Dados de 2026 regerados e subidos (18.543 arquivos)
 - 24/10/2026 · Claude · aba Comparar testada no navegador (sem erros); medida "as bases se parecem X%"; legenda sem chave repetida; `.vercelignore` (sem `.cache/` e `conteudo/`); token do GitHub tirado do endereço do `origin` — o git usa o login do `gh`
 - 22/10/2026 · Claude · login volta para onde a pessoa ia (`?proximo=`), sitemaps de candidatos e robots.txt
 - 22/10/2026 · Claude · Estratégia v2 (branch `estrategia-v2`): abas Quociente/Disputa, Comparar, Trajetória, Gastos, Perguntar; mapa em % do eleitorado; cidade com eleitorado e perfil; página pública `/candidato/[id]`; dados extras do TSE via `scripts/gerar-eleicao-extras.mjs`
@@ -22,6 +23,8 @@ cada ação concluída.
 - 20/10/2026 · — · fotos de urna maiores · `fbf99c3`
 
 ## Armadilhas
+
+- A Vercel NÃO publica a partir do GitHub: publicar é `npx vercel deploy --prod` na pasta (o Emanuel roda; a trava do Claude Code bloqueia). As variáveis do banco moram na Vercel e NÃO acompanham o `.env.local`: trocou de banco, trocar lá também (`vercel env update NOME -e production`; as `NEXT_PUBLIC_` pedem `--type config`).
 
 - `gerar-eleicao-arquivos.mjs --ano=X` (sem `--uf`) apaga `.cache/eleicao-arquivos/X/` inteira, inclusive os extras: sempre rodar `gerar-eleicao-extras.mjs --ano=X` e `--pessoas` logo depois.
 
