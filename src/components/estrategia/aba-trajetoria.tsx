@@ -58,7 +58,7 @@ export function AbaTrajetoria({ raioX, onEscolher }: { raioX: RaioXCandidato; on
                   <span className="block text-[11px] font-bold text-tinta-500">{x.ano} · {x.cargo.toLowerCase()} · {ondeDisputa(x)}</span>
                   <span className="block truncate text-[12.5px] font-bold text-tinta-900">{x.nome_urna} <span className="font-medium text-tinta-500">({x.partido_sigla})</span></span>
                   <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                    <SeloResultado situacao={x.situacao} />
+                    <SeloResultado situacao={x.situacao} segundo={x.segundo_turno} />
                     {lista.some((y) => y.ano === x.ano && y.turno === 2 && y.cargo === x.cargo) && (
                       <span className="text-[10.5px] font-semibold text-tinta-500">teve 2º turno</span>
                     )}

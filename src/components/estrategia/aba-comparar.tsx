@@ -232,7 +232,7 @@ function Lado({ r, cor, total }: { r: RaioXCandidato; cor: string; total: number
       </div>
       <p className="tabular mt-2 text-lg font-extrabold text-tinta-900">{fmt(total)}</p>
       <p className="text-[10.5px] text-tinta-500">votos neste estado · {Object.keys(r.votos_por_municipio).length} cidades</p>
-      <SeloResultado situacao={c.situacao} className="mt-1.5" />
+      <SeloResultado situacao={c.situacao} segundo={c.segundo_turno} className="mt-1.5" />
     </div>
   );
 }

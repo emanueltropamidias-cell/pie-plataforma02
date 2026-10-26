@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, Search, Users } from "lucide-react";
+import { Check, ChevronDown, Download, Search, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ondeDisputa } from "@/lib/eleicao";
 import type { CandidatoBusca } from "@/components/estrategia/painel-estrategia-eleitoral";
@@ -180,14 +180,33 @@ export function SeletorCandidatos({
             </span>
           </h2>
         </div>
-        <div className="relative w-full sm:w-64">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Filtrar por nome, número ou cidade"
-            className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-8 pr-3 text-[12.5px] outline-none transition focus:border-blue-500 focus:bg-white sm:h-9"
-          />
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filtrar por nome, número ou cidade"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-8 pr-3 text-[12.5px] outline-none transition focus:border-blue-500 focus:bg-white sm:h-9"
+            />
+          </div>
+          {/* A lista inteira com os filtros da tela, não só a página carregada. */}
+          <a
+            href={`/api/eleicao?${(() => {
+              const p = new URLSearchParams({ lista: "1", ano: String(ano), uf, formato: "csv" });
+              if (cargo !== "TODOS") p.set("cargo", cargo);
+              if (partido !== "TODOS") p.set("partido", partido);
+              if (resultado !== "TODOS") p.set("resultado", resultado);
+              if (q.trim()) p.set("q", q.trim());
+              return p.toString();
+            })()}`}
+            download
+            title="Baixar a lista filtrada em planilha (abre no Excel)"
+            className="flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-[12px] font-semibold text-slate-700 transition hover:bg-slate-50 sm:h-9"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">Planilha</span>
+          </a>
         </div>
       </div>
 
@@ -227,6 +246,15 @@ export function SeletorCandidatos({
                   {c.situacao && /ELEITO/.test(c.situacao) && !/NÃO/.test(c.situacao) && (
                     <span className="ml-1.5 rounded bg-emerald-50 px-1 text-[10px] font-bold text-emerald-700">
                       {c.situacao}
+                    </span>
+                  )}
+                  {c.segundo_turno && (
+                    <span
+                      className={`ml-1.5 rounded px-1 text-[10px] font-bold ${
+                        /^ELEITO/.test(c.segundo_turno.situacao) ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {/^ELEITO/.test(c.segundo_turno.situacao) ? "ELEITO NO 2º TURNO" : "NÃO ELEITO NO 2º TURNO"}
                     </span>
                   )}
                 </span>

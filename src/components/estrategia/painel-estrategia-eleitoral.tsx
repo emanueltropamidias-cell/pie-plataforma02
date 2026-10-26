@@ -22,6 +22,7 @@ import {
   Wallet,
   Percent,
   ExternalLink,
+  Download,
 } from "lucide-react";
 import { MapaBrasil } from "@/components/estrategia/mapa-brasil";
 import { MapaVotos, type BaseCidade, type MedidaMapa } from "@/components/estrategia/mapa-votos";
@@ -34,6 +35,7 @@ import { AbaPerguntar } from "@/components/estrategia/aba-perguntar";
 import { SeloResultado, fmt, pct } from "@/components/estrategia/comum";
 import { CARGOS_PROPORCIONAIS, chave, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
 import { municipiosDaUf } from "@/lib/estados";
+import { nomeDeArquivo, planilha } from "@/lib/planilha";
 import { CANDIDATO } from "@/lib/candidato";
 import UFS from "@/lib/ufs.json";
 import APELIDOS_MUNICIPIOS from "@/lib/municipios-apelidos.json";
@@ -67,6 +69,8 @@ export interface CandidatoBusca {
   partido_sigla: string;
   situacao: string;
   foto_url: string | null;
+  /** Quem disputou o 2º turno: o resultado final e os votos da 2ª volta. */
+  segundo_turno?: { id: number; situacao: string; votos: number } | null;
 }
 
 export interface RaioXCandidato {
@@ -369,6 +373,33 @@ export function PainelEstrategiaEleitoral({
     : [];
   const votosSemRede = lacunas.reduce((s, l) => s + l.votos, 0);
 
+  // A votação do candidato aberto, cidade a cidade, em planilha.
+  function baixarVotosPorCidade() {
+    const linhas = Object.entries(raioX.votos_por_municipio)
+      .sort((a, b) => b[1] - a[1])
+      .map(([m, v]) => {
+        const b = base?.[m];
+        return [
+          m,
+          v,
+          votosNoMapa ? +((v / votosNoMapa) * 100).toFixed(2) : null,
+          b?.aptos ?? null,
+          b?.aptos ? +((v / b.aptos) * 100).toFixed(2) : null,
+          b?.validos ?? null,
+          b?.validos ? +((v / b.validos) * 100).toFixed(2) : null,
+        ];
+      });
+    const texto = planilha(
+      ["Município", "Votos", "% da votação do candidato", "Eleitores aptos", "% do eleitorado", "Votos válidos do cargo", "% dos válidos"],
+      linhas,
+    );
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([texto], { type: "text/csv;charset=utf-8" }));
+    a.download = nomeDeArquivo("votos", c.nome_urna, c.cargo, c.ano, ufMapa);
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
   return (
     <div className="space-y-5">
       {/* ── 1. CABEÇALHO: CANDIDATO + FILTROS ──────────────────────────── */}
@@ -390,7 +421,7 @@ export function PainelEstrategiaEleitoral({
                 <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
                   {c.cargo} · {ondeDisputa(c)}
                 </span>
-                <SeloResultado situacao={c.situacao} />
+                <SeloResultado situacao={c.situacao} segundo={c.segundo_turno} />
               </div>
               <h1 className="mt-1 break-words text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
                 {c.nome_urna}
@@ -400,6 +431,11 @@ export function PainelEstrategiaEleitoral({
                 {c.turno === 2 ? " · 2º turno" : ""} ·{" "}
                 <b className="font-semibold text-slate-800">{fmt(c.total_votos)}</b> votos válidos
                 {c.uf === "BR" ? " no Brasil" : ""}
+                {c.segundo_turno && (
+                  <>
+                    {" "}no 1º turno e <b className="font-semibold text-slate-800">{fmt(c.segundo_turno.votos)}</b> no 2º
+                  </>
+                )}
                 {pctValidos !== null && c.uf !== "BR" && <> · <b className="font-semibold text-slate-800">{pct(pctValidos)}</b> dos válidos</>}
                 {" · "}
                 <Link href={`/candidato/${c.id}`} target="_blank" className="inline-flex items-center gap-0.5 font-semibold text-blue-700 hover:underline">
@@ -612,7 +648,7 @@ export function PainelEstrategiaEleitoral({
         ))}
       </nav>
 
-      {aba === "eleicao" && <AbaEleicao key={c.id} raioX={raioX} onEscolher={selecionarCandidato} />}
+      {aba === "eleicao" && <AbaEleicao key={c.id} raioX={raioX} onEscolher={selecionarCandidato} ufMapa={ufMapa} />}
       {aba === "comparar" && <AbaComparar key={`${c.id}|${ufMapa}`} raioX={raioX} ufMapa={ufMapa} />}
       {aba === "trajetoria" && <AbaTrajetoria key={c.id} raioX={raioX} onEscolher={selecionarCandidato} />}
       {aba === "gastos" && <AbaGastos key={c.id} raioX={raioX} />}
@@ -657,6 +693,14 @@ export function PainelEstrategiaEleitoral({
                     {medida === "votos" ? "Votos" : medida === "eleitorado" ? "Fatia do eleitorado" : "Fatia dos votos válidos"} por município
                   </h2>
                 </div>
+                <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={baixarVotosPorCidade}
+                  title="Baixar os votos por cidade em planilha (abre no Excel)"
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-2.5 py-1.5 text-[11.5px] font-bold text-slate-600 transition hover:bg-slate-50"
+                >
+                  <Download size={13} /> Planilha
+                </button>
                 <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50/80 p-1 text-[11.5px]" role="group" aria-label="Medida do mapa">
                   {MEDIDAS.map((m) => (
                     <button
@@ -671,6 +715,7 @@ export function PainelEstrategiaEleitoral({
                       {m.rotulo}
                     </button>
                   ))}
+                </div>
                 </div>
               </div>
               <MapaVotos

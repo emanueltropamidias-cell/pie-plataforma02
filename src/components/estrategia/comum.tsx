@@ -9,9 +9,21 @@ import { CLASSE_RESULTADO, resultadoDe } from "@/lib/eleicao";
 
 export { fmt, pct, reais } from "@/lib/formato";
 
-/** Eleito, suplente, não eleito… com a cor certa. */
-export function SeloResultado({ situacao, className = "" }: { situacao: string | null | undefined; className?: string }) {
-  const r = resultadoDe(situacao);
+/** Eleito, suplente, não eleito… com a cor certa. Com o 2º turno, o final. */
+export function SeloResultado({
+  situacao,
+  segundo,
+  className = "",
+}: {
+  situacao: string | null | undefined;
+  /** O que o candidato fez no 2º turno (vem da API em `segundo_turno`). */
+  segundo?: { situacao: string } | null;
+  className?: string;
+}) {
+  const final = segundo ? resultadoDe(segundo.situacao) : null;
+  const r = final
+    ? { rotulo: final.tom === "eleito" ? "Eleito no 2º turno" : "Não eleito no 2º turno", tom: final.tom }
+    : resultadoDe(situacao);
   return (
     <span
       className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${CLASSE_RESULTADO[r.tom]} ${className}`}

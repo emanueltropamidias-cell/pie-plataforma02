@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { nomeDeArquivo, planilha } from "@/lib/planilha";
 import {
   aleatorio,
   buscarCandidatos,
@@ -30,7 +31,7 @@ import {
 //   ?candidatoId=<id>&municipio=SALVADOR          camada municipal
 //   ?destaque=1&ano=2024&uf=MG[&cargo=…]          o mais votado
 //   ?aleatorio=1&ano=2024&uf=MG[&cargo=…][&partido=…]   um qualquer do estado
-//   ?lista=1&ano=2022&uf=SP[&cargo][&partido][&resultado][&q][&pagina]   seletor de candidatos
+//   ?lista=1&ano=2022&uf=SP[&cargo][&partido][&resultado][&q][&pagina][&formato=csv]   seletor de candidatos (ou planilha)
 //   ?candidatoId=<id>&extra=quociente|contas|trajetoria|ficha   abas do painel
 //   ?cidade=SALVADOR&ano=2022&uf=BA                apuração e perfil do eleitorado
 //
@@ -96,17 +97,44 @@ export async function GET(request: Request) {
   const partido = partidoParam && partidoParam !== "TODOS" ? partidoParam : null;
 
   if (sp.get("lista") === "1" && uf) {
-    return NextResponse.json(
-      await listarCandidatos({
-        ano,
-        uf,
-        cargo,
-        partido,
-        resultado: (["eleito", "segundo", "suplente", "nao"] as const).find((r) => r === sp.get("resultado")) ?? null,
-        q: sp.get("q"),
-        pagina: parseInt(sp.get("pagina") ?? "0", 10) || 0,
-      }),
+    const resultado = (["eleito", "segundo", "suplente", "nao"] as const).find((r) => r === sp.get("resultado")) ?? null;
+    const csv = sp.get("formato") === "csv";
+    const lista = await listarCandidatos({
+      ano,
+      uf,
+      cargo,
+      partido,
+      resultado,
+      q: sp.get("q"),
+      pagina: csv ? 0 : parseInt(sp.get("pagina") ?? "0", 10) || 0,
+      // A planilha leva a lista filtrada inteira, não a página da tela.
+      porPagina: csv ? 200_000 : undefined,
+    });
+    if (!csv) return NextResponse.json(lista);
+    const texto = planilha(
+      ["Nome de urna", "Nome completo", "Número", "Partido", "Cargo", "Onde disputou", "UF", "Ano", "Votos (1º turno)", "Resultado", "Votos (2º turno)", "Resultado final"],
+      lista.candidatos.map((c) => [
+        c.nome_urna,
+        c.nome_completo,
+        c.numero,
+        c.partido_sigla,
+        c.cargo,
+        c.nm_ue,
+        c.uf,
+        c.ano,
+        c.total_votos,
+        c.situacao,
+        c.segundo_turno?.votos ?? null,
+        c.segundo_turno?.situacao ?? c.situacao,
+      ]),
     );
+    return new Response(texto, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${nomeDeArquivo("candidatos", ano, uf, cargo ?? "todos", partido ?? "", resultado ?? "")}"`,
+        "Cache-Control": "no-store",
+      },
+    });
   }
 
   if (sp.get("aleatorio") === "1" && uf) {

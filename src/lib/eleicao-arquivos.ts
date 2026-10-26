@@ -147,7 +147,29 @@ async function ufsComFoto(ano: number): Promise<Set<string>> {
 }
 
 /** O que a tela chama de candidato — o mesmo formato que o banco devolvia. */
-function paraCandidato(ano: number, uf: string, l: LinhaIndice, fotos: Set<string>) {
+// Linhas do índice por chave, para achar a do 2º turno de um candidato sem
+// varrer o índice de novo a cada um.
+const porChaveDoIndice = new WeakMap<LinhaIndice[], Map<number, LinhaIndice>>();
+function linhaPorChave(indice: LinhaIndice[], chave: number) {
+  let m = porChaveDoIndice.get(indice);
+  if (!m) {
+    m = new Map(indice.map((x) => [x[0], x]));
+    porChaveDoIndice.set(indice, m);
+  }
+  return m.get(chave) ?? null;
+}
+
+/**
+ * O que o candidato fez no 2º turno, para quem disputou um. O selo do 1º turno
+ * dizia só "foi ao 2º turno" — o Lula de 2022 aparecia sem o "eleito".
+ */
+function segundoTurnoDe(ano: number, uf: string, l: LinhaIndice, indice?: LinhaIndice[] | null) {
+  if (!indice || l[1] !== 1 || l[7] !== "2º TURNO") return null;
+  const x = linhaPorChave(indice, Math.floor(l[0] / 10) * 10 + 2);
+  return x ? { id: codificarId(ano, uf, x[0]), situacao: x[7], votos: x[9] } : null;
+}
+
+function paraCandidato(ano: number, uf: string, l: LinhaIndice, fotos: Set<string>, indice?: LinhaIndice[] | null) {
   const sq = String(Math.floor(l[0] / 10));
   return {
     id: codificarId(ano, uf, l[0]),
@@ -166,6 +188,7 @@ function paraCandidato(ano: number, uf: string, l: LinhaIndice, fotos: Set<strin
     foto_url: fotos.has(uf) ? `${BASE}/urna/${ano}/${uf}/${sq}.jpg` : fotoNoTse(ano, sq, l[11] ?? uf),
     total_votos: l[9],
     municipios_com_voto: l[10],
+    segundo_turno: segundoTurnoDe(ano, uf, l, indice),
   };
 }
 
@@ -203,7 +226,7 @@ export async function buscarCandidatos(o: {
   return achados
     .sort((a, b) => b[9] - a[9])
     .slice(0, o.limite ?? 40)
-    .map((l) => paraCandidato(o.ano, o.uf, l, fotos));
+    .map((l) => paraCandidato(o.ano, o.uf, l, fotos, indice));
 }
 
 /**
@@ -275,7 +298,7 @@ export async function listarCandidatos(o: {
     resultados,
     candidatos: filtrados
       .slice(pagina * porPagina, (pagina + 1) * porPagina)
-      .map((l) => paraCandidato(o.ano, fonte, l, fotos)),
+      .map((l) => paraCandidato(o.ano, fonte, l, fotos, indice)),
   };
 }
 
@@ -338,8 +361,8 @@ async function linhaPorId(id: number) {
   const { ano, uf, chave } = decodificarId(id);
   if (!uf) return null;
   const indice = await lerIndice(ano, uf);
-  const l = indice?.find((x) => x[0] === chave);
-  return l ? { ano, uf, l } : null;
+  const l = indice ? linhaPorChave(indice, chave) : null;
+  return l && indice ? { ano, uf, l, indice } : null;
 }
 
 /**
@@ -372,7 +395,7 @@ export async function raioX(id: number, ufMapa?: string | null) {
     : [];
   const somar = (k: keyof BaseMunicipio) => unidade.reduce((s, b) => s + b[k], 0);
   return {
-    candidato: paraCandidato(ano, uf, l, fotos),
+    candidato: paraCandidato(ano, uf, l, fotos, achado.indice),
     votos_por_municipio: porMunicipio,
     votos_por_uf: votosPorUf,
     top_municipios: top,
@@ -583,7 +606,7 @@ export async function quocienteDe(id: number) {
   const eleitosDaChapa = daChapa.filter((x) => ELEITO.test(x[7]));
   const ultimoEleito = eleitosDaChapa[eleitosDaChapa.length - 1] ?? null;
   const primeiroSuplente = daChapa.find((x) => x[7] === "SUPLENTE") ?? null;
-  const resumo = (x: LinhaIndice) => paraCandidato(ano, uf, x, fotos);
+  const resumo = (x: LinhaIndice) => paraCandidato(ano, uf, x, fotos, indice);
 
   return {
     ue: ue.ue,
@@ -664,9 +687,9 @@ export async function trajetoriaDe(id: number) {
   const lidas = await Promise.all(
     outras.map(async ([a, u, k]) => {
       const indice = await lerIndice(a, u);
-      const x = indice?.find((y) => y[0] === k);
+      const x = indice ? linhaPorChave(indice, k) : null;
       if (!x) return null;
-      return paraCandidato(a, u, x, await ufsComFoto(a));
+      return paraCandidato(a, u, x, await ufsComFoto(a), indice);
     }),
   );
   return lidas
@@ -690,7 +713,7 @@ export async function fichaDe(id: number) {
 export async function candidatoPorId(id: number) {
   const achado = await linhaPorId(id);
   if (!achado) return null;
-  return paraCandidato(achado.ano, achado.uf, achado.l, await ufsComFoto(achado.ano));
+  return paraCandidato(achado.ano, achado.uf, achado.l, await ufsComFoto(achado.ano), achado.indice);
 }
 
 /** Ids de quem teve voto no 1º turno, do mais ao menos votado (sitemap). */

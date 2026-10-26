@@ -88,7 +88,7 @@ export default async function PaginaCandidato({ params }: Params) {
               {ficha?.chapa && ficha.chapa !== c.partido_sigla ? ` · ${ficha.chapa}` : ""}
             </p>
             <div className="mt-2">
-              <SeloResultado situacao={c.situacao} />
+              <SeloResultado situacao={c.situacao} segundo={c.segundo_turno} />
             </div>
           </div>
         </section>

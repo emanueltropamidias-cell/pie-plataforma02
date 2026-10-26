@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Scale, Trophy } from "lucide-react";
+import { ArrowUpRight, Repeat, Scale, Trophy } from "lucide-react";
 import { CARGOS_PROPORCIONAIS, ondeDisputa } from "@/lib/eleicao";
 import { FotoUrna } from "@/components/estrategia/seletor-candidatos";
 import type { CandidatoBusca, RaioXCandidato } from "@/components/estrategia/painel-estrategia-eleitoral";
@@ -39,12 +39,21 @@ type Quociente = {
   eleitos: Candidato[];
 };
 
-export function AbaEleicao({ raioX, onEscolher }: { raioX: RaioXCandidato; onEscolher: (c: CandidatoBusca) => void }) {
+export function AbaEleicao({
+  raioX,
+  onEscolher,
+  ufMapa,
+}: {
+  raioX: RaioXCandidato;
+  onEscolher: (c: CandidatoBusca) => void;
+  /** Estado do mapa (para o presidente, cuja votação é do Brasil todo). */
+  ufMapa: string;
+}) {
   const c = raioX.candidato;
   return CARGOS_PROPORCIONAIS.has(c.cargo) ? (
     <Proporcional raioX={raioX} onEscolher={onEscolher} />
   ) : (
-    <Majoritaria raioX={raioX} onEscolher={onEscolher} />
+    <Majoritaria raioX={raioX} onEscolher={onEscolher} ufMapa={ufMapa} />
   );
 }
 
@@ -199,7 +208,7 @@ function Mini({ rotulo, valor, nota }: { rotulo: string; valor: string; nota?: s
   );
 }
 
-function Majoritaria({ raioX, onEscolher }: { raioX: RaioXCandidato; onEscolher: (c: CandidatoBusca) => void }) {
+function Majoritaria({ raioX, onEscolher, ufMapa }: { raioX: RaioXCandidato; onEscolher: (c: CandidatoBusca) => void; ufMapa: string }) {
   const c = raioX.candidato;
   const [lista, setLista] = useState<{ chave: string; candidatos: Candidato[] } | null>(null);
   const chave = `${c.ano}|${c.uf}|${c.cargo}|${c.nm_ue}`;
@@ -232,7 +241,10 @@ function Majoritaria({ raioX, onEscolher }: { raioX: RaioXCandidato; onEscolher:
   const maior = candidatos[0]?.total_votos ?? 1;
   const segundoTurno = candidatos.some((x) => x.situacao === "2º TURNO");
 
+  const finalistas = candidatos.filter((x) => x.segundo_turno);
+
   return (
+    <div className="space-y-4">
     <div className={CAIXA}>
       <Titulo
         icone={<Trophy size={13} />}
@@ -252,7 +264,7 @@ function Majoritaria({ raioX, onEscolher }: { raioX: RaioXCandidato; onEscolher:
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 flex-wrap items-center gap-1.5">
                 <span className="truncate text-[12.5px] font-bold text-tinta-900">{x.nome_urna}</span>
-                <SeloResultado situacao={x.situacao} />
+                <SeloResultado situacao={x.situacao} segundo={x.segundo_turno} />
               </span>
               <span className="mt-1 block"><Barra valor={x.total_votos} maximo={maior} /></span>
             </span>
@@ -261,6 +273,133 @@ function Majoritaria({ raioX, onEscolher }: { raioX: RaioXCandidato; onEscolher:
               <span className="tabular block text-[11px] text-tinta-500">{fmt(x.total_votos)}</span>
             </span>
           </button>
+        ))}
+      </div>
+    </div>
+    {finalistas.length === 2 && <SegundoTurno finalistas={finalistas} ufMapa={ufMapa} presidente={c.cargo === "PRESIDENTE"} onEscolher={onEscolher} />}
+    </div>
+  );
+}
+
+// ── DO 1º PARA O 2º TURNO ───────────────────────────────────────────────────
+//
+// Os dois finalistas, cidade a cidade: quanto cada um ganhou entre as voltas.
+// É de onde vieram os votos que decidiram a eleição — o eleitor de quem ficou
+// pelo caminho no 1º turno escolhendo um lado.
+
+type Volta = { municipio: string; t1: number; t2: number; ganho: number };
+
+function SegundoTurno({
+  finalistas,
+  ufMapa,
+  presidente,
+  onEscolher,
+}: {
+  finalistas: Candidato[];
+  ufMapa: string;
+  presidente: boolean;
+  onEscolher: (c: CandidatoBusca) => void;
+}) {
+  const ids = finalistas.flatMap((f) => [f.id, f.segundo_turno!.id]);
+  const chave = `${ids.join(",")}|${ufMapa}`;
+  const [dados, setDados] = useState<{ chave: string; r: (RaioXCandidato | null)[] } | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    Promise.all(
+      ids.map((id) =>
+        fetch(`/api/eleicao?candidatoId=${id}${presidente ? `&uf=${ufMapa}` : ""}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
+      ),
+    ).then((r) => vivo && setDados({ chave, r }));
+    return () => {
+      vivo = false;
+    };
+    // ids muda de identidade a cada render; a chave resume o que importa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chave]);
+
+  const r = dados?.chave === chave ? dados.r : null;
+  if (!r) return <div className={CAIXA}><Carregando linhas={4} /></div>;
+
+  const lados = finalistas.map((f, i) => {
+    const t1 = r[i * 2]?.votos_por_municipio ?? {};
+    const t2 = r[i * 2 + 1]?.votos_por_municipio ?? {};
+    const cidades: Volta[] = [...new Set([...Object.keys(t1), ...Object.keys(t2)])].map((m) => ({
+      municipio: m,
+      t1: t1[m] ?? 0,
+      t2: t2[m] ?? 0,
+      ganho: (t2[m] ?? 0) - (t1[m] ?? 0),
+    }));
+    const soma = (k: "t1" | "t2") => cidades.reduce((s, x) => s + x[k], 0);
+    return { f, cidades, total1: soma("t1"), total2: soma("t2") };
+  });
+  if (lados.some((l) => !l.cidades.length)) return null;
+
+  // Cidades que mudaram de vencedor entre as voltas.
+  const virou = lados[0].cidades
+    .map((a) => {
+      const b = lados[1].cidades.find((x) => x.municipio === a.municipio);
+      if (!b) return null;
+      const v1 = a.t1 === b.t1 ? null : a.t1 > b.t1 ? 0 : 1;
+      const v2 = a.t2 === b.t2 ? null : a.t2 > b.t2 ? 0 : 1;
+      return v1 !== null && v2 !== null && v1 !== v2 ? { municipio: a.municipio, para: v2 } : null;
+    })
+    .filter((x): x is { municipio: string; para: number } => !!x);
+
+  return (
+    <div className={CAIXA}>
+      <Titulo
+        icone={<Repeat size={13} />}
+        sobre={`Do 1º para o 2º turno${presidente ? ` · em ${ufMapa}` : ""}`}
+        titulo={`${lados[0].f.nome_urna} × ${lados[1].f.nome_urna}`}
+        nota={`${virou.length} ${virou.length === 1 ? "cidade mudou" : "cidades mudaram"} de vencedor entre as voltas.`}
+      />
+      <div className="grid gap-4 md:grid-cols-2">
+        {lados.map(({ f, cidades, total1, total2 }, i) => (
+          <div key={f.id} className="min-w-0">
+            <button onClick={() => onEscolher(f)} className="flex w-full min-w-0 items-center gap-2.5 rounded-xl p-1.5 text-left hover:bg-tinta-50">
+              <FotoUrna src={f.foto_url} nome={f.nome_urna} tamanho={40} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[12.5px] font-bold text-tinta-900">{f.nome_urna}</span>
+                <SeloResultado situacao={f.situacao} segundo={f.segundo_turno} />
+              </span>
+            </button>
+            <p className="mt-2 text-[12.5px] text-tinta-700">
+              <b className="tabular">{fmt(total1)}</b> → <b className="tabular">{fmt(total2)}</b> votos{" "}
+              <span className={total2 >= total1 ? "font-bold text-emerald-700" : "font-bold text-rose-700"}>
+                ({total2 >= total1 ? "+" : ""}
+                {fmt(total2 - total1)})
+              </span>
+            </p>
+            <p className="mb-1.5 mt-3 flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-tinta-500">
+              <ArrowUpRight size={12} /> Onde mais ganhou
+            </p>
+            {[...cidades]
+              .sort((a, b) => b.ganho - a.ganho)
+              .slice(0, 8)
+              .map((x) => (
+                <div key={x.municipio} className="flex min-w-0 items-center gap-2 py-0.5 text-[12px]">
+                  <span className="min-w-0 flex-1 truncate text-tinta-800">{x.municipio}</span>
+                  <span className="tabular shrink-0 text-tinta-500">
+                    {fmt(x.t1)} → {fmt(x.t2)}
+                  </span>
+                  <span className="tabular w-16 shrink-0 text-right font-bold text-emerald-700">+{fmt(x.ganho)}</span>
+                </div>
+              ))}
+            {virou.filter((v) => v.para === i).length > 0 && (
+              <p className="mt-2 text-[11.5px] text-tinta-600">
+                Virou a seu favor:{" "}
+                {virou
+                  .filter((v) => v.para === i)
+                  .slice(0, 6)
+                  .map((v) => v.municipio)
+                  .join(", ")}
+                {virou.filter((v) => v.para === i).length > 6 ? "…" : ""}
+              </p>
+            )}
+          </div>
         ))}
       </div>
     </div>
