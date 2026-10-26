@@ -37,7 +37,7 @@ import { municipiosDaUf } from "@/lib/estados";
 import { CANDIDATO } from "@/lib/candidato";
 import UFS from "@/lib/ufs.json";
 import APELIDOS_MUNICIPIOS from "@/lib/municipios-apelidos.json";
-import { FotoUrna, SeletorCandidatos } from "@/components/estrategia/seletor-candidatos";
+import { FotoUrna, ROTULO_RESULTADO, SeletorCandidatos, type ContagemResultados } from "@/components/estrategia/seletor-candidatos";
 
 // Central de Estratégia: os dados do TSE de 2022, 2024 e 2026, Brasil inteiro.
 //
@@ -140,10 +140,17 @@ export function PainelEstrategiaEleitoral({
 
   // Cargos e partidos que EXISTEM no estado e eleição abertos, vindos do
   // seletor de candidatos. Antes eram 30 partidos escritos à mão.
-  const [opcoes, setOpcoes] = useState<{ cargos: { valor: string; n: number }[]; partidos: { valor: string; n: number }[] }>({
+  const [opcoes, setOpcoes] = useState<{
+    cargos: { valor: string; n: number }[];
+    partidos: { valor: string; n: number }[];
+    resultados: ContagemResultados;
+  }>({
     cargos: [],
     partidos: [],
+    resultados: { eleito: 0, segundo: 0, suplente: 0, nao: 0 },
   });
+  // Filtro da lista de candidatos por resultado (eleitos, suplentes…).
+  const [resultadoFiltro, setResultadoFiltro] = useState<string>("TODOS");
 
   // Camadas de navegação e abas
   // Prefeito e vereador abrem na própria cidade: o mapa do estado teria uma
@@ -274,11 +281,13 @@ export function PainelEstrategiaEleitoral({
   }
 
   function trocarEleicao(novoAno: number, novoCargo: string) {
+    if (novoAno !== anoFiltro) setResultadoFiltro("TODOS");
     setAnoFiltro(novoAno);
     setCargoFiltro(novoCargo);
     const uf = ufsDeAno(novoAno).includes(ufFiltro) || ufFiltro === "BR" ? ufFiltro : CANDIDATO.uf;
-    // Presidente só existe no índice nacional.
-    return abrirDestaque({ ano: novoAno, uf: novoCargo === "PRESIDENTE" ? "BR" : uf, cargo: novoCargo, partido: partidoFiltro });
+    // Presidente escolhido dentro de um estado: o mais votado do Brasil, com o
+    // mapa no estado aberto (a API busca no índice nacional).
+    return abrirDestaque({ ano: novoAno, uf, cargo: novoCargo, partido: partidoFiltro });
   }
 
   function trocarPartido(partido: string) {
@@ -502,6 +511,17 @@ export function PainelEstrategiaEleitoral({
                 ))}
             </select>
 
+            <select value={resultadoFiltro} onChange={(e) => setResultadoFiltro(e.target.value)} className={SELECT} aria-label="Resultado">
+              <option value="TODOS">Todos os resultados</option>
+              {(Object.keys(ROTULO_RESULTADO) as (keyof ContagemResultados)[])
+                .filter((r) => opcoes.resultados[r] > 0 || resultadoFiltro === r)
+                .map((r) => (
+                  <option key={r} value={r}>
+                    {ROTULO_RESULTADO[r]} ({opcoes.resultados[r]})
+                  </option>
+                ))}
+            </select>
+
             <div className="relative w-full sm:w-64">
               <div className="relative">
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -560,6 +580,7 @@ export function PainelEstrategiaEleitoral({
         uf={ufFiltro}
         cargo={cargoFiltro}
         partido={partidoFiltro}
+        resultado={resultadoFiltro}
         idAtual={c.id}
         onEscolher={selecionarCandidato}
         onOpcoes={setOpcoes}

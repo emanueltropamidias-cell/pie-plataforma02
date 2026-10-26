@@ -30,7 +30,7 @@ import {
 //   ?candidatoId=<id>&municipio=SALVADOR          camada municipal
 //   ?destaque=1&ano=2024&uf=MG[&cargo=…]          o mais votado
 //   ?aleatorio=1&ano=2024&uf=MG[&cargo=…][&partido=…]   um qualquer do estado
-//   ?lista=1&ano=2022&uf=SP[&cargo][&partido][&q][&pagina]   seletor de candidatos
+//   ?lista=1&ano=2022&uf=SP[&cargo][&partido][&resultado][&q][&pagina]   seletor de candidatos
 //   ?candidatoId=<id>&extra=quociente|contas|trajetoria|ficha   abas do painel
 //   ?cidade=SALVADOR&ano=2022&uf=BA                apuração e perfil do eleitorado
 //
@@ -102,6 +102,7 @@ export async function GET(request: Request) {
         uf,
         cargo,
         partido,
+        resultado: (["eleito", "segundo", "suplente", "nao"] as const).find((r) => r === sp.get("resultado")) ?? null,
         q: sp.get("q"),
         pagina: parseInt(sp.get("pagina") ?? "0", 10) || 0,
       }),

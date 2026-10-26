@@ -211,16 +211,32 @@ export async function buscarCandidatos(o: {
  * cargos e partidos que existem ali (para os filtros saírem do dado, e não de
  * lista escrita à mão).
  */
+/** Resultado da candidatura em quatro grupos, para o filtro da lista. */
+export type GrupoResultado = "eleito" | "segundo" | "suplente" | "nao";
+export function grupoResultado(situacao: string): GrupoResultado | null {
+  const s = (situacao || "").toUpperCase();
+  if (s.startsWith("ELEITO")) return "eleito";
+  if (s === "2º TURNO") return "segundo";
+  if (s === "SUPLENTE") return "suplente";
+  if (s === "NÃO ELEITO") return "nao";
+  return null; // "#NULO": candidatura sem voto válido
+}
+
 export async function listarCandidatos(o: {
   ano: number;
   uf: string;
   cargo?: string | null;
   partido?: string | null;
+  resultado?: GrupoResultado | null;
   q?: string | null;
   pagina?: number;
   porPagina?: number;
 }) {
-  const indice = (await lerIndice(o.ano, o.uf)) ?? [];
+  // O presidente mora no índice nacional ("BR"), não no do estado: sem isto o
+  // cargo nem aparecia na lista de um estado (pedido do Emanuel, 26/10/2026).
+  const geral = o.ano % 4 === 2;
+  const fonte = o.cargo === "PRESIDENTE" && geral ? "BR" : o.uf;
+  const indice = (await lerIndice(o.ano, fonte)) ?? [];
   const fotos = await ufsComFoto(o.ano);
   const primeiroTurno = indice.filter((l) => l[1] === 1);
   const doCargo = primeiroTurno.filter((l) => !o.cargo || l[2] === o.cargo);
@@ -231,21 +247,35 @@ export async function listarCandidatos(o: {
   };
   const q = o.q ? normalizar(o.q) : "";
   const palavras = q.split(" ").filter(Boolean);
-  const filtrados = doCargo
-    .filter((l) => !o.partido || l[6] === o.partido)
+  const doPartido = doCargo.filter((l) => !o.partido || l[6] === o.partido);
+  const filtrados = doPartido
+    .filter((l) => !o.resultado || grupoResultado(l[7]) === o.resultado)
     .filter((l) => !palavras.length || palavras.every((p) => normalizar(`${l[3]} ${l[4]} ${l[5]} ${l[8]}`).includes(p)))
     .sort((a, b) => b[9] - a[9]);
   const porPagina = o.porPagina ?? 48;
   const pagina = Math.max(0, o.pagina ?? 0);
+  // Cargos do estado + presidente (do índice nacional) na eleição geral.
+  const doEstado = fonte === o.uf ? primeiroTurno : ((await lerIndice(o.ano, o.uf)) ?? []).filter((l) => l[1] === 1);
+  const cargos = contar(doEstado.filter((l) => l[9] > 0), 2);
+  if (geral && o.uf !== "BR" && !cargos.some((c) => c.valor === "PRESIDENTE")) {
+    const br = ((await lerIndice(o.ano, "BR")) ?? []).filter((l) => l[1] === 1 && l[2] === "PRESIDENTE" && l[9] > 0);
+    if (br.length) cargos.push({ valor: "PRESIDENTE", n: br.length });
+  }
+  const resultados = { eleito: 0, segundo: 0, suplente: 0, nao: 0 };
+  for (const l of doPartido) {
+    const g = grupoResultado(l[7]);
+    if (g) resultados[g]++;
+  }
   return {
     total: filtrados.length,
     // Só cargo com voto próprio: vice e suplente não recebem voto (vai para o
     // titular), e escolher um deles dava uma lista inteira de zeros.
-    cargos: contar(primeiroTurno.filter((l) => l[9] > 0), 2),
+    cargos,
     partidos: contar(doCargo, 6),
+    resultados,
     candidatos: filtrados
       .slice(pagina * porPagina, (pagina + 1) * porPagina)
-      .map((l) => paraCandidato(o.ano, o.uf, l, fotos)),
+      .map((l) => paraCandidato(o.ano, fonte, l, fotos)),
   };
 }
 
@@ -270,6 +300,8 @@ export async function aleatorio(ano: number, uf: string, cargo?: string | null, 
  * sempre o governador ou o prefeito da capital, de qualquer jeito).
  */
 export async function destaque(ano: number, uf: string, cargo?: string | null, partido?: string | null) {
+  // Presidente pedido de dentro de um estado: o candidato está no índice "BR".
+  if (cargo === "PRESIDENTE" && uf !== "BR" && ano % 4 === 2) return destaque(ano, "BR", cargo, partido);
   const indice = await lerIndice(ano, uf);
   if (!indice) return null;
   const preferido = cargo ? null : uf === "BR" ? "PRESIDENTE" : ano % 4 === 0 ? "PREFEITO" : "GOVERNADOR";

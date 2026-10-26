@@ -12,10 +12,13 @@ import type { CandidatoBusca } from "@/components/estrategia/painel-estrategia-e
 // do mais votado ao menos, com a foto de urna. Escolher um partido no filtro
 // já lista os candidatos dele — sem precisar digitar nada.
 
+export type ContagemResultados = { eleito: number; segundo: number; suplente: number; nao: number };
+
 type Lista = {
   total: number;
   cargos: { valor: string; n: number }[];
   partidos: { valor: string; n: number }[];
+  resultados: ContagemResultados;
   candidatos: (CandidatoBusca & { total_votos: number })[];
 };
 
@@ -70,11 +73,19 @@ export function FotoUrna({
   );
 }
 
+export const ROTULO_RESULTADO: Record<string, string> = {
+  eleito: "Eleitos",
+  segundo: "Foram ao 2º turno",
+  suplente: "Suplentes",
+  nao: "Não eleitos",
+};
+
 export function SeletorCandidatos({
   ano,
   uf,
   cargo,
   partido,
+  resultado = "TODOS",
   idAtual,
   onEscolher,
   onOpcoes,
@@ -83,10 +94,12 @@ export function SeletorCandidatos({
   uf: string;
   cargo: string;
   partido: string;
+  /** "eleito" | "segundo" | "suplente" | "nao" | "TODOS" */
+  resultado?: string;
   idAtual: number;
   onEscolher: (c: CandidatoBusca) => void;
   /** Cargos e partidos que existem neste estado e eleição — alimentam os filtros. */
-  onOpcoes?: (o: { cargos: Lista["cargos"]; partidos: Lista["partidos"] }) => void;
+  onOpcoes?: (o: { cargos: Lista["cargos"]; partidos: Lista["partidos"]; resultados: ContagemResultados }) => void;
 }) {
   const [aberto, setAberto] = useState(false);
   const [q, setQ] = useState("");
@@ -94,7 +107,7 @@ export function SeletorCandidatos({
   const [lista, setLista] = useState<{ chave: string; dados: Lista } | null>(null);
   const [extras, setExtras] = useState<Lista["candidatos"]>([]);
 
-  const chave = `${ano}|${uf}|${cargo}|${partido}|${q}`;
+  const chave = `${ano}|${uf}|${cargo}|${partido}|${resultado}|${q}`;
   const carregando = lista?.chave !== chave;
 
   useEffect(() => {
@@ -103,6 +116,7 @@ export function SeletorCandidatos({
       const p = new URLSearchParams({ lista: "1", ano: String(ano), uf });
       if (cargo !== "TODOS") p.set("cargo", cargo);
       if (partido !== "TODOS") p.set("partido", partido);
+      if (resultado !== "TODOS") p.set("resultado", resultado);
       if (q.trim()) p.set("q", q.trim());
       try {
         const r = await fetch(`/api/eleicao?${p}`);
@@ -113,15 +127,17 @@ export function SeletorCandidatos({
           total: bruto.total ?? 0,
           cargos: bruto.cargos ?? [],
           partidos: bruto.partidos ?? [],
+          resultados: bruto.resultados ?? { eleito: 0, segundo: 0, suplente: 0, nao: 0 },
           candidatos: bruto.candidatos ?? [],
         };
         if (!vivo) return;
         setLista({ chave, dados });
         setExtras([]);
         setPagina(0);
-        onOpcoes?.({ cargos: dados.cargos, partidos: dados.partidos });
+        onOpcoes?.({ cargos: dados.cargos, partidos: dados.partidos, resultados: dados.resultados });
       } catch {
-        if (vivo) setLista({ chave, dados: { total: 0, cargos: [], partidos: [], candidatos: [] } });
+        if (vivo)
+          setLista({ chave, dados: { total: 0, cargos: [], partidos: [], resultados: { eleito: 0, segundo: 0, suplente: 0, nao: 0 }, candidatos: [] } });
       }
     }, 200);
     return () => {
@@ -130,12 +146,13 @@ export function SeletorCandidatos({
     };
     // onOpcoes muda a cada render do pai; a lista só depende dos filtros.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chave, ano, uf, cargo, partido, q]);
+  }, [chave, ano, uf, cargo, partido, resultado, q]);
 
   async function maisCandidatos() {
     const p = new URLSearchParams({ lista: "1", ano: String(ano), uf, pagina: String(pagina + 1) });
     if (cargo !== "TODOS") p.set("cargo", cargo);
     if (partido !== "TODOS") p.set("partido", partido);
+    if (resultado !== "TODOS") p.set("resultado", resultado);
     if (q.trim()) p.set("q", q.trim());
     const dados: Lista = await (await fetch(`/api/eleicao?${p}`)).json();
     setExtras((e) => [...e, ...(dados.candidatos ?? [])]);
@@ -159,6 +176,7 @@ export function SeletorCandidatos({
               · {uf === "BR" ? "Brasil" : uf} · {ano}
               {cargo !== "TODOS" ? ` · ${cargo.toLowerCase()}` : ""}
               {partido !== "TODOS" ? ` · ${partido}` : ""}
+              {resultado !== "TODOS" ? ` · ${ROTULO_RESULTADO[resultado]?.toLowerCase() ?? resultado}` : ""}
             </span>
           </h2>
         </div>
