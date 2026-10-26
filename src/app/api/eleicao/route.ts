@@ -14,6 +14,7 @@ import {
   apuracaoDaCidade,
   contasDe,
   fichaDe,
+  partidoNoEstado,
   perfilDoEleitorado,
   quocienteDe,
   trajetoriaDe,
@@ -34,6 +35,7 @@ import {
 //   ?lista=1&ano=2022&uf=SP[&cargo][&partido][&resultado][&q][&pagina][&formato=csv]   seletor de candidatos (ou planilha)
 //   ?candidatoId=<id>&extra=quociente|contas|trajetoria|ficha   abas do painel
 //   ?cidade=SALVADOR&ano=2022&uf=BA                apuração e perfil do eleitorado
+//   ?partido_estado=1&ano&uf&cargo&sigla[&turno]   aba Partido
 //
 // O detalhe por LOCAL de votação (bairro) continua no banco, só para as
 // cidades-foco: é pequeno e tem consulta própria.
@@ -61,6 +63,13 @@ export async function GET(request: Request) {
     const leitor = { quociente: quocienteDe, contas: contasDe, trajetoria: trajetoriaDe, ficha: fichaDe }[extra];
     if (!leitor) return NextResponse.json({ erro: "extra desconhecido" }, { status: 400 });
     return NextResponse.json({ dados: await leitor(id) });
+  }
+
+  // Um partido num cargo do estado: votos por cidade e ranking dos partidos.
+  const siglaPartido = sp.get("sigla")?.trim();
+  if (sp.get("partido_estado") === "1" && uf && cargoParam && siglaPartido) {
+    const turno = parseInt(sp.get("turno") ?? "1", 10) || 1;
+    return NextResponse.json({ dados: await partidoNoEstado(ano, uf, cargoParam, turno, siglaPartido) });
   }
 
   // A cidade, sem candidato: comparecimento por cargo e perfil do eleitorado.

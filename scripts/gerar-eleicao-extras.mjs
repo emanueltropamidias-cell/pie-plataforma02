@@ -6,7 +6,7 @@
 //   node scripts/gerar-eleicao-extras.mjs --pessoas          (os três anos)
 //
 // Depois: `node scripts/subir-eleicao-arquivos.mjs --ano=2022 --confirmo
-//          --apenas="^(apuracao|quociente|perfil|contas|pessoas|ficha)/"`
+//          --apenas="^(apuracao|quociente|perfil|contas|pessoas|ficha|partido)/"`
 //
 // ── O QUE SAI, POR ANO ──────────────────────────────────────────────────────
 //
@@ -21,6 +21,9 @@
 //                        de escolaridade (perfil_eleitorado)
 //   contas/<UF>.json     por SQ_CANDIDATO: [receitas, despesas contratadas] da
 //                        prestação mais definitiva, em reais inteiros
+//   partido/<UF>.json    por "CARGO|turno", partido e município: votos do
+//                        partido (nominais + legenda), todos os cargos; o
+//                        presidente vem do arquivo _BR, repartido por estado
 //   ficha/<UF>.json      por chave do candidato: [gênero, nascimento,
 //                        instrução, ocupação, chapa] (consulta_cand)
 //   pessoas/<UF>.json    por chave: todas as candidaturas da mesma pessoa em
@@ -172,6 +175,40 @@ async function quociente(ano, escrever) {
     n++;
   }
   console.log(`quociente ${ano}: ${n} estados`);
+}
+
+// ── VOTOS DE CADA PARTIDO POR MUNICÍPIO ─────────────────────────────────────
+//
+// A aba Partido soma o partido inteiro numa cidade. Somar os candidatos um a
+// um pediria um arquivo por candidato (centenas) a cada abertura; o TSE já
+// entrega a soma pronta, com o voto de legenda junto.
+
+async function partidos(ano, escrever) {
+  const z = zip(`votacao_partido_munzona_${ano}.zip`);
+  if (!z) return console.log(`partido ${ano}: zip ausente`);
+  const dentro = noZip(z);
+  const porUf = new Map(); // uf → { "CARGO|turno": { sigla: { mun: votos } } }
+  const ler = (nome, ufFixo) =>
+    lerCsv(z, nome, (v) => {
+      const uf = ufFixo ?? v("SG_UF");
+      if (!SIGLAS.includes(uf)) return; // exterior
+      const k = `${(v("DS_CARGO") || "").toUpperCase()}|${inteiro(v("NR_TURNO")) || 1}`;
+      const votos = inteiro(v("QT_VOTOS_NOMINAIS_VALIDOS")) + inteiro(v("QT_TOTAL_VOTOS_LEG_VALIDOS"));
+      if (!votos) return;
+      const e = porUf.get(uf) ?? {};
+      porUf.set(uf, e);
+      const m = ((e[k] ??= {})[v("SG_PARTIDO")] ??= {});
+      const mun = v("NM_MUNICIPIO");
+      m[mun] = (m[mun] ?? 0) + votos;
+    });
+  for (const uf of SIGLAS) {
+    const nome = `votacao_partido_munzona_${ano}_${uf}.csv`;
+    if (dentro.has(nome)) await ler(nome, uf);
+  }
+  const br = `votacao_partido_munzona_${ano}_BR.csv`;
+  if (dentro.has(br)) await ler(br, null);
+  for (const [uf, e] of porUf) escrever(`partido/${uf}.json`, e);
+  console.log(`partido ${ano}: ${porUf.size} estados`);
 }
 
 // ── PERFIL DO ELEITORADO ────────────────────────────────────────────────────
@@ -333,10 +370,11 @@ if (args.includes("--pessoas")) {
   await pessoas();
 } else {
   const ano = parseInt(arg("ano", "2022"), 10);
-  const so = new Set(arg("so", "apuracao,quociente,perfil,contas").split(","));
+  const so = new Set(arg("so", "apuracao,quociente,perfil,contas,partido").split(","));
   const escrever = escritor(ano);
   if (so.has("apuracao")) await apuracao(ano, escrever);
   if (so.has("quociente")) await quociente(ano, escrever);
   if (so.has("perfil")) await perfil(ano, escrever);
   if (so.has("contas")) await contas(ano, escrever);
+  if (so.has("partido")) await partidos(ano, escrever);
 }

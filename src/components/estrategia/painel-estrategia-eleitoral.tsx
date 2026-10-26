@@ -23,6 +23,7 @@ import {
   Percent,
   ExternalLink,
   Download,
+  Flag,
 } from "lucide-react";
 import { MapaBrasil } from "@/components/estrategia/mapa-brasil";
 import { MapaVotos, type BaseCidade, type MedidaMapa } from "@/components/estrategia/mapa-votos";
@@ -32,6 +33,7 @@ import { AbaComparar } from "@/components/estrategia/aba-comparar";
 import { AbaTrajetoria } from "@/components/estrategia/aba-trajetoria";
 import { AbaGastos } from "@/components/estrategia/aba-gastos";
 import { AbaPerguntar } from "@/components/estrategia/aba-perguntar";
+import { AbaPartido } from "@/components/estrategia/aba-partido";
 import { SeloResultado, fmt, pct } from "@/components/estrategia/comum";
 import { CARGOS_PROPORCIONAIS, chave, fotoDoCandidato, ondeDisputa } from "@/lib/eleicao";
 import { municipiosDaUf } from "@/lib/estados";
@@ -102,11 +104,12 @@ const ESTADOS_BR = [{ uf: "BR", nome: "Brasil (Visão Nacional)" }, ...UFS];
 const ANOS = [2026, 2024, 2022];
 const MUNICIPAIS = new Set(["PREFEITO", "VEREADOR"]);
 
-type Aba = "mapa" | "eleicao" | "comparar" | "trajetoria" | "gastos" | "perguntar";
+type Aba = "mapa" | "eleicao" | "partido" | "comparar" | "trajetoria" | "gastos" | "perguntar";
 
 const ABAS: { id: Aba; rotulo: string; icone: typeof IconeMapa }[] = [
   { id: "mapa", rotulo: "Mapa", icone: IconeMapa },
   { id: "eleicao", rotulo: "Eleição", icone: Scale },
+  { id: "partido", rotulo: "Partido", icone: Flag },
   { id: "comparar", rotulo: "Comparar", icone: GitCompare },
   { id: "trajetoria", rotulo: "Trajetória", icone: History },
   { id: "gastos", rotulo: "Gastos", icone: Wallet },
@@ -649,6 +652,7 @@ export function PainelEstrategiaEleitoral({
       </nav>
 
       {aba === "eleicao" && <AbaEleicao key={c.id} raioX={raioX} onEscolher={selecionarCandidato} ufMapa={ufMapa} />}
+      {aba === "partido" && <AbaPartido key={`${c.id}|${ufMapa}`} raioX={raioX} ufMapa={ufMapa} onAbrirMunicipio={transitarParaMunicipio} />}
       {aba === "comparar" && <AbaComparar key={`${c.id}|${ufMapa}`} raioX={raioX} ufMapa={ufMapa} />}
       {aba === "trajetoria" && <AbaTrajetoria key={c.id} raioX={raioX} onEscolher={selecionarCandidato} />}
       {aba === "gastos" && <AbaGastos key={c.id} raioX={raioX} />}

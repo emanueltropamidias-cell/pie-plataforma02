@@ -724,3 +724,33 @@ export async function idsComVoto(ano: number, uf: string) {
     .sort((a, b) => b[9] - a[9])
     .map((l) => codificarId(ano, uf, l[0]));
 }
+
+// ── VOTOS DO PARTIDO ────────────────────────────────────────────────────────
+//
+// <ano>/partido/<UF>.json: "CARGO|turno" → partido → município → votos
+// (nominais + legenda). Gerado de votacao_partido_munzona do TSE.
+
+type PartidoArquivo = Record<string, Record<string, Record<string, number>>>;
+
+/** O partido num cargo do estado, cidade a cidade, e o ranking dos partidos. */
+export async function partidoNoEstado(ano: number, uf: string, cargo: string, turno: number, sigla: string) {
+  const arq = await lerDoAno<PartidoArquivo>(ano, `partido/${uf}.json`);
+  const doCargo = arq?.[`${cargo}|${turno}`];
+  if (!doCargo) return null;
+  const soma = (m: Record<string, number>) => Object.values(m).reduce((s, v) => s + v, 0);
+  const totalCargo = Object.values(doCargo).reduce((s, m) => s + soma(m), 0);
+  // Total do cargo em cada cidade: a fatia do partido ali.
+  const totalPorCidade: Record<string, number> = {};
+  for (const m of Object.values(doCargo)) for (const [c, v] of Object.entries(m)) totalPorCidade[c] = (totalPorCidade[c] ?? 0) + v;
+  const doPartido = doCargo[sigla] ?? {};
+  return {
+    sigla,
+    votos_por_municipio: doPartido,
+    total: soma(doPartido),
+    total_cargo: totalCargo,
+    total_por_cidade: totalPorCidade,
+    partidos: Object.entries(doCargo)
+      .map(([p, m]) => ({ sigla: p, votos: soma(m) }))
+      .sort((a, b) => b.votos - a.votos),
+  };
+}
