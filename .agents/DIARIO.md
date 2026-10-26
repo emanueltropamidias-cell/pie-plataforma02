@@ -5,7 +5,7 @@ cada ação concluída.
 
 ## Em andamento
 
-- 24/10/2026 · Claude · Estratégia v2 está na `main` e no GitHub, mas NÃO na produção: a Vercel não publica sozinha a partir do GitHub, e a última publicação é de 16/10 (antes também das entregas de 20–22/10). Publicar: `npx vercel deploy --prod` na pasta (o Emanuel roda; a trava do Claude Code bloqueia publicação em produção). Depois de publicar: testar a aba Perguntar logado (a `ANTHROPIC_API_KEY` existe na Vercel). Depois de 25/10: regerar 2026 com o 2º turno; quando o TSE fechar, as contas de 2026 (`scripts/gerar-eleicao-extras.mjs`).
+- 24/10/2026 · Claude · Estratégia v2 está na `main` e no GitHub, mas NÃO na produção: a Vercel não publica sozinha a partir do GitHub, e a última publicação é de 16/10 (antes também das entregas de 20–22/10). Publicar: `npx vercel deploy --prod` na pasta (o Emanuel roda; a trava do Claude Code bloqueia publicação em produção). Depois de publicar: testar a aba Perguntar logado (a `ANTHROPIC_API_KEY` existe na Vercel). 2º turno de 2026: os arquivos do TSE de 25/10 foram gerados às 12h58 (antes do fim da votação) e ainda não têm o 2º turno; regerado e subido mesmo assim (cadastro atualizado). Quando o TSE publicar o 2º turno (`PRESIDENTE|2` aparece em `apuracao/BA.json`), rodar `gerar-eleicao-arquivos.mjs --ano=2026`, depois `gerar-eleicao-extras.mjs --ano=2026` e `--pessoas` (o primeiro APAGA a pasta do ano) e subir; quando o TSE fechar, as contas de 2026 (`scripts/gerar-eleicao-extras.mjs`).
 
 ## Feito (mais recente no topo)
 
@@ -22,6 +22,8 @@ cada ação concluída.
 - 20/10/2026 · — · fotos de urna maiores · `fbf99c3`
 
 ## Armadilhas
+
+- `gerar-eleicao-arquivos.mjs --ano=X` (sem `--uf`) apaga `.cache/eleicao-arquivos/X/` inteira, inclusive os extras: sempre rodar `gerar-eleicao-extras.mjs --ano=X` e `--pessoas` logo depois.
 
 - O `origin` tinha um token do GitHub dentro do endereço (`https://usuario:ghp_…@github.com/…`) e uma linha vazia de `credential.helper` no `.git/config`. Os dois foram tirados em 24/10: o envio usa o login do `gh` (conta com permissão no repositório). Nunca pôr token no endereço do remoto.
 
