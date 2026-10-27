@@ -166,7 +166,12 @@ function linhaPorChave(indice: LinhaIndice[], chave: number) {
 function segundoTurnoDe(ano: number, uf: string, l: LinhaIndice, indice?: LinhaIndice[] | null) {
   if (!indice || l[1] !== 1 || l[7] !== "2º TURNO") return null;
   const x = linhaPorChave(indice, Math.floor(l[0] / 10) * 10 + 2);
-  return x ? { id: codificarId(ano, uf, x[0]), situacao: x[7], votos: x[9] } : null;
+  // O TSE cadastra o 2º turno antes de publicar a apuração: a linha existe com
+  // "#NULO" e zero voto. Em 26/10/2026 isso fez Lula e Flávio aparecerem como
+  // "não eleito no 2º turno, 0 votos". Sem resultado apurado, não há 2º turno
+  // para mostrar — o selo fica em "foi ao 2º turno".
+  if (!x || !x[9] || !/ELEITO/.test(x[7])) return null;
+  return { id: codificarId(ano, uf, x[0]), situacao: x[7], votos: x[9] };
 }
 
 function paraCandidato(ano: number, uf: string, l: LinhaIndice, fotos: Set<string>, indice?: LinhaIndice[] | null) {
