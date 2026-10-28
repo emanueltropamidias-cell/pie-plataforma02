@@ -12,8 +12,6 @@ import { CompartilharLideranca } from "./compartilhar-lideranca";
 import { Cabecalho } from "@/components/ui/pagina";
 import { CANDIDATO } from "@/lib/candidato";
 
-const SITE_URL = CANDIDATO.site;
-
 function waNum(tel: string | null) {
   const d = (tel || "").replace(/\D/g, "");
   if (!d) return "";
@@ -25,7 +23,7 @@ function waNum(tel: string | null) {
 const gerarCod = gerarLinkCode;
 function mensagemAcesso(nome: string, code: string) {
   const prim = (nome || "").split(" ")[0] || "";
-  return `Olá${prim ? ", " + prim : ""}! Aqui está o seu acesso ao painel da *Talita Oliveira · Bahia*.\n\nPasso a passo:\n1) Acesse: ${SITE_URL}\n2) Toque em "🔑 Sou liderança — acessar meu painel"\n3) Toque em "Primeiro acesso? Criar com código de vínculo"\n4) Crie o seu e-mail e senha\n5) Cole este código: *${code}*\n\nPronto! Você vai ver a sua rede e poderá cadastrar pessoas. 💙💚`;
+  return `Olá${prim ? ", " + prim : ""}! Aqui está o seu acesso ao *ManuFlow*, o painel da campanha.\n\nPasso a passo:\n1) Acesse: ${CANDIDATO.app}\n2) Toque em "🔑 Sou liderança — acessar meu painel"\n3) Toque em "Primeiro acesso? Criar com código de vínculo"\n4) Crie o seu e-mail e senha\n5) Cole este código: *${code}*\n\nPronto! Você vai ver a sua rede e poderá cadastrar pessoas. 💙💚`;
 }
 
 export function CrmClient({ liderancas, abrirNova = false }: { liderancas: Lideranca[]; abrirNova?: boolean }) {

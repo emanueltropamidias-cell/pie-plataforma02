@@ -74,7 +74,7 @@ export function CriarConta() {
   // O recado pronto para colar no WhatsApp. Sem isto o coordenador digita à mão
   // cinco vezes e erra o endereço numa delas.
   const recado = criada
-    ? `Oi, ${criada.nome.split(" ")[0]}! Seu acesso ao PIE:\n\n` +
+    ? `Oi, ${criada.nome.split(" ")[0]}! Seu acesso ao ManuFlow:\n\n` +
       `Endereço: ${CANDIDATO.app}\n` +
       `E-mail: ${criada.email}\n` +
       `Senha: ${criada.senha}\n\n` +

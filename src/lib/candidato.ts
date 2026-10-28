@@ -190,15 +190,21 @@ export const CANDIDATO = {
   pixelMeta: podeDesligar(process.env.NEXT_PUBLIC_META_PIXEL, "2913972855615390"),
 
   /**
-   * O endereço por onde a EQUIPE entra — outro domínio do mesmo aplicativo.
+   * O endereço da plataforma (ManuFlow) — por onde a equipe e as lideranças
+   * entram.
    *
-   * Vai escrito no recado de acesso que o supervisor manda para a atendente
-   * nova. Errar aqui manda a menina para um endereço que não abre, e ela vai
-   * achar que a senha está errada.
+   * Vai escrito nos recados de acesso de conta nova e de liderança. Errar aqui
+   * manda a pessoa para um endereço que não abre, e ela vai achar que a senha
+   * está errada.
+   *
+   * Era o subdomínio `atendimento.…`, que só abre a caixa de entrada: a conta
+   * de coordenação ou com abas escolhidas entrava e ficava presa na fila. O
+   * endereço principal serve todo mundo, porque quem segura a atendente na
+   * caixa é o PAPEL (`src/app/(app)/layout.tsx`), não o domínio.
    */
   app: (
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    "https://atendimento.talitaoliveiraoficial.com"
+    "https://pieplataforma.vercel.app"
   ).replace(/\/+$/, ""),
 } as const;
 
