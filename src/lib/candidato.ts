@@ -204,7 +204,7 @@ export const CANDIDATO = {
    */
   app: (
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    "https://pieplataforma.vercel.app"
+    "https://manuflow-app.vercel.app"
   ).replace(/\/+$/, ""),
 } as const;
 
