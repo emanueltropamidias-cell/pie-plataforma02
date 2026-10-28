@@ -5,10 +5,11 @@ cada ação concluída.
 
 ## Em andamento
 
-- 26/10/2026 · Claude · Estratégia v2 NO AR (pieplataforma.vercel.app e talitaoliveiraoficial.com). FALTA: o Emanuel entrar e testar a aba Perguntar logado; 2º turno de 2026 quando o TSE publicar (`PRESIDENTE|2` em `apuracao/BA.json`): `gerar-eleicao-arquivos.mjs --ano=2026` (APAGA a pasta do ano), depois `gerar-eleicao-extras.mjs --ano=2026` e `--pessoas`, e subir; contas finais de 2026 quando o TSE fechar.
+- 26/10/2026 · Claude · Estratégia v2 NO AR (pieplataforma.vercel.app e talitaoliveiraoficial.com). FALTA: o Emanuel adicionar `manuflow.vercel.app` em Domains na Vercel (a trava bloqueia o Claude); depois trocar o padrão de `app` em `src/lib/candidato.ts` para ele e publicar; o Emanuel entrar e testar a aba Perguntar logado; 2º turno de 2026 quando o TSE publicar (`PRESIDENTE|2` em `apuracao/BA.json`): `gerar-eleicao-arquivos.mjs --ano=2026` (APAGA a pasta do ano), depois `gerar-eleicao-extras.mjs --ano=2026` e `--pessoas`, e subir; contas finais de 2026 quando o TSE fechar.
 
 ## Feito (mais recente no topo)
 
+- 27/10/2026 · Claude · recado de conta nova e de liderança apontam para o endereço principal (`CANDIDATO.app` = pieplataforma.vercel.app), não mais para `atendimento.…` · `6d35df7` · publicado
 - 27/10/2026 · Claude · textos da plataforma viram ManuFlow (aba, barra lateral, relatórios, painel, espera de aprovação, package.json, README) · `22f54d2` — publicado 27/10
 - 27/10/2026 · Claude · publicado em produção com o `ddfe675` (2º turno sem apuração)
 - 26/10/2026 · Claude · Estratégia: presidente na lista de cargos do estado; filtro por resultado; resultado final do 2º turno no selo; 1º → 2º turno por cidade (aba Disputa); planilhas (lista filtrada e votos por cidade); aba Partido com lacunas do candidato (dados `partido/<UF>.json`, etapa `partido` do gerador); simulador de chapa (`src/lib/quociente.ts`, reproduz o oficial em 23/23 disputas testadas). No ar desde a publicação de 26/10 14:08
