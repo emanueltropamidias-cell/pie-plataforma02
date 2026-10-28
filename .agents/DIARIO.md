@@ -9,7 +9,7 @@ cada ação concluída.
 
 ## Feito (mais recente no topo)
 
-- 27/10/2026 · Claude · textos da plataforma viram ManuFlow (aba, barra lateral, relatórios, painel, espera de aprovação, package.json, README) · `22f54d2` — FALTA publicar
+- 27/10/2026 · Claude · textos da plataforma viram ManuFlow (aba, barra lateral, relatórios, painel, espera de aprovação, package.json, README) · `22f54d2` — publicado 27/10
 - 27/10/2026 · Claude · publicado em produção com o `ddfe675` (2º turno sem apuração)
 - 26/10/2026 · Claude · Estratégia: presidente na lista de cargos do estado; filtro por resultado; resultado final do 2º turno no selo; 1º → 2º turno por cidade (aba Disputa); planilhas (lista filtrada e votos por cidade); aba Partido com lacunas do candidato (dados `partido/<UF>.json`, etapa `partido` do gerador); simulador de chapa (`src/lib/quociente.ts`, reproduz o oficial em 23/23 disputas testadas). No ar desde a publicação de 26/10 14:08
 - 26/10/2026 · Claude + Emanuel · produção consertada: as variáveis da Vercel apontavam para o Supabase antigo (`unmjcm…`, apagado depois da migração de 20/10); trocadas pelas do banco novo (`lrccsrz…`), publicado pelo Emanuel. Dados de 2026 regerados e subidos (18.543 arquivos)
@@ -31,7 +31,7 @@ cada ação concluída.
 
 - Sobras do quociente: a última fase vai para TODAS as agremiações (STF, fev/2024), e isso vale também para 2022 — o TSE recontou (Amapá trocou deputados) e o dado oficial já é o recontado. Com a regra antiga o simulador erra o Amapá 2022.
 
-- A Vercel NÃO publica a partir do GitHub: publicar é `npx vercel deploy --prod` na pasta (em 27/10 o Claude conseguiu rodar com autorização do Emanuel). As variáveis do banco moram na Vercel e NÃO acompanham o `.env.local`: trocou de banco, trocar lá também (`vercel env update NOME -e production`; as `NEXT_PUBLIC_` pedem `--type config`).
+- A Vercel NÃO publica a partir do GitHub: publicar é `npx vercel deploy --prod` na pasta (desde 27/10 liberado para o Claude em `.claude/settings.local.json`, só `npx vercel deploy --prod --yes`). As variáveis do banco moram na Vercel e NÃO acompanham o `.env.local`: trocou de banco, trocar lá também (`vercel env update NOME -e production`; as `NEXT_PUBLIC_` pedem `--type config`).
 
 - `gerar-eleicao-arquivos.mjs --ano=X` (sem `--uf`) apaga `.cache/eleicao-arquivos/X/` inteira, inclusive os extras: sempre rodar `gerar-eleicao-extras.mjs --ano=X` e `--pessoas` logo depois.
 
