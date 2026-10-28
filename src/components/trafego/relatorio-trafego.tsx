@@ -169,7 +169,7 @@ export function RelatorioTrafego({
         </table>
 
         <p className="mt-8 border-t border-tinta-200 pt-3 text-[11px] text-tinta-400">
-          Plataforma de Inteligência - Talita Oliveira. Dados das campanhas do Gerenciador de Anúncios.
+          ManuFlow · Dados das campanhas do Gerenciador de Anúncios.
         </p>
       </div>
 

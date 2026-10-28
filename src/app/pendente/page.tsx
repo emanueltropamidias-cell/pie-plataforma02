@@ -48,7 +48,7 @@ export default async function PendentePage() {
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-zinc-500">
           Sua conta foi criada com sucesso e está <b>aguardando a aprovação</b> de um
-          administrador da Talita Oliveira. Assim que for liberada, você entra normalmente.
+          administrador da campanha. Assim que for liberada, você entra normalmente.
         </p>
         <div className="mt-6">
           <LogoutButton className="text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900" />

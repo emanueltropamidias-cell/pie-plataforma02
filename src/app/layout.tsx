@@ -25,11 +25,11 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   metadataBase: new URL(CANDIDATO.site),
-  title: `${CANDIDATO.nome} · ${CANDIDATO.uf}`,
-  description: "Plataforma de Inteligência",
+  title: "ManuFlow",
+  description: "Inteligência eleitoral",
   openGraph: {
-    title: `${CANDIDATO.nome} · ${CANDIDATO.uf}`,
-    description: `Plataforma de Inteligência · ${CANDIDATO.uf}`,
+    title: "ManuFlow",
+    description: "Inteligência eleitoral",
     images: [MARCA.capa],
     type: "website",
   },

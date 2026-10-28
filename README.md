@@ -1,6 +1,6 @@
-# PIE — Plataforma de Inteligência
+# ManuFlow — inteligência eleitoral
 
-Plataforma interna da pré-campanha **Talita Oliveira · Bahia**. Reúne num só lugar a rede de
+Plataforma multi-campanha. A primeira instalação é a da **Talita Oliveira · Bahia**. Reúne num só lugar a rede de
 lideranças, o mapa eleitoral do estado, o placar das metas e a gestão do tráfego pago.
 
 Produção: **https://www.talitaoliveiraoficial.com** (Vercel)

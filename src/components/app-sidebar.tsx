@@ -218,7 +218,7 @@ function Conteudo({
           apoio: diz a mesma coisa e não pede holofote na barra de trabalho. */}
       {!recolhido && (
         <p className="mt-2 text-[11px] tracking-[0.01em] text-barra-fraca">
-          Plataforma de Inteligência
+          Inteligência eleitoral
         </p>
       )}
 

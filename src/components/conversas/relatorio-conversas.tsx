@@ -195,7 +195,7 @@ export function RelatorioConversas({
 
         {/* Rodapé */}
         <p className="mt-8 border-t border-tinta-200 pt-3 text-[11px] text-tinta-400">
-          Plataforma de Inteligência - Talita Oliveira. Documento gerado a partir dos registros do atendimento.
+          ManuFlow · Documento gerado a partir dos registros do atendimento.
         </p>
       </div>
 

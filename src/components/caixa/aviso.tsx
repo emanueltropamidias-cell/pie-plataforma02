@@ -139,7 +139,7 @@ export function useAviso() {
 
   // O título da aba é o aviso que sobrevive à pessoa sair da mesa.
   useEffect(() => {
-    const original = "Atendimento · PIE";
+    const original = "Atendimento · ManuFlow";
     document.title = naoVistas > 0 ? `(${naoVistas}) ${original}` : original;
     return () => {
       document.title = original;

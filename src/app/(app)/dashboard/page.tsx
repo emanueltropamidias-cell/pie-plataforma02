@@ -134,7 +134,7 @@ export default async function DashboardPage() {
       <Cabecalho
         sobretitulo="Painel geral"
         titulo={`Olá, ${nome} 👋`}
-        descricao="O estado da rede da Talita Oliveira · Bahia, agora."
+        descricao="O estado da rede da campanha, agora."
       />
 
       <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
