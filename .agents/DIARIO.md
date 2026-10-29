@@ -5,6 +5,7 @@ cada ação concluída.
 
 ## Em andamento
 
+- 29/10/2026 · Claude · migração do Mac da conta `talitasantosdeoliveira` para `emanuelsilva`: cópia feita em `/Users/Shared/Emanuel-transferencia` (passo a passo em `LEIA-ME.md` lá dentro). FALTA: o Emanuel entrar na conta nova e o Claude de lá seguir o LEIA-ME; Documentos é misturado (Emanuel vai dizer o que é dele); só depois limpar a conta da Talita, com confirmação dele.
 - 26/10/2026 · Claude · Estratégia v2 NO AR (pieplataforma.vercel.app e talitaoliveiraoficial.com). FALTA: o Emanuel entrar e testar a aba Perguntar logado; 2º turno de 2026 quando o TSE publicar (`PRESIDENTE|2` em `apuracao/BA.json`): `gerar-eleicao-arquivos.mjs --ano=2026` (APAGA a pasta do ano), depois `gerar-eleicao-extras.mjs --ano=2026` e `--pessoas`, e subir; contas finais de 2026 quando o TSE fechar.
 
 ## Feito (mais recente no topo)
