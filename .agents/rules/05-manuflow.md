@@ -43,7 +43,11 @@ ver `src/lib/modulos.ts`).
 **Estratégia:** quociente e disputa, comparar candidatos, trajetória pelo título de eleitor,
 gastos de campanha, partido com lacunas do candidato, simulador de chapa
 (`src/lib/quociente.ts`), perguntas por IA, mapa em % do eleitorado. Os dados do TSE de
-2022 a 2026 ficam em arquivos no Storage (bucket `eleicao`, ver `src/lib/eleicao-arquivos.ts`).
+2022 a 2026 ficam em arquivos no Storage (bucket `eleicao`, fotos de urna no bucket `urna`, ver
+`src/lib/eleicao-arquivos.ts`).
+
+**Fora dos módulos:** `/config` (Configurações) não pode ser escondida e é o destino de quem
+não tem módulo liberado. `/analise` só redireciona para `/dashboard`: a tela acabou em 15/09.
 
 **Páginas públicas**, fora da área logada: `/1022` (urna de treino e grupo), `/instituto`,
 `/portal` (liderança), `/c/[code]` (ponte de WhatsApp por liderança), `/l/[slug]` (links de
@@ -56,9 +60,11 @@ panfleto), `/candidato/[id]`, `/privacidade`.
 - **Next.js 16 muda APIs:** ler `node_modules/next/dist/docs/` antes de escrever código.
 - **Banco:** `supabase/migrations/`, numeradas até `0060`. Nunca rodar `supabase/historico/`.
   SQL só por `node scripts/rodar-sql.mjs <arquivo>`.
-- **WhatsApp:** Evolution API em VPS (`evo.talitaoliveiraoficial.com`), com Meta Cloud API
-  como alternativa (`WA_PROVEDOR`). A chave da Evolution é global do servidor, então cada
-  candidato precisa do próprio servidor.
+- **WhatsApp:** dois provedores atrás de `src/lib/wa.ts`, escolhidos por `WA_PROVEDOR`. Sem
+  a variável, ganha a Meta Cloud API se estiver configurada; senão, a Evolution em VPS
+  (`evo.talitaoliveiraoficial.com`). A Evolution é não oficial, levou o banimento de 26/08 e
+  fica como contingência. A chave dela é global do servidor, então cada candidato precisa do
+  próprio servidor.
 - **Instalação nova:** `INSTALAR.md`. `NEXT_PUBLIC_WA_NUMERO` não tem padrão e quebra o
   build de propósito. O Pixel tem padrão (o da Talita): outra campanha precisa trocar ou
   deixar em branco, senão treina os anúncios dela.
