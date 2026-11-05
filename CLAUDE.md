@@ -11,4 +11,5 @@ Não copiar conteúdo para cá; editar lá.
 @.agents/rules/03-entrega-de-arquivos.md
 @.agents/rules/04-dominio-pie.md
 @.agents/rules/05-passagem-de-bastao.md
+@.agents/rules/05-manuflow.md
 @.agents/DIARIO.md

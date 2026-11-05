@@ -10,6 +10,7 @@ cada ação concluída.
 
 ## Feito (mais recente no topo)
 
+- 05/11/2026 · Claude · regra `05-manuflow.md` com o contexto do produto, importada no `CLAUDE.md`
 - 27/10/2026 · Claude · endereço da plataforma vira manuflow-app.vercel.app (domínio do projeto na Vercel; `manuflow.vercel.app` é de outra conta) e os recados de acesso apontam para ele
 - 27/10/2026 · Claude · recado de conta nova e de liderança apontam para o endereço principal (`CANDIDATO.app` = pieplataforma.vercel.app), não mais para `atendimento.…` · `6d35df7` · publicado
 - 27/10/2026 · Claude · textos da plataforma viram ManuFlow (aba, barra lateral, relatórios, painel, espera de aprovação, package.json, README) · `22f54d2` — publicado 27/10
