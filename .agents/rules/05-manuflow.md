@@ -72,18 +72,20 @@ panfleto), `/candidato/[id]`, `/privacidade`.
 
 ## Onde está publicado
 
-- **Vercel:** projeto `pieplataforma`, região `gru1`, cron diário de tráfego em
-  `/api/trafego/sync?modo=recente`.
-- **Endereços:** `manuflow-app.vercel.app` (plataforma, usado nos recados de acesso),
-  `pieplataforma.vercel.app` e `talitaoliveiraoficial.com`. `manuflow.vercel.app` é de outra
-  conta. `manuflow.com.br` e `manuflow.com` já têm dono, então não há domínio próprio.
-- **Publicar:** `npx vercel deploy --prod --yes`, na pasta do projeto. Enviar para o GitHub
-  **não** publica.
+- **Desde 11/2026, produção é `pie-plataforma02.vercel.app`**: projeto `pie-plataforma02` na conta
+  Vercel `emanuel-02`, ligado ao GitHub (`origin`). **Enviar para o `main` publica sozinho.** A CLI
+  local (`.vercel/project.json`) ainda aponta para a conta antiga, que foi SUSPENSA por pagamento em
+  22/11/2026: `npx vercel deploy` dali falha, e `manuflow-app`, `pieplataforma.vercel.app` e
+  `talitaoliveiraoficial.com` devolvem 402.
+- **Variáveis do projeto novo (conferido em 22/11 por `/api/versao`):** só o Supabase está
+  configurado. FALTAM `META_ACCESS_TOKEN` (tráfego e Instagram), `ANTHROPIC_API_KEY` (aba Perguntar e
+  IA), `CRON_SECRET` (crons) e as da Evolution. Quem põe é o Emanuel, no painel da Vercel.
+- **Cron:** `vercel.json` (tráfego 07:00 UTC, Instagram 07:30 UTC). Sem `CRON_SECRET` as rotas recusam.
 - **GitHub:** `origin` = `emanueltropamidias-cell/pie-plataforma02` (atual); `antigo` =
-  `emanuelcontatocomercial1-sys/PIEPLATAFORMA`. A Vercel segue ligada ao antigo até o Emanuel
-  reconectar em Settings, Git.
+  `emanuelcontatocomercial1-sys/PIEPLATAFORMA`.
+- `manuflow.vercel.app` é de outra conta; `manuflow.com.br` e `manuflow.com` já têm dono.
 - **Sessão do Claude:** abrir em `~/PIEPLATAFORMA`. As permissões valem pela pasta em que a
-  sessão começou, e em outra pasta a publicação é barrada.
+  sessão começou.
 
 ## Marca
 

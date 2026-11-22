@@ -32,7 +32,7 @@ cada ação concluída.
 
 ## Armadilhas
 
-- 22/11/2026: a conta da Vercel foi SUSPENSA por pagamento ("add a valid payment method"); os três endereços devolvem 402 DEPLOYMENT_DISABLED. O commit `7391463` (coleta do Instagram) está no GitHub mas NÃO publicado. Depois que o Emanuel regularizar: `npx vercel deploy --prod --yes` e testar o diagnóstico.
+- 22/11/2026: produção mudou para `pie-plataforma02.vercel.app` (conta `emanuel-02`, publica sozinho no push do `main`); a conta antiga está suspensa (402). O projeto novo NÃO tem `META_ACCESS_TOKEN`, `ANTHROPIC_API_KEY`, `CRON_SECRET` nem as da Evolution — diagnóstico do Instagram devolveu "nenhum token". Ver `05-manuflow.md`.
 
 - Renomear para ManuFlow NÃO alcança o que é da campanha da Talita: página 1022, política de privacidade (ela é a controladora na LGPD), mensagens de WhatsApp, `site-talita/`, `linktree/`, links de panfleto `talitaoliveiraoficial.com/l/…` e `evo.talitaoliveiraoficial.com` (WhatsApp depende dele). `manuflow.com.br` e `manuflow.com` já têm dono (27/10).
 
