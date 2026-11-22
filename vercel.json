@@ -1,7 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["gru1"],
+  "regions": [
+    "gru1"
+  ],
   "crons": [
-    { "path": "/api/trafego/sync?modo=recente", "schedule": "0 7 * * *" }
+    {
+      "path": "/api/trafego/sync?modo=recente",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/redes/instagram",
+      "schedule": "30 7 * * *"
+    }
   ]
 }
