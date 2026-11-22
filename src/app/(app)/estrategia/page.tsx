@@ -3,6 +3,8 @@ import { lerTerritorio } from "@/lib/painel-territorio";
 import { CANDIDATO } from "@/lib/candidato";
 import { candidaturaDaCasa, cobertura as lerCobertura, raioX as raioXDoArquivo } from "@/lib/eleicao-arquivos";
 import { PainelEstrategiaEleitoral } from "@/components/estrategia/painel-estrategia-eleitoral";
+import Link from "next/link";
+import { AtSign } from "lucide-react";
 
 // Central de Estratégia e Inteligência Eleitoral.
 //
@@ -49,6 +51,16 @@ export default async function CentralEstrategia({
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      {/* Redes sociais dos políticos (Dossiê do mandato, 22/11/2026). */}
+      <div className="mb-3 flex justify-end">
+        <Link
+          href="/estrategia/redes"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-tinta-200 bg-white px-3 py-1.5 text-[12.5px] font-semibold text-tinta-700 transition-colors hover:border-tinta-300 hover:text-tema"
+        >
+          <AtSign size={14} /> Redes sociais dos deputados
+        </Link>
+      </div>
+
       {/* ── PAINEL VISUAL DE DADOS ELEITORAIS E MAPA DE CALOR ──────── */}
       <div>
         {raioX ? (
