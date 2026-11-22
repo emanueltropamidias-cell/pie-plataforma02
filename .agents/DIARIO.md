@@ -32,6 +32,8 @@ cada ação concluída.
 
 ## Armadilhas
 
+- 22/11/2026: a conta da Vercel foi SUSPENSA por pagamento ("add a valid payment method"); os três endereços devolvem 402 DEPLOYMENT_DISABLED. O commit `7391463` (coleta do Instagram) está no GitHub mas NÃO publicado. Depois que o Emanuel regularizar: `npx vercel deploy --prod --yes` e testar o diagnóstico.
+
 - Renomear para ManuFlow NÃO alcança o que é da campanha da Talita: página 1022, política de privacidade (ela é a controladora na LGPD), mensagens de WhatsApp, `site-talita/`, `linktree/`, links de panfleto `talitaoliveiraoficial.com/l/…` e `evo.talitaoliveiraoficial.com` (WhatsApp depende dele). `manuflow.com.br` e `manuflow.com` já têm dono (27/10).
 
 - Sobras do quociente: a última fase vai para TODAS as agremiações (STF, fev/2024), e isso vale também para 2022 — o TSE recontou (Amapá trocou deputados) e o dado oficial já é o recontado. Com a regra antiga o simulador erra o Amapá 2022.
